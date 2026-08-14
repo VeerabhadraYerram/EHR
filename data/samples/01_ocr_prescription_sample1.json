@@ -1,0 +1,56 @@
+{
+  "source_type": "OCR",
+  "document_id": "OCR-2026-081234",
+  "encounter_id": "ENC-778901",
+  "patient_session_ref": "PT-SESSION-55210",
+  "document_class": "prescription",
+  "capture_timestamp": "2026-08-09T09:14:22Z",
+  "ocr_engine": "tesseract-5.3.3",
+  "overall_ocr_confidence": 0.91,
+  "page_count": 1,
+  "blocks": [
+    {
+      "block_id": "b1",
+      "page": 1,
+      "bounding_box": { "x": 88, "y": 120, "width": 420, "height": 40 },
+      "text": "Dr. Meera Kulkarni, MD - Internal Medicine",
+      "confidence": 0.97
+    },
+    {
+      "block_id": "b2",
+      "page": 1,
+      "bounding_box": { "x": 88, "y": 170, "width": 300, "height": 30 },
+      "text": "Patient: Rohan Sharma   Age: 54   Sex: M",
+      "confidence": 0.94
+    },
+    {
+      "block_id": "b3",
+      "page": 1,
+      "bounding_box": { "x": 88, "y": 230, "width": 480, "height": 30 },
+      "text": "Rx: Metformin 500mg tablet - 1 tab BID with meals",
+      "confidence": 0.89
+    },
+    {
+      "block_id": "b4",
+      "page": 1,
+      "bounding_box": { "x": 88, "y": 265, "width": 480, "height": 30 },
+      "text": "Atorvastatin 10mg tablet - 1 tab OD at night",
+      "confidence": 0.86
+    },
+    {
+      "block_id": "b5",
+      "page": 1,
+      "bounding_box": { "x": 88, "y": 300, "width": 460, "height": 30 },
+      "text": "Dx: Type 2 Diabetes Mellitus, Hyperlipidemia",
+      "confidence": 0.83
+    },
+    {
+      "block_id": "b6",
+      "page": 1,
+      "bounding_box": { "x": 88, "y": 340, "width": 300, "height": 26 },
+      "text": "Follow up in 4 weeks with HbA1c",
+      "confidence": 0.9
+    }
+  ],
+  "raw_text_concatenated": "Dr. Meera Kulkarni, MD - Internal Medicine\nPatient: Rohan Sharma   Age: 54   Sex: M\nRx: Metformin 500mg tablet - 1 tab BID with meals\nAtorvastatin 10mg tablet - 1 tab OD at night\nDx: Type 2 Diabetes Mellitus, Hyperlipidemia\nFollow up in 4 weeks with HbA1c"
+}

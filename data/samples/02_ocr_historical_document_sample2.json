@@ -1,0 +1,58 @@
+{
+  "source_type": "OCR",
+  "document_id": "OCR-2026-081290",
+  "document_class": "historical_discharge_summary",
+  "origin": "external_hospital",
+  "originating_facility_name": "Sunrise General Hospital",
+  "capture_timestamp": "2026-08-09T09:20:05Z",
+  "ocr_engine": "tesseract-5.3.3",
+  "overall_ocr_confidence": 0.78,
+  "page_count": 2,
+  "identity_hint_fields": {
+    "name_raw": "Rohan Sharma",
+    "dob_raw": "1972-03-14",
+    "gender_raw": "M",
+    "phone_raw": "+91-98xxxxxx10",
+    "national_id_raw": "XXXX-XXXX-4432",
+    "mrn_raw": "SGH-MRN-88213",
+    "address_raw": "12 MG Road, Pune"
+  },
+  "blocks": [
+    {
+      "block_id": "b1",
+      "page": 1,
+      "bounding_box": { "x": 70, "y": 100, "width": 500, "height": 34 },
+      "text": "Discharge Summary - Sunrise General Hospital",
+      "confidence": 0.95
+    },
+    {
+      "block_id": "b2",
+      "page": 1,
+      "bounding_box": { "x": 70, "y": 150, "width": 480, "height": 30 },
+      "text": "Patient: Rohan Sharma  DOB: 14-Mar-1972  MRN: SGH-MRN-88213",
+      "confidence": 0.88
+    },
+    {
+      "block_id": "b3",
+      "page": 1,
+      "bounding_box": { "x": 70, "y": 200, "width": 480, "height": 60 },
+      "text": "Admitting Diagnosis: Acute Pancreatitis\nDischarge Diagnosis: Resolved Acute Pancreatitis, Type 2 Diabetes Mellitus",
+      "confidence": 0.74
+    },
+    {
+      "block_id": "b4",
+      "page": 2,
+      "bounding_box": { "x": 70, "y": 100, "width": 480, "height": 40 },
+      "text": "Labs at discharge: HbA1c 8.4%, Lipase 210 U/L (elevated)",
+      "confidence": 0.7
+    },
+    {
+      "block_id": "b5",
+      "page": 2,
+      "bounding_box": { "x": 70, "y": 150, "width": 480, "height": 30 },
+      "text": "Discharge Medications: Metformin 500mg BID, Pantoprazole 40mg OD",
+      "confidence": 0.81
+    }
+  ],
+  "raw_text_concatenated": "Discharge Summary - Sunrise General Hospital\nPatient: Rohan Sharma  DOB: 14-Mar-1972  MRN: SGH-MRN-88213\nAdmitting Diagnosis: Acute Pancreatitis\nDischarge Diagnosis: Resolved Acute Pancreatitis, Type 2 Diabetes Mellitus\nLabs at discharge: HbA1c 8.4%, Lipase 210 U/L (elevated)\nDischarge Medications: Metformin 500mg BID, Pantoprazole 40mg OD"
+}

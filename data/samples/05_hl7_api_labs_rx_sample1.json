@@ -1,0 +1,74 @@
+{
+  "source_type": "HL7_API_JSON",
+  "message_id": "HL7API-2026-081234",
+  "source_system": "Metro Diagnostics LIS",
+  "hl7_version_context": "HL7 v2 ORU^R01 mapped to FHIR JSON",
+  "received_timestamp": "2026-08-09T10:05:00Z",
+  "encounter_id": "ENC-778901",
+  "patient_identifiers": {
+    "mrn": "HOSP-MRN-55210",
+    "name": "Rohan Sharma",
+    "dob": "1972-03-14",
+    "gender": "male"
+  },
+  "bundle_type": "collection",
+  "resources": [
+    {
+      "resourceType": "DiagnosticReport",
+      "id": "DR-9001",
+      "status": "final",
+      "code": { "coding": [{ "system": "http://loinc.org", "code": "24323-8", "display": "Comprehensive metabolic panel" }] },
+      "effectiveDateTime": "2026-08-09T08:30:00Z",
+      "result": ["Observation/OBS-9001", "Observation/OBS-9002", "Observation/OBS-9003"]
+    },
+    {
+      "resourceType": "Observation",
+      "id": "OBS-9001",
+      "status": "final",
+      "code": { "coding": [{ "system": "http://loinc.org", "code": "4548-4", "display": "Hemoglobin A1c" }] },
+      "valueQuantity": { "value": 8.2, "unit": "%", "system": "http://unitsofmeasure.org" },
+      "referenceRange": [{ "low": { "value": 4 }, "high": { "value": 5.6 } }],
+      "interpretation": [{ "coding": [{ "code": "H", "display": "High" }] }]
+    },
+    {
+      "resourceType": "Observation",
+      "id": "OBS-9002",
+      "status": "final",
+      "code": { "coding": [{ "system": "http://loinc.org", "code": "2160-0", "display": "Creatinine" }] },
+      "valueQuantity": { "value": 1.1, "unit": "mg/dL", "system": "http://unitsofmeasure.org" },
+      "referenceRange": [{ "low": { "value": 0.6 }, "high": { "value": 1.3 } }],
+      "interpretation": [{ "coding": [{ "code": "N", "display": "Normal" }] }]
+    },
+    {
+      "resourceType": "Observation",
+      "id": "OBS-9003",
+      "status": "final",
+      "code": { "coding": [{ "system": "http://loinc.org", "code": "2093-3", "display": "Total Cholesterol" }] },
+      "valueQuantity": { "value": 215, "unit": "mg/dL", "system": "http://unitsofmeasure.org" },
+      "referenceRange": [{ "low": { "value": 0 }, "high": { "value": 200 } }],
+      "interpretation": [{ "coding": [{ "code": "H", "display": "High" }] }]
+    },
+    {
+      "resourceType": "MedicationRequest",
+      "id": "MR-4001",
+      "status": "active",
+      "intent": "order",
+      "medicationCodeableConcept": {
+        "coding": [{ "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "861007", "display": "Metformin 500 MG Oral Tablet" }]
+      },
+      "dosageInstruction": [{ "text": "1 tablet by mouth twice daily with meals", "route": "oral", "frequency": "BID" }],
+      "requester": "Practitioner/DR-KULKARNI-201"
+    },
+    {
+      "resourceType": "MedicationRequest",
+      "id": "MR-4002",
+      "status": "active",
+      "intent": "order",
+      "medicationCodeableConcept": {
+        "coding": [{ "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "617311", "display": "Atorvastatin 10 MG Oral Tablet" }]
+      },
+      "dosageInstruction": [{ "text": "1 tablet by mouth once daily at bedtime", "route": "oral", "frequency": "OD" }],
+      "requester": "Practitioner/DR-KULKARNI-201"
+    }
+  ]
+}

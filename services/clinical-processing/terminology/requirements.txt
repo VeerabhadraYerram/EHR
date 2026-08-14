@@ -1,0 +1,11 @@
+fastapi==0.110.0
+uvicorn==0.27.1
+-e ../../../packages/ehr-contracts
+sqlalchemy>=2.0.30
+alembic==1.13.1
+psycopg[binary]
+pgvector==0.2.5
+sentence-transformers==2.5.1
+pandas==2.2.1
+openpyxl==3.1.2
+pydantic-settings==2.2.1

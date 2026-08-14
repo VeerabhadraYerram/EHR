@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  terminology-db:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5433:5432" # Use 5433 to avoid clashing with the main EHR postgres if running simultaneously
+    environment:
+      - POSTGRES_USER=ehr_term
+      - POSTGRES_PASSWORD=ehr_term_pass
+      - POSTGRES_DB=terminology
+    volumes:
+      - terminology_pgdata:/var/lib/postgresql/data
+    profiles:
+      - terminology
+
+  terminology-api:
+    build: 
+      context: ./services/clinical-processing/terminology
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://ehr_term:ehr_term_pass@terminology-db:5432/terminology
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+    depends_on:
+      - terminology-db
+    profiles:
+      - terminology
+
+volumes:
+  terminology_pgdata:

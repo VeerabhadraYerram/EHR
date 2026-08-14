@@ -1,0 +1,72 @@
+{
+  "source_type": "HL7_API_JSON",
+  "message_id": "HL7API-2026-081298",
+  "source_system": "CityCare EHR",
+  "hl7_version_context": "HL7 v2 MDM^T02 / FHIR Composition JSON",
+  "received_timestamp": "2026-08-09T12:15:00Z",
+  "encounter_id": "ENC-779044",
+  "patient_identifiers": {
+    "mrn": "HOSP-MRN-55311",
+    "name": "Anita Verma",
+    "dob": "1985-11-02",
+    "gender": "female"
+  },
+  "bundle_type": "collection",
+  "resources": [
+    {
+      "resourceType": "Condition",
+      "id": "COND-7001",
+      "clinicalStatus": { "coding": [{ "code": "active" }] },
+      "verificationStatus": { "coding": [{ "code": "confirmed" }] },
+      "code": {
+        "coding": [
+          { "system": "http://hl7.org/fhir/sid/icd-10-cm", "code": "G43.909", "display": "Migraine, unspecified, not intractable" },
+          { "system": "http://snomed.info/sct", "code": "37796009", "display": "Migraine" }
+        ]
+      },
+      "onsetDateTime": "2026-08-06",
+      "recordedDate": "2026-08-09"
+    },
+    {
+      "resourceType": "Condition",
+      "id": "COND-7002",
+      "clinicalStatus": { "coding": [{ "code": "resolved" }] },
+      "verificationStatus": { "coding": [{ "code": "confirmed" }] },
+      "code": {
+        "coding": [
+          { "system": "http://hl7.org/fhir/sid/icd-10-cm", "code": "G43.909", "display": "Migraine, unspecified" }
+        ]
+      },
+      "onsetDateTime": "2024-05-01",
+      "abatementDateTime": "2024-06-15",
+      "note": [{ "text": "Prior migraine episode 2 years ago, self-resolved." }]
+    },
+    {
+      "resourceType": "DocumentReference",
+      "id": "DOCREF-3001",
+      "status": "current",
+      "type": { "coding": [{ "system": "http://loinc.org", "code": "11488-4", "display": "Consultation note" }] },
+      "date": "2026-08-09T11:50:00Z",
+      "author": "Practitioner/DR-RAO-114",
+      "content": [
+        {
+          "attachment": {
+            "contentType": "text/plain",
+            "data_note_text": "Patient presents with 3-day history of right-sided headache with nausea, similar to migraine 2 years ago. No fever, no vision changes. Assessment: likely migraine recurrence; rule out sinusitis if not resolved in 1 week. Plan: Sumatriptan 50mg PRN."
+          }
+        }
+      ]
+    },
+    {
+      "resourceType": "MedicationRequest",
+      "id": "MR-4010",
+      "status": "active",
+      "intent": "order",
+      "medicationCodeableConcept": {
+        "coding": [{ "system": "http://www.nlm.nih.gov/research/umls/rxnorm", "code": "312950", "display": "Sumatriptan 50 MG Oral Tablet" }]
+      },
+      "dosageInstruction": [{ "text": "1 tablet by mouth as needed for migraine", "route": "oral", "frequency": "PRN" }],
+      "requester": "Practitioner/DR-RAO-114"
+    }
+  ]
+}

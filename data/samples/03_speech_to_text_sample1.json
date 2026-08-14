@@ -1,0 +1,62 @@
+{
+  "source_type": "SPEECH_TO_TEXT",
+  "transcript_id": "STT-2026-081234",
+  "encounter_id": "ENC-778901",
+  "patient_session_ref": "PT-SESSION-55210",
+  "capture_start": "2026-08-09T09:02:10Z",
+  "capture_end": "2026-08-09T09:11:45Z",
+  "stt_engine": "whisper-large-v3",
+  "language": "en-IN",
+  "overall_confidence": 0.88,
+  "segments": [
+    {
+      "segment_id": "s1",
+      "speaker": "doctor",
+      "start_ms": 0,
+      "end_ms": 4200,
+      "text": "So how have you been feeling since your last visit?",
+      "confidence": 0.95
+    },
+    {
+      "segment_id": "s2",
+      "speaker": "patient",
+      "start_ms": 4300,
+      "end_ms": 12500,
+      "text": "Doctor I have been having some fatigue and my feet swell up a little in the evening. No chest pain though.",
+      "confidence": 0.86
+    },
+    {
+      "segment_id": "s3",
+      "speaker": "doctor",
+      "start_ms": 12600,
+      "end_ms": 18000,
+      "text": "Okay, any changes in your urination or excessive thirst?",
+      "confidence": 0.93
+    },
+    {
+      "segment_id": "s4",
+      "speaker": "patient",
+      "start_ms": 18100,
+      "end_ms": 24500,
+      "text": "A little more thirsty than usual, yes.",
+      "confidence": 0.9
+    },
+    {
+      "segment_id": "s5",
+      "speaker": "doctor",
+      "start_ms": 24600,
+      "end_ms": 34000,
+      "text": "Your sugar seems to be running high, HbA1c was eight point two last time. Let's continue Metformin five hundred milligrams twice a day and add Atorvastatin ten milligrams at night for your cholesterol.",
+      "confidence": 0.84
+    },
+    {
+      "segment_id": "s6",
+      "speaker": "doctor",
+      "start_ms": 34100,
+      "end_ms": 39500,
+      "text": "I want to rule out early kidney involvement given the swelling, so let's get a repeat HbA1c and a kidney function test.",
+      "confidence": 0.8
+    }
+  ],
+  "raw_transcript_concatenated": "So how have you been feeling since your last visit? Doctor I have been having some fatigue and my feet swell up a little in the evening. No chest pain though. Okay, any changes in your urination or excessive thirst? A little more thirsty than usual, yes. Your sugar seems to be running high, HbA1c was eight point two last time. Let's continue Metformin five hundred milligrams twice a day and add Atorvastatin ten milligrams at night for your cholesterol. I want to rule out early kidney involvement given the swelling, so let's get a repeat HbA1c and a kidney function test."
+}

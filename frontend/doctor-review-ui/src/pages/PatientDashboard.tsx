@@ -101,43 +101,52 @@ export const PatientDashboard: React.FC = () => {
         await fetchDocuments();
       }
     } catch (e) {
-      alert("Could not trigger seed API. Ensure backend is running.");
+      console.error("Failed to seed samples:", e);
     } finally {
       setLoading(false);
     }
   };
 
   const handleInspectDoc = async (doc: SourceDocument) => {
+    setSelectedDoc(doc);
+    setNlpResults(null);
+    setInspectModalOpen(true);
     try {
       const res = await fetch(`${API_BASE}/api/v1/documents/${doc.id}`);
       if (res.ok) {
         const fullDoc = await res.json();
         setSelectedDoc(fullDoc);
-      } else {
-        setSelectedDoc(doc);
       }
     } catch (e) {
-      setSelectedDoc(doc);
+      console.error("Failed to load full document details:", e);
     }
-    setInspectModalOpen(true);
   };
 
-  const handleRunNLP = async (text: string, docId: string) => {
+  const handleRunNlp = async (doc: SourceDocument) => {
+    setSelectedDoc(doc);
+    setLoading(true);
+    setInspectModalOpen(true);
     try {
-      const res = await fetch(`http://localhost:8002/api/v1/nlp/extract`, {
+      const textToExtract = doc.raw_text || (doc.fragments && doc.fragments.map(f => f.original_text).join(" ")) || "";
+      const res = await fetch(`${API_BASE}/api/v1/nlp/extract`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ document_id: docId, text: text })
+        body: JSON.stringify({
+          document_id: doc.id,
+          encounter_id: doc.encounter_id,
+          patient_id: doc.patient_id,
+          text: textToExtract,
+          source_type: doc.source_type
+        })
       });
       if (res.ok) {
-        const data = await res.json();
-        setNlpResults(data);
-      } else {
-        alert("NLP service error");
+        const nlpData = await res.json();
+        setNlpResults(nlpData);
       }
     } catch (e) {
-      // Fallback local extraction mock for preview
-      alert("NLP service (port 8002) connecting... Please ensure NLP service is running.");
+      console.error("Failed to extract clinical entities:", e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,13 +162,13 @@ export const PatientDashboard: React.FC = () => {
   const getSourceBadge = (type: string) => {
     switch (type) {
       case "SPEECH_TO_TEXT":
-        return <span className="source-type-tag tag-stt">Speech-to-Text</span>;
+        return <span className="source-type-tag">STT // Audio</span>;
       case "OCR":
-        return <span className="source-type-tag tag-ocr">OCR Prescription</span>;
+        return <span className="source-type-tag">OCR // Rx</span>;
       case "HISTORICAL_DOCUMENT":
-        return <span className="source-type-tag tag-historical">Historical Document</span>;
+        return <span className="source-type-tag">HIST // Record</span>;
       case "HL7_API_JSON":
-        return <span className="source-type-tag tag-hl7">HL7 / FHIR API</span>;
+        return <span className="source-type-tag">HL7 // LIS</span>;
       default:
         return <span className="source-type-tag">{type}</span>;
     }
@@ -175,11 +184,11 @@ export const PatientDashboard: React.FC = () => {
             <div className="patient-name">{patient.name}</div>
             <div className="patient-meta-row">
               <span><strong>MRN:</strong> {patient.mrn || patient.id}</span>
-              <span>•</span>
+              <span>/</span>
               <span><strong>DOB:</strong> {patient.dob}</span>
-              <span>•</span>
+              <span>/</span>
               <span><strong>Gender:</strong> {patient.gender}</span>
-              <span>•</span>
+              <span>/</span>
               <span><strong>Phone:</strong> {patient.phone}</span>
             </div>
           </div>
@@ -188,15 +197,15 @@ export const PatientDashboard: React.FC = () => {
         <div className="patient-quick-stats">
           <div className="stat-item">
             <span className="stat-label">Active Session</span>
-            <span className="stat-value">ENC-778901</span>
+            <span className="stat-value" style={{ fontFamily: "var(--font-mono)", fontSize: 15 }}>ENC-778901</span>
           </div>
           <div className="stat-item">
             <span className="stat-label">Ingested Sources</span>
-            <span className="stat-value" style={{ color: "#60a5fa" }}>{documents.length} Files</span>
+            <span className="stat-value">{documents.length}</span>
           </div>
           <div className="stat-item">
-            <span className="stat-label">Identity Match</span>
-            <span className="stat-value" style={{ color: "#10b981" }}>Verified (Current)</span>
+            <span className="stat-label">Identity State</span>
+            <span className="stat-value" style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: 0.5 }}>Verified</span>
           </div>
         </div>
       </div>
@@ -232,26 +241,34 @@ export const PatientDashboard: React.FC = () => {
             className={`tab-btn ${activeTab === "HL7" ? "active" : ""}`}
             onClick={() => setActiveTab("HL7")}
           >
-            HL7 / LIS Feeds <span className="pill-count">{documents.filter(d => d.source_type === "HL7_API_JSON").length}</span>
+            HL7 Feeds <span className="pill-count">{documents.filter(d => d.source_type === "HL7_API_JSON").length}</span>
           </button>
         </div>
 
         <div className="button-group">
           <button className="btn btn-secondary" onClick={fetchDocuments} disabled={loading}>
-            🔄 Refresh
+            ↻ Refresh
           </button>
           <button className="btn btn-primary" onClick={handleSeedSamples} disabled={loading}>
-            📥 Seed 5 Test Samples
+            + Seed Test Payloads
           </button>
         </div>
       </div>
 
       {/* Feed Cards Grid */}
       {filteredDocs.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", background: "var(--bg-surface)", borderRadius: "var(--radius-md)" }}>
-          <p style={{ color: "var(--text-secondary)", marginBottom: "16px" }}>No ingested documents in this stream yet.</p>
+        <div style={{
+          textAlign: "center",
+          padding: "60px 20px",
+          background: "var(--bg-surface)",
+          border: "1px dashed var(--border-subtle)",
+          borderRadius: "var(--radius-md)"
+        }}>
+          <p style={{ color: "var(--text-secondary)", marginBottom: "16px", fontSize: 14 }}>
+            No ingested documents in this stream yet.
+          </p>
           <button className="btn btn-primary" onClick={handleSeedSamples}>
-            Click to Load Sample Payloads (OCR, STT, Historical, HL7)
+            Load Sample Payloads (OCR, STT, Historical, HL7)
           </button>
         </div>
       ) : (
@@ -265,11 +282,11 @@ export const PatientDashboard: React.FC = () => {
 
               <div className="source-meta-row">
                 <span>Facility: <strong>{doc.originating_facility_name || "Metro Clinic"}</strong></span>
-                <span>•</span>
+                <span>/</span>
                 <span>Conf: <strong>{(doc.overall_confidence * 100).toFixed(0)}%</strong></span>
-                <span>•</span>
-                <span style={{ color: doc.status === "PENDING_IDENTITY_RESOLUTION" ? "#f59e0b" : "#10b981" }}>
-                  ● {doc.status}
+                <span>/</span>
+                <span style={{ color: "var(--text-primary)", fontWeight: 600 }}>
+                  [{doc.status}]
                 </span>
               </div>
 
@@ -279,27 +296,36 @@ export const PatientDashboard: React.FC = () => {
 
               {/* Historical hint callout */}
               {doc.identity_hint_fields && (
-                <div style={{ marginTop: 10, padding: 8, background: "rgba(245, 158, 11, 0.08)", border: "1px dashed var(--warning-border)", borderRadius: 6, fontSize: 11 }}>
-                  <strong style={{ color: "#f59e0b" }}>Identity Hints:</strong> {doc.identity_hint_fields.name_raw} (DOB: {doc.identity_hint_fields.dob_raw}, MRN: {doc.identity_hint_fields.mrn_raw})
+                <div style={{
+                  marginTop: 10,
+                  padding: "8px 12px",
+                  background: "var(--bg-surface-elevated)",
+                  border: "1px solid var(--border-strong)",
+                  borderRadius: "var(--radius-xs)",
+                  fontSize: 11,
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--text-secondary)"
+                }}>
+                  <strong style={{ color: "var(--text-primary)" }}>HINTS:</strong> {doc.identity_hint_fields.name_raw} (DOB: {doc.identity_hint_fields.dob_raw}, MRN: {doc.identity_hint_fields.mrn_raw})
                 </div>
               )}
 
               <div className="source-card-footer">
                 <span className="s3-badge">
-                  📦 {doc.minio_raw_path}
+                  {doc.minio_raw_path}
                 </span>
-                <div style={{ display: "flex", gap: 6 }}>
+                <div style={{ display: "flex", gap: 8 }}>
                   <button
                     className="btn btn-secondary"
-                    style={{ padding: "4px 8px", fontSize: 11 }}
+                    style={{ padding: "4px 10px", fontSize: 11 }}
                     onClick={() => handleInspectDoc(doc)}
                   >
                     Inspect
                   </button>
                   <button
-                    className="btn btn-purple"
-                    style={{ padding: "4px 8px", fontSize: 11 }}
-                    onClick={() => handleRunNLP(doc.raw_text || "", doc.id)}
+                    className="btn btn-primary"
+                    style={{ padding: "4px 10px", fontSize: 11 }}
+                    onClick={() => handleRunNlp(doc)}
                   >
                     Run NLP
                   </button>
@@ -310,78 +336,128 @@ export const PatientDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* NLP Results Modal/Drawer */}
-      {nlpResults && (
-        <div className="modal-overlay" onClick={() => setNlpResults(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3 style={{ fontSize: 18, color: "#fff" }}>Clinical NLP Extraction ({nlpResults.document_id})</h3>
-              <button className="btn btn-secondary" onClick={() => setNlpResults(null)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <p style={{ color: "var(--text-secondary)", marginBottom: 16 }}>
-                Identified <strong>{nlpResults.entity_count} entities</strong> with confidence scores, negation, and temporal status:
-              </p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-                {nlpResults.entities.map((ent: any) => (
-                  <div
-                    key={ent.entity_id}
-                    style={{
-                      background: "var(--bg-surface-elevated)",
-                      border: "1px solid var(--border-strong)",
-                      borderRadius: 6,
-                      padding: "8px 12px",
-                      fontSize: 12
-                    }}
-                  >
-                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, marginBottom: 4 }}>
-                      <span style={{ fontWeight: 700, color: "#60a5fa" }}>{ent.entity_type}</span>
-                      <span style={{ color: "#10b981" }}>{(ent.confidence * 100).toFixed(0)}%</span>
-                    </div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>"{ent.span_text}"</div>
-                    <div style={{ fontSize: 10, color: "var(--text-muted)", marginTop: 4 }}>
-                      Status: {ent.temporal_status} {ent.negation_status ? "(NEGATED)" : ""} {ent.certainty !== "CONFIRMED" ? `(${ent.certainty})` : ""}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Document & MinIO Inspector Modal */}
+      {/* Minimalist Inspector Modal */}
       {inspectModalOpen && selectedDoc && (
         <div className="modal-overlay" onClick={() => setInspectModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <div>
-                <h3 style={{ fontSize: 18, color: "#fff" }}>Document Inspector: {selectedDoc.id}</h3>
-                <span style={{ fontSize: 12, color: "var(--text-muted)" }}>MinIO S3 Store: {selectedDoc.minio_raw_path}</span>
+                <span style={{
+                  fontSize: 10,
+                  fontFamily: "var(--font-mono)",
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase"
+                }}>
+                  DOCUMENT INSPECTION //
+                </span>
+                <h3 style={{ fontSize: 16, fontWeight: 700, color: "var(--text-primary)", marginTop: 2 }}>
+                  {selectedDoc.id}
+                </h3>
               </div>
-              <button className="btn btn-secondary" onClick={() => setInspectModalOpen(false)}>✕</button>
+              <button
+                onClick={() => setInspectModalOpen(false)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-primary)",
+                  fontSize: 18,
+                  cursor: "pointer",
+                  padding: 4
+                }}
+              >
+                ✕
+              </button>
             </div>
+
             <div className="modal-body">
-              <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 12, color: "var(--text-secondary)", marginBottom: 4 }}>SHA-256 Integrity Hash:</div>
-                <code style={{ width: "100%", wordBreak: "break-all" }}>{selectedDoc.sha256_checksum}</code>
-              </div>
-              <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Parsed Source Fragments ({selectedDoc.fragments?.length || 0}):</div>
-              {selectedDoc.fragments && selectedDoc.fragments.length > 0 ? (
-                <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-                  {selectedDoc.fragments.map(f => (
-                    <div key={f.id} style={{ background: "var(--bg-main)", padding: 10, borderRadius: 6, border: "1px solid var(--border-subtle)", fontSize: 12 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", color: "var(--text-muted)", marginBottom: 4 }}>
-                        <span>Fragment #{f.fragment_index} {f.speaker ? `(${f.speaker})` : ""}</span>
-                        <span style={{ color: "#10b981" }}>{(f.confidence * 100).toFixed(0)}% conf</span>
-                      </div>
-                      <div style={{ color: "#e2e8f0" }}>{f.original_text}</div>
-                    </div>
-                  ))}
+              {/* Metadata strip */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: 12,
+                marginBottom: 20,
+                padding: 14,
+                background: "var(--code-bg)",
+                border: "1px solid var(--border-subtle)",
+                borderRadius: "var(--radius-xs)",
+                fontFamily: "var(--font-mono)",
+                fontSize: 11
+              }}>
+                <div>
+                  <span style={{ color: "var(--text-muted)" }}>SOURCE TYPE:</span>
+                  <div style={{ color: "var(--text-primary)", fontWeight: 600 }}>{selectedDoc.source_type}</div>
                 </div>
-              ) : (
-                <p style={{ color: "var(--text-muted)", fontSize: 12 }}>No broken-down fragments loaded.</p>
-              )}
+                <div>
+                  <span style={{ color: "var(--text-muted)" }}>SHA256 CHECKSUM:</span>
+                  <div style={{ color: "var(--text-primary)", fontWeight: 600 }}>{selectedDoc.sha256_checksum.substring(0, 16)}...</div>
+                </div>
+                <div>
+                  <span style={{ color: "var(--text-muted)" }}>DOCUMENT STATUS:</span>
+                  <div style={{ color: "var(--text-primary)", fontWeight: 600 }}>{selectedDoc.status}</div>
+                </div>
+              </div>
+
+              {/* NLP Entities View */}
+              {nlpResults ? (
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                    <h4 style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: "var(--text-primary)" }}>
+                      Extracted Clinical Entities ({nlpResults.entity_count})
+                    </h4>
+                    <span style={{ fontSize: 11, fontFamily: "var(--font-mono)", color: "var(--text-muted)" }}>
+                      Engine: ClinicalEntityExtractor
+                    </span>
+                  </div>
+
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+                    {nlpResults.entities.map((ent: any, i: number) => (
+                      <div
+                        key={i}
+                        style={{
+                          background: "var(--bg-surface-elevated)",
+                          border: "1px solid var(--border-strong)",
+                          borderRadius: "var(--radius-xs)",
+                          padding: "8px 12px",
+                          fontSize: 12,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{
+                            fontSize: 9,
+                            fontFamily: "var(--font-mono)",
+                            fontWeight: 700,
+                            padding: "1px 4px",
+                            background: "var(--btn-primary-bg)",
+                            color: "var(--btn-primary-text)",
+                            borderRadius: "var(--radius-xs)"
+                          }}>
+                            {ent.entity_type}
+                          </span>
+                          <strong style={{ color: "var(--text-primary)" }}>{ent.span_text}</strong>
+                        </div>
+                        <div style={{ fontSize: 10, color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>
+                          Conf: {(ent.confidence * 100).toFixed(0)}%
+                          {ent.negation_status && " • [NEGATED]"}
+                          {ent.temporal_status && ` • ${ent.temporal_status}`}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Raw JSON or Fragments */}
+              <div>
+                <h4 style={{ fontSize: 13, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", marginBottom: 8 }}>
+                  Raw Payload / Normalized Fragments
+                </h4>
+                <pre className="json-view">
+                  {JSON.stringify(selectedDoc, null, 2)}
+                </pre>
+              </div>
             </div>
           </div>
         </div>

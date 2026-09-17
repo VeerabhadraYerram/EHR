@@ -6,3 +6,6 @@
 - `project_docs/EHR_Timeline_and_Milestones.md` (8-Week Implementation Timeline & Milestones)
 
 **LOGGING WORK:** All agents and developers MUST log their completed work in `progress.md`. Whenever you complete a significant chunk of work, prepend a new entry to the top of the log (below the header) so that the team can track what has been done and what remains.
+
+**GIT COMMITS & PUSHES:** Agents and developers MUST ALWAYS ASK for explicit confirmation from the user BEFORE committing or pushing any changes into the GitHub repository. Never commit or push automatically without user permission.
+

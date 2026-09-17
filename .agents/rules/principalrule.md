@@ -19,3 +19,6 @@ description: Mandatory rule to always refer to agent.md before taking any action
 3. **Execution Guardrails:**
    - Never make assumptions that contradict `agent.md` or the reference architecture.
    - Cross-check requirements with `agent.md` at every step of development.
+
+4. **Git Commits & Pushes:**
+   - MUST ALWAYS ask for explicit user confirmation before committing or pushing changes to the GitHub repository. Never commit or push automatically.

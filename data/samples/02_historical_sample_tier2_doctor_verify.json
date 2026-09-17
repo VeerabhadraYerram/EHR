@@ -1,0 +1,51 @@
+{
+  "source_type": "OCR",
+  "document_id": "HIST-DOC-TIER2-002",
+  "document_class": "historical_clinical_note",
+  "origin": "external_clinic",
+  "originating_facility_name": "Pune Metro Endocrine Clinic",
+  "capture_timestamp": "2026-07-15T14:30:00Z",
+  "ocr_engine": "tesseract-5.3.3",
+  "overall_ocr_confidence": 0.81,
+  "page_count": 1,
+  "identity_hint_fields": {
+    "name_raw": "Rohan Shama",
+    "dob_raw": "1972-03-14",
+    "gender_raw": "M",
+    "phone_raw": null,
+    "national_id_raw": null,
+    "mrn_raw": "PUNE-METRO-4412",
+    "address_raw": "Pune, Maharashtra"
+  },
+  "blocks": [
+    {
+      "block_id": "b1",
+      "page": 1,
+      "bounding_box": { "x": 60, "y": 80, "width": 500, "height": 30 },
+      "text": "Outpatient Follow-up Note - Pune Metro Endocrine Clinic",
+      "confidence": 0.9
+    },
+    {
+      "block_id": "b2",
+      "page": 1,
+      "bounding_box": { "x": 60, "y": 120, "width": 480, "height": 30 },
+      "text": "Patient Name: Rohan Shama | Age: 54 M | MRN: PUNE-METRO-4412",
+      "confidence": 0.8
+    },
+    {
+      "block_id": "b3",
+      "page": 1,
+      "bounding_box": { "x": 60, "y": 160, "width": 480, "height": 60 },
+      "text": "Clinical Assessment: Type 2 Diabetes Mellitus with Hyperlipidemia. Blood sugar poorly controlled. HbA1c 8.1%.",
+      "confidence": 0.82
+    },
+    {
+      "block_id": "b4",
+      "page": 1,
+      "bounding_box": { "x": 60, "y": 230, "width": 480, "height": 50 },
+      "text": "Medications Continued: Metformin 500mg twice daily with food, Atorvastatin 10mg once daily at bedtime.",
+      "confidence": 0.85
+    }
+  ],
+  "raw_text_concatenated": "Outpatient Follow-up Note - Pune Metro Endocrine Clinic\nPatient Name: Rohan Shama | Age: 54 M | MRN: PUNE-METRO-4412\nClinical Assessment: Type 2 Diabetes Mellitus with Hyperlipidemia. Blood sugar poorly controlled. HbA1c 8.1%.\nMedications Continued: Metformin 500mg twice daily with food, Atorvastatin 10mg once daily at bedtime."
+}

@@ -68,7 +68,28 @@ class HL7APIAdapter:
                 db.add(enc)
                 db.flush()
 
-        # 4. Synthesize raw concatenated text and fragment list from resources
+        # 4. Create or ensure SourceDocumentDB record exists before fragments
+        doc = db.query(SourceDocumentDB).filter(SourceDocumentDB.id == msg_id).first()
+        if not doc:
+            doc = SourceDocumentDB(
+                id=msg_id,
+                source_type="HL7_API_JSON",
+                encounter_id=encounter_id,
+                patient_id=patient.id,
+                document_class="lab_and_medication_feed",
+                origin="external_lis" if "LIS" in source_system else "external_system",
+                originating_facility_name=source_system,
+                capture_timestamp=received_timestamp,
+                minio_raw_path=minio_path,
+                sha256_checksum=sha256,
+                overall_confidence=1.0,
+                status="INGESTED",
+                raw_text=""
+            )
+            db.add(doc)
+            db.flush()
+
+        # 5. Synthesize raw concatenated text and fragment list from resources
         resources = payload.get("resources", [])
         fragment_texts = []
         fragments = []
@@ -120,27 +141,8 @@ class HL7APIAdapter:
             fragments.append(frag)
 
         concatenated_raw_text = "\n".join(fragment_texts)
-
-        # 5. Create SourceDocumentDB record
-        doc = db.query(SourceDocumentDB).filter(SourceDocumentDB.id == msg_id).first()
-        if not doc:
-            doc = SourceDocumentDB(
-                id=msg_id,
-                source_type="HL7_API_JSON",
-                encounter_id=encounter_id,
-                patient_id=patient.id,
-                document_class="lab_and_medication_feed",
-                origin="external_lis" if "LIS" in source_system else "external_system",
-                originating_facility_name=source_system,
-                capture_timestamp=received_timestamp,
-                minio_raw_path=minio_path,
-                sha256_checksum=sha256,
-                overall_confidence=1.0,
-                status="INGESTED",
-                raw_text=concatenated_raw_text
-            )
-            db.add(doc)
-            db.flush()
+        doc.raw_text = concatenated_raw_text
+        db.flush()
 
         db.commit()
         db.refresh(doc)

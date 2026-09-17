@@ -84,21 +84,21 @@ class CandidateRetriever:
         query_embedding = self.embedding_provider.embed_query(query)
         
         # Vector similarity search using pgvector cosine distance operator (<=>)
-        stmt = select(OntologyEmbedding).join(Concept)
+        distance_expr = OntologyEmbedding.embedding.cosine_distance(query_embedding).label("distance")
+        stmt = select(OntologyEmbedding, distance_expr).join(Concept)
         if ontology:
             stmt = stmt.where(OntologyEmbedding.ontology == ontology)
             
         # Order by distance (closer = more similar)
-        stmt = stmt.order_by(OntologyEmbedding.embedding.cosine_distance(query_embedding))
+        stmt = stmt.order_by(distance_expr)
         stmt = stmt.limit(limit)
         
-        embeddings = self.db.execute(stmt).scalars().all()
+        results = self.db.execute(stmt).all()
         
         candidates = []
-        for i, emb in enumerate(embeddings):
-            # Calculate cosine similarity from distance
-            distance = float(emb.embedding.cosine_distance(query_embedding)) # This is pseudo-code for SQLAlchemy
-            similarity = 1.0 - distance
+        for i, (emb, dist) in enumerate(results):
+            distance = float(dist) if dist is not None else 0.0
+            similarity = max(0.0, 1.0 - distance)
             
             candidates.append(
                 SearchCandidate(

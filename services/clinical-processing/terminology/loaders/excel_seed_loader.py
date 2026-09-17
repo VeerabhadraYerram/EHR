@@ -20,15 +20,28 @@ class ExcelSeedLoader:
         
         # We will parse Labs -> LOINC, Diagnoses -> SNOMED/ICD-10, Pharma -> RxNorm
         sheet_mapping = {
-            'Labs': 'LOINC',
-            'Diagnoses': 'SNOMED_CT', # Or ICD-10 depending on code, treating as SNOMED for seed
-            'Pharma': 'RXNORM'
+            'Labs': {
+                'ontology': 'LOINC',
+                'code_cols': ['LOINC_Code', 'Code'],
+                'name_cols': ['Standard_Test_Name', 'Standard_Name']
+            },
+            'Diagnoses': {
+                'ontology': 'SNOMED_CT',
+                'code_cols': ['SNOMED_CT_Code', 'ICD10_Code', 'Code'],
+                'name_cols': ['Standard_Diagnosis_Name', 'Standard_Name']
+            },
+            'Pharma': {
+                'ontology': 'RXNORM',
+                'code_cols': ['RxNorm_Code', 'Code'],
+                'name_cols': ['Standard_Drug_Name', 'Standard_Name']
+            }
         }
         
-        for sheet_name, ontology in sheet_mapping.items():
+        for sheet_name, cfg in sheet_mapping.items():
             if sheet_name not in xls.sheet_names:
                 continue
-                
+            
+            ontology = cfg['ontology']
             print(f"Loading {sheet_name} as {ontology}...")
             
             # Create Release
@@ -43,15 +56,17 @@ class ExcelSeedLoader:
             self.db.flush()
             
             df = pd.read_excel(xls, sheet_name=sheet_name, skiprows=3)
+            code_col = next((c for c in cfg['code_cols'] if c in df.columns), None)
+            name_col = next((c for c in cfg['name_cols'] if c in df.columns), None)
             
             concepts_created = 0
             
             for _, row in df.iterrows():
-                if 'Code' not in row or pd.isna(row['Code']):
+                if not code_col or code_col not in row or pd.isna(row[code_col]):
                     continue
                     
-                code = str(row['Code']).strip()
-                preferred_term = str(row['Standard_Name']).strip()
+                code = str(row[code_col]).strip()
+                preferred_term = str(row[name_col]).strip() if name_col and name_col in row and not pd.isna(row[name_col]) else code
                 synonym = str(row['Raw_Text_Variant']).strip() if 'Raw_Text_Variant' in row and not pd.isna(row['Raw_Text_Variant']) else None
                 
                 # Check if concept exists

@@ -14,7 +14,9 @@ app = FastAPI(
     description="EHR Ontology Storage and Vector Retrieval Subsystem"
 )
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://ehr_term:ehr_term_pass@localhost:5433/terminology")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg://ehr_term:ehr_term_pass@localhost:5433/terminology")
+if DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+psycopg://", 1)
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

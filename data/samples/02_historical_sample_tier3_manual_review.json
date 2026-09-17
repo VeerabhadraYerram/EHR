@@ -1,0 +1,51 @@
+{
+  "source_type": "OCR",
+  "document_id": "HIST-DOC-TIER3-003",
+  "document_class": "historical_discharge_summary",
+  "origin": "external_hospital",
+  "originating_facility_name": "Mumbai Orthopedic Institute",
+  "capture_timestamp": "2026-06-10T11:15:00Z",
+  "ocr_engine": "tesseract-5.3.3",
+  "overall_ocr_confidence": 0.88,
+  "page_count": 1,
+  "identity_hint_fields": {
+    "name_raw": "Rohan Sharma",
+    "dob_raw": "1992-07-22",
+    "gender_raw": "Male",
+    "phone_raw": "+91-9123456789",
+    "national_id_raw": "YYYY-YYYY-9911",
+    "mrn_raw": "BOM-MRN-1019",
+    "address_raw": "45 Marine Drive, Mumbai, MH"
+  },
+  "blocks": [
+    {
+      "block_id": "b1",
+      "page": 1,
+      "bounding_box": { "x": 50, "y": 70, "width": 500, "height": 30 },
+      "text": "Discharge Summary - Mumbai Orthopedic Institute",
+      "confidence": 0.95
+    },
+    {
+      "block_id": "b2",
+      "page": 1,
+      "bounding_box": { "x": 50, "y": 110, "width": 480, "height": 30 },
+      "text": "Patient: Rohan Sharma | DOB: 22-Jul-1992 | Gender: Male | MRN: BOM-MRN-1019",
+      "confidence": 0.9
+    },
+    {
+      "block_id": "b3",
+      "page": 1,
+      "bounding_box": { "x": 50, "y": 150, "width": 480, "height": 50 },
+      "text": "Diagnosis: Left Tibial Shaft Fracture following sports injury. Closed reduction and casting performed.",
+      "confidence": 0.88
+    },
+    {
+      "block_id": "b4",
+      "page": 1,
+      "bounding_box": { "x": 50, "y": 210, "width": 480, "height": 40 },
+      "text": "Discharge Advice: Weight-bearing as tolerated with crutches. Tramadol 50mg PRN for severe pain.",
+      "confidence": 0.86
+    }
+  ],
+  "raw_text_concatenated": "Discharge Summary - Mumbai Orthopedic Institute\nPatient: Rohan Sharma | DOB: 22-Jul-1992 | Gender: Male | MRN: BOM-MRN-1019\nDiagnosis: Left Tibial Shaft Fracture following sports injury. Closed reduction and casting performed.\nDischarge Advice: Weight-bearing as tolerated with crutches. Tramadol 50mg PRN for severe pain."
+}

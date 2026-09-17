@@ -1,8 +1,9 @@
-version: '3.8'
-
 services:
   terminology-db:
-    image: pgvector/pgvector:pg16
+    build:
+      context: ./services/clinical-processing/terminology
+      dockerfile: Dockerfile.db
+    image: ehr-terminology-db:latest
     ports:
       - "5433:5432" # Use 5433 to avoid clashing with the main EHR postgres if running simultaneously
     environment:
@@ -16,12 +17,12 @@ services:
 
   terminology-api:
     build: 
-      context: ./services/clinical-processing/terminology
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: ./services/clinical-processing/terminology/Dockerfile
     ports:
       - "8001:8000"
     environment:
-      - DATABASE_URL=postgresql://ehr_term:ehr_term_pass@terminology-db:5432/terminology
+      - DATABASE_URL=postgresql+psycopg://ehr_term:ehr_term_pass@terminology-db:5432/terminology
       - EMBEDDING_MODEL=all-MiniLM-L6-v2
     depends_on:
       - terminology-db

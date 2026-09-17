@@ -1,6 +1,12 @@
 import re
-from typing import List, Dict, Any
-from nlp_models import ClinicalEntitySpan, NLPInput, NLPOutput
+try:
+    from nlp_models import ClinicalEntitySpan, NLPInput, NLPOutput
+except ImportError:
+    try:
+        from services.clinical_processing.nlp.nlp_models import ClinicalEntitySpan, NLPInput, NLPOutput
+    except ImportError:
+        from nlp.nlp_models import ClinicalEntitySpan, NLPInput, NLPOutput
+
 
 class ClinicalEntityExtractor:
     """

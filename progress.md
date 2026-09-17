@@ -5,6 +5,17 @@ Append your updates to the top of the log when you complete a significant chunk 
 
 ---
 
+### [2026-09-17] Extracted Complete Project Timeline & Milestones Document
+**Author:** AI Assistant
+
+**Work Completed:**
+- Inspected the full 3-part Google Document (`EHR Clinical Text Understanding, Doctor Verification & HL7 Persistence`).
+- Extracted Page 3 ("Timeline and Milestones"), detailing the 8-week implementation plan, weekly milestones across AI/NLP, Backend/EHR, and Frontend/Workflow, acceptance criteria, and final target end-to-end demo.
+- Saved the complete timeline as a standalone markdown specification at `project_docs/EHR_Timeline_and_Milestones.md`.
+- Updated `agent.md` to reference the new timeline document alongside the architecture and scope documents.
+
+---
+
 ### [2026-08-14] Terminology Storage & Vector Retrieval Subsystem
 **Author:** AI Assistant
 

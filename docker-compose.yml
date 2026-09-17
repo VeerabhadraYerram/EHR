@@ -1,0 +1,50 @@
+services:
+  ehr-postgres:
+    image: postgres:16-alpine
+    container_name: ehr-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ehr_user
+      POSTGRES_PASSWORD: ehr_password
+      POSTGRES_DB: ehr_primary
+    volumes:
+      - ehr_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ehr_user -d ehr_primary"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  ehr-minio:
+    image: quay.io/minio/minio:latest
+    container_name: ehr-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - ehr_miniodata:/data
+
+  minio-init:
+    image: quay.io/minio/mc:latest
+    container_name: ehr-minio-init
+    depends_on:
+      - ehr-minio
+    entrypoint: >
+      /bin/sh -c "
+      sleep 3;
+      /usr/bin/mc alias set local http://ehr-minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb --ignore-existing local/ehr-raw-inputs;
+      /usr/bin/mc anonymous set download local/ehr-raw-inputs;
+      exit 0;
+      "
+
+volumes:
+  ehr_pgdata:
+  ehr_miniodata:

@@ -5,6 +5,30 @@ Append your updates to the top of the log when you complete a significant chunk 
 
 ---
 
+### [2026-09-17] Week 1 Completed: Foundation & Input Ingestion
+**Author:** AI Assistant
+
+**Work Completed:**
+- **Core Infrastructure (`docker-compose.yml`):** Deployed primary PostgreSQL 16 on port 5432 (`ehr-postgres`) and MinIO Object Storage on ports 9000/9001 (`ehr-minio`) with automatic bucket provisioning (`ehr-raw-inputs`).
+- **Database Schema & Canonical Models (`services/ingestion/models.py`, `packages/ehr-contracts`):** Implemented relational models for `PatientDB`, `EncounterDB`, `SourceDocumentDB`, and `SourceFragmentDB`.
+- **MinIO Storage Handler (`services/ingestion/storage.py`):** Built raw fragment archiver with SHA-256 integrity hashing and MinIO S3 object storage integration.
+- **4 Heterogeneous Ingestion Adapters (`services/ingestion/adapters/`):**
+  - `STTAdapter`: Diarized speech-to-text segments with timestamps, speaker turns, and confidence.
+  - `OCRAdapter`: OCR prescriptions and documents with bounding boxes and block confidences.
+  - `HistoricalAdapter`: External records with `identity_hint_fields`, flagged as `PENDING_IDENTITY_RESOLUTION` per Architecture Sec 4.3.
+  - `HL7APIAdapter`: Multi-resource FHIR/HL7 collection bundles (DiagnosticReport, Observation, MedicationRequest, Condition).
+- **Unified Ingestion & Dashboard API (`services/ingestion/main.py`):** Exposed endpoints for all 4 source types, document queries, patient dashboard, and sample seeder (`/api/v1/seed/samples`).
+- **Clinical AI / NLP Baseline (`services/clinical-processing/nlp/`):** Created contracts (`nlp_models.py`), unit tests (`test_clinical_cases.py`), and baseline entity extractor (`extractor.py`) covering medications, dosages, frequencies, diagnoses, labs, demographics, procedures, allergies, negation, and temporality.
+- **Frontend Patient Dashboard (`frontend/doctor-review-ui/`):** Built modern dark healthcare UI with active patient context banner, 4-source stream feed, fragment inspector with MinIO SHA-256 view, and interactive NLP analysis modal. Production build verified with Vite (`npm run build`).
+- **Automated Integration Test Suite (`tests/test_week1_pipeline.py`):** All 6 end-to-end integration tests passing across MinIO, PostgreSQL, adapters, and NLP extractor.
+
+**Next Steps / Open Items:**
+- Advance to **Week 2 (Patient Identity Resolution and Text Fusion)**:
+  - Implement probabilistic patient identity resolution (OpenEMPI / `recordlinkage` / Elasticsearch candidate search) with confidence tiers (Auto-link, Doctor verification, Manual review).
+  - Implement the Python Text Fusion service to merge cleared fragments into a single chronological patient narrative.
+
+---
+
 ### [2026-09-17] Extracted Complete Project Timeline & Milestones Document
 **Author:** AI Assistant
 

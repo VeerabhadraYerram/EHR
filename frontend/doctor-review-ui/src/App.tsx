@@ -1,16 +1,59 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { PatientDashboard } from "./pages/PatientDashboard";
+import { DoctorVerificationQueue } from "./pages/DoctorVerificationQueue";
+import { UnifiedTimeline } from "./pages/UnifiedTimeline";
+
+function NavigationBar() {
+  const location = useLocation();
+
+  const navLinks = [
+    { path: "/", label: "01 // Dashboard" },
+    { path: "/review", label: "02 // Verification Queue" },
+    { path: "/timeline", label: "03 // Unified Timeline" }
+  ];
+
+  return (
+    <nav className="nav-bar-container">
+      {navLinks.map((item) => {
+        const isActive = location.pathname === item.path || (item.path === "/" && location.pathname === "/dashboard");
+        return (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`nav-link-item ${isActive ? "active" : ""}`}
+          >
+            {item.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
 
 export default function App() {
+  const [theme, setTheme] = useState<"light" | "dark">(() => {
+    return (localStorage.getItem("ehr-theme") as "light" | "dark") || "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("ehr-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
   return (
     <BrowserRouter>
-      {/* Platform Top Header */}
+      {/* Minimalist Top Header */}
       <header className="top-nav">
         <div className="brand-section">
-          <div className="brand-icon">⚕</div>
+          <div className="brand-icon">+</div>
           <div>
-            <div className="brand-title">EHR Clinical Intelligence Platform</div>
-            <div className="brand-subtitle">Clinical NLP & HL7/FHIR Ingestion Pipeline</div>
+            <div className="brand-title">EHR // Clinical Intelligence</div>
+            <div className="brand-subtitle">Heterogeneous NLP Ingestion &amp; EMPI Identity Fusion</div>
           </div>
         </div>
 
@@ -24,22 +67,36 @@ export default function App() {
             MinIO S3: 9000
           </div>
           <div className="status-indicator">
-            <span className="status-dot" style={{ backgroundColor: "#3b82f6", boxShadow: "0 0 8px #3b82f6" }}></span>
-            Terminology: 5433
+            <span className="status-dot"></span>
+            EMPI: 8002
           </div>
           <div className="status-indicator">
-            <span className="status-dot" style={{ backgroundColor: "#8b5cf6", boxShadow: "0 0 8px #8b5cf6" }}></span>
-            NLP Baseline: Active
+            <span className="status-dot"></span>
+            Fusion: 8003
           </div>
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="theme-toggle-btn"
+            title="Toggle Bright / Dark Mode"
+          >
+            <span>{theme === "light" ? "◐" : "◑"}</span>
+            <span>{theme === "light" ? "Bright Mode" : "Dark Mode"}</span>
+          </button>
         </div>
       </header>
 
-      <main style={{ flex: 1 }}>
+      {/* Navigation Sub-Bar */}
+      <NavigationBar />
+
+      <main style={{ flex: 1, background: "var(--bg-main)", transition: "background-color 0.2s ease" }}>
         <Routes>
           <Route path="/" element={<PatientDashboard />} />
           <Route path="/dashboard" element={<PatientDashboard />} />
-          <Route path="/review" element={<div style={{ padding: 40, textAlign: "center" }}>Doctor Verification Task Queue (Week 5)</div>} />
-          <Route path="/fhir" element={<div style={{ padding: 40, textAlign: "center" }}>FHIR Persistence Store (Week 7)</div>} />
+          <Route path="/review" element={<DoctorVerificationQueue />} />
+          <Route path="/timeline" element={<UnifiedTimeline />} />
+          <Route path="/fhir" element={<div style={{ padding: 60, textAlign: "center", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>FHIR PERSISTENCE STORE // WEEK 7</div>} />
         </Routes>
       </main>
     </BrowserRouter>

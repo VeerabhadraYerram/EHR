@@ -1,0 +1,111 @@
+person_id,rxnorm_code,drug_name,dose_text,frequency,route
+P001,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P002,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P003,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P004,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P004,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P005,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P006,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P006,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P007,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P008,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P009,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P010,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P011,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P012,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P013,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P014,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P015,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P016,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P017,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P018,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P019,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P020,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P021,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P021,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P022,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P023,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P024,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P025,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P026,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P027,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P028,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P029,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P030,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P031,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P032,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P033,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P034,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P035,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P036,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P036,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P037,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P038,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P038,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P039,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P040,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P041,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P042,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P043,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P044,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P045,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P046,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P047,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P048,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P049,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P050,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P051,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P052,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P053,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P054,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P054,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P055,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P055,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P056,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P057,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P058,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P059,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P060,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P061,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P061,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P062,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P063,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P064,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P065,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P066,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P067,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P068,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P069,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P069,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P070,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P071,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P072,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P073,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P074,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P075,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P076,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P077,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P077,274783,Insulin Glargine 100 UNT/ML,10 units,once daily at night,subcutaneous
+P078,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P079,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P080,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P081,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P082,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P083,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P084,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P085,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P086,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P087,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P088,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P089,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P090,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P091,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P092,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral
+P093,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P094,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P095,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P096,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P097,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P098,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P099,861007,Metformin 500 MG Oral Tablet,500 mg,twice daily,oral
+P100,861007,Metformin 500 MG Oral Tablet,500 mg,three times daily,oral

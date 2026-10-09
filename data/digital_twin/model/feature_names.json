@@ -1,0 +1,21 @@
+[
+  "age_years",
+  "sex_male",
+  "years_with_diabetes",
+  "hba1c_percent",
+  "on_insulin",
+  "metformin_dose_mg_per_day",
+  "glucose_now",
+  "glucose_mean_30min",
+  "glucose_mean_2h",
+  "glucose_min_2h",
+  "glucose_max_2h",
+  "glucose_rise_per_hour",
+  "minutes_since_meal",
+  "last_meal_carbs_g",
+  "steps_last_2h",
+  "sleep_hours_last_night",
+  "dose_missed",
+  "dose_unknown",
+  "hour_of_day"
+]

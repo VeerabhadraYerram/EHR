@@ -3,14 +3,16 @@ import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-do
 import { PatientDashboard } from "./pages/PatientDashboard";
 import { DoctorVerificationQueue } from "./pages/DoctorVerificationQueue";
 import { UnifiedTimeline } from "./pages/UnifiedTimeline";
+import { DigitalTwin } from "./pages/DigitalTwin";
 
 function NavigationBar() {
   const location = useLocation();
 
   const navLinks = [
-    { path: "/", label: "01 // Dashboard" },
-    { path: "/review", label: "02 // Verification Queue" },
-    { path: "/timeline", label: "03 // Unified Timeline" }
+    { path: "/twin", label: "01 // Digital Twin" },
+    { path: "/", label: "02 // Dashboard" },
+    { path: "/review", label: "03 // Verification Queue" },
+    { path: "/timeline", label: "04 // Unified Timeline" }
   ];
 
   return (
@@ -53,7 +55,7 @@ export default function App() {
           <div className="brand-icon">+</div>
           <div>
             <div className="brand-title">EHR // Clinical Intelligence</div>
-            <div className="brand-subtitle">Heterogeneous NLP Ingestion &amp; EMPI Identity Fusion</div>
+            <div className="brand-subtitle">Type 2 diabetes twin · clinic file and today’s readings</div>
           </div>
         </div>
 
@@ -92,6 +94,7 @@ export default function App() {
 
       <main style={{ flex: 1, background: "var(--bg-main)", transition: "background-color 0.2s ease" }}>
         <Routes>
+          <Route path="/twin" element={<DigitalTwin />} />
           <Route path="/" element={<PatientDashboard />} />
           <Route path="/dashboard" element={<PatientDashboard />} />
           <Route path="/review" element={<DoctorVerificationQueue />} />

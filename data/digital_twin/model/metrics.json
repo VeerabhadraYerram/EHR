@@ -1,0 +1,40 @@
+{
+  "trained_on": "data/digital_twin/training/examples.csv",
+  "table_rows": 132900,
+  "question": "Will sugar be at or above 180 mg/dL at any reading in the next 2 hours?",
+  "rows": {
+    "learn": 93030,
+    "tune": 13290,
+    "test": 26580
+  },
+  "test_people_only": {
+    "model": {
+      "roc_auc": 0.955,
+      "average_precision": 0.956,
+      "threshold": 0.41,
+      "warnings_in_time_share": 0.886,
+      "precision": 0.86,
+      "f1": 0.873,
+      "false_alarm_share": 0.136,
+      "true_warnings": 11438,
+      "missed_spikes": 1475,
+      "false_alarms": 1862,
+      "quiet_and_correct": 11805
+    },
+    "simple_rule_current_sugar": {
+      "roc_auc": 0.852,
+      "average_precision": 0.867,
+      "threshold": 0.56,
+      "warnings_in_time_share": 0.761,
+      "precision": 0.759,
+      "f1": 0.76,
+      "false_alarm_share": 0.228,
+      "true_warnings": 9822,
+      "missed_spikes": 3091,
+      "false_alarms": 3118,
+      "quiet_and_correct": 10549
+    }
+  },
+  "warning_line_chosen_on_tune_people": 0.41,
+  "trees_used": 368
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "rank": 1,
+    "feature": "cos_hour",
+    "mean_abs_shap": 0.6843
+  },
+  {
+    "rank": 2,
+    "feature": "glucose_now",
+    "mean_abs_shap": 0.5611
+  },
+  {
+    "rank": 3,
+    "feature": "hour_of_day",
+    "mean_abs_shap": 0.3437
+  },
+  {
+    "rank": 4,
+    "feature": "glucose_velocity_per_hour",
+    "mean_abs_shap": 0.252
+  },
+  {
+    "rank": 5,
+    "feature": "minutes_since_meal",
+    "mean_abs_shap": 0.1522
+  },
+  {
+    "rank": 6,
+    "feature": "years_with_diabetes",
+    "mean_abs_shap": 0.1515
+  },
+  {
+    "rank": 7,
+    "feature": "sin_hour",
+    "mean_abs_shap": 0.1323
+  },
+  {
+    "rank": 8,
+    "feature": "bmi",
+    "mean_abs_shap": 0.1175
+  },
+  {
+    "rank": 9,
+    "feature": "hba1c_percent",
+    "mean_abs_shap": 0.0933
+  },
+  {
+    "rank": 10,
+    "feature": "egfr",
+    "mean_abs_shap": 0.0894
+  }
+]

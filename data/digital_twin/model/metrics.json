@@ -1,40 +1,178 @@
 {
-  "trained_on": "data/digital_twin/training/examples.csv",
-  "table_rows": 132900,
-  "question": "Will sugar be at or above 180 mg/dL at any reading in the next 2 hours?",
-  "rows": {
-    "learn": 93030,
-    "tune": 13290,
-    "test": 26580
-  },
-  "test_people_only": {
-    "model": {
-      "roc_auc": 0.955,
-      "average_precision": 0.956,
-      "threshold": 0.41,
-      "warnings_in_time_share": 0.886,
-      "precision": 0.86,
-      "f1": 0.873,
-      "false_alarm_share": 0.136,
-      "true_warnings": 11438,
-      "missed_spikes": 1475,
-      "false_alarms": 1862,
-      "quiet_and_correct": 11805
+  "model_architecture": "Dual-Head Calibrated XGBoost & Multi-Horizon Trajectory Regressor",
+  "training_provenance": "Shanghai T2DM Real Clinical Cohort (100 patients, FreeStyle Libre CGM)",
+  "question": "Will interstitial glucose cross >= 180 mg/dL in the next 120 minutes from a euglycemic baseline?",
+  "optimal_decision_threshold": 0.22,
+  "test_evaluation_head_1_classifier": {
+    "proposed_calibrated_digital_twin": {
+      "roc_auc": 0.8852,
+      "average_precision_pr_auc": 0.6058,
+      "brier_score": 0.0907,
+      "decision_threshold": 0.22,
+      "sensitivity_recall": 0.5767,
+      "specificity": 0.9263,
+      "precision": 0.5887,
+      "f1_score": 0.5826,
+      "false_alarm_rate_fpr": 0.0737,
+      "true_warnings_tp": 1380,
+      "missed_spikes_fn": 1013,
+      "false_alarms_fp": 964,
+      "quiet_correct_tn": 12110,
+      "total_evaluated": 15467
     },
-    "simple_rule_current_sugar": {
-      "roc_auc": 0.852,
-      "average_precision": 0.867,
-      "threshold": 0.56,
-      "warnings_in_time_share": 0.761,
-      "precision": 0.759,
-      "f1": 0.76,
-      "false_alarm_share": 0.228,
-      "true_warnings": 9822,
-      "missed_spikes": 3091,
-      "false_alarms": 3118,
-      "quiet_and_correct": 10549
+    "proposed_uncalibrated_xgboost": {
+      "roc_auc": 0.8861,
+      "average_precision_pr_auc": 0.6218,
+      "brier_score": 0.0882,
+      "decision_threshold": 0.22,
+      "sensitivity_recall": 0.6753,
+      "specificity": 0.887,
+      "precision": 0.5223,
+      "f1_score": 0.589,
+      "false_alarm_rate_fpr": 0.113,
+      "true_warnings_tp": 1616,
+      "missed_spikes_fn": 777,
+      "false_alarms_fp": 1478,
+      "quiet_correct_tn": 11596,
+      "total_evaluated": 15467
+    },
+    "baseline_logistic_regression": {
+      "roc_auc": 0.8509,
+      "average_precision_pr_auc": 0.5754,
+      "brier_score": 0.0953,
+      "decision_threshold": 0.22,
+      "sensitivity_recall": 0.6135,
+      "specificity": 0.8897,
+      "precision": 0.5045,
+      "f1_score": 0.5536,
+      "false_alarm_rate_fpr": 0.1103,
+      "true_warnings_tp": 1468,
+      "missed_spikes_fn": 925,
+      "false_alarms_fp": 1442,
+      "quiet_correct_tn": 11632,
+      "total_evaluated": 15467
+    },
+    "baseline_clinical_heuristic": {
+      "roc_auc": 0.7397,
+      "average_precision_pr_auc": 0.3523,
+      "brier_score": 0.1726,
+      "decision_threshold": 0.52,
+      "sensitivity_recall": 0.5345,
+      "specificity": 0.8404,
+      "precision": 0.38,
+      "f1_score": 0.4442,
+      "false_alarm_rate_fpr": 0.1596,
+      "true_warnings_tp": 1279,
+      "missed_spikes_fn": 1114,
+      "false_alarms_fp": 2087,
+      "quiet_correct_tn": 10987,
+      "total_evaluated": 15467
     }
   },
-  "warning_line_chosen_on_tune_people": 0.41,
-  "trees_used": 368
+  "test_evaluation_head_2_trajectory": {
+    "mean_trajectory_mae_mg_dl": 15.93,
+    "mean_trajectory_rmse_mg_dl": 22.53,
+    "persistence_baseline_mae_mg_dl": 17.58,
+    "persistence_baseline_rmse_mg_dl": 27.85,
+    "mae_reduction_over_persistence_percent": 9.4,
+    "horizon_breakdown": {
+      "+15m": {
+        "horizon_minutes": 15,
+        "mae_mg_dl": 4.82,
+        "rmse_mg_dl": 7.01
+      },
+      "+30m": {
+        "horizon_minutes": 30,
+        "mae_mg_dl": 9.43,
+        "rmse_mg_dl": 13.59
+      },
+      "+45m": {
+        "horizon_minutes": 45,
+        "mae_mg_dl": 13.02,
+        "rmse_mg_dl": 18.6
+      },
+      "+60m": {
+        "horizon_minutes": 60,
+        "mae_mg_dl": 15.87,
+        "rmse_mg_dl": 22.56
+      },
+      "+75m": {
+        "horizon_minutes": 75,
+        "mae_mg_dl": 18.34,
+        "rmse_mg_dl": 25.96
+      },
+      "+90m": {
+        "horizon_minutes": 90,
+        "mae_mg_dl": 20.43,
+        "rmse_mg_dl": 28.7
+      },
+      "+105m": {
+        "horizon_minutes": 105,
+        "mae_mg_dl": 21.95,
+        "rmse_mg_dl": 30.87
+      },
+      "+120m": {
+        "horizon_minutes": 120,
+        "mae_mg_dl": 23.57,
+        "rmse_mg_dl": 32.96
+      }
+    },
+    "clarke_error_grid": {
+      "zone_a_percent": 78.58,
+      "zone_b_percent": 21.15,
+      "clinically_acceptable_zones_a_and_b_percent": 99.73
+    }
+  },
+  "top_shap_features": [
+    {
+      "rank": 1,
+      "feature": "cos_hour",
+      "mean_abs_shap": 0.6843
+    },
+    {
+      "rank": 2,
+      "feature": "glucose_now",
+      "mean_abs_shap": 0.5611
+    },
+    {
+      "rank": 3,
+      "feature": "hour_of_day",
+      "mean_abs_shap": 0.3437
+    },
+    {
+      "rank": 4,
+      "feature": "glucose_velocity_per_hour",
+      "mean_abs_shap": 0.252
+    },
+    {
+      "rank": 5,
+      "feature": "minutes_since_meal",
+      "mean_abs_shap": 0.1522
+    },
+    {
+      "rank": 6,
+      "feature": "years_with_diabetes",
+      "mean_abs_shap": 0.1515
+    },
+    {
+      "rank": 7,
+      "feature": "sin_hour",
+      "mean_abs_shap": 0.1323
+    },
+    {
+      "rank": 8,
+      "feature": "bmi",
+      "mean_abs_shap": 0.1175
+    },
+    {
+      "rank": 9,
+      "feature": "hba1c_percent",
+      "mean_abs_shap": 0.0933
+    },
+    {
+      "rank": 10,
+      "feature": "egfr",
+      "mean_abs_shap": 0.0894
+    }
+  ]
 }

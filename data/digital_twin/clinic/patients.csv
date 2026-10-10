@@ -1,101 +1,101 @@
-person_id,display_name,is_demo,split,age_years,sex,diabetes_type,years_with_diabetes,diagnosis_name,icd10_code,snomed_code,hba1c_percent,hba1c_source,on_metformin,metformin_dose_mg_per_day,on_insulin
-P001,Rohan Sharma,yes,learn,54,male,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,8.2,lab,yes,1000,no
-P002,,no,learn,73,female,2,15,Type 2 Diabetes Mellitus,E11.9,44054006,7.7,lab,yes,1000,no
-P003,,no,learn,72,male,2,9,Type 2 Diabetes Mellitus,E11.9,44054006,8.3,lab,yes,1000,no
-P004,,no,learn,51,female,2,4,Type 2 Diabetes Mellitus,E11.9,44054006,9.4,lab,yes,1500,yes
-P005,,no,test,71,female,2,14,Type 2 Diabetes Mellitus,E11.9,44054006,8.6,lab,yes,1500,no
-P006,,no,learn,42,female,2,2,Type 2 Diabetes Mellitus,E11.9,44054006,9.9,lab,yes,1500,yes
-P007,,no,test,57,male,2,12,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1500,no
-P008,,no,learn,60,male,2,5,Type 2 Diabetes Mellitus,E11.9,44054006,7.7,lab,yes,1000,no
-P009,,no,learn,65,male,2,12,Type 2 Diabetes Mellitus,E11.9,44054006,8.2,lab,yes,1000,no
-P010,,no,tune,55,female,2,2,Type 2 Diabetes Mellitus,E11.9,44054006,7.7,lab,yes,1500,no
-P011,,no,learn,37,female,2,3,Type 2 Diabetes Mellitus,E11.9,44054006,8.9,lab,yes,1000,no
-P012,,no,learn,70,female,2,17,Type 2 Diabetes Mellitus,E11.9,44054006,9.2,lab,yes,1500,no
-P013,,no,test,35,female,2,15,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,lab,yes,1000,no
-P014,,no,test,35,male,2,3,Type 2 Diabetes Mellitus,E11.9,44054006,7.5,lab,yes,1500,no
-P015,,no,test,42,female,2,12,Type 2 Diabetes Mellitus,E11.9,44054006,9.2,lab,yes,1500,no
-P016,,no,learn,67,female,2,15,Type 2 Diabetes Mellitus,E11.9,44054006,6.7,lab,yes,1500,no
-P017,,no,test,46,female,2,15,Type 2 Diabetes Mellitus,E11.9,44054006,8.2,lab,yes,1500,no
-P018,,no,learn,60,female,2,3,Type 2 Diabetes Mellitus,E11.9,44054006,6.9,lab,yes,1000,no
-P019,,no,learn,66,male,2,7,Type 2 Diabetes Mellitus,E11.9,44054006,7.9,lab,yes,1000,no
-P020,,no,learn,55,female,2,11,Type 2 Diabetes Mellitus,E11.9,44054006,8.7,lab,yes,1000,no
-P021,,no,test,36,female,2,18,Type 2 Diabetes Mellitus,E11.9,44054006,10.6,lab,yes,1500,yes
-P022,,no,learn,69,female,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,7.3,lab,yes,1000,no
-P023,,no,learn,37,male,2,10,Type 2 Diabetes Mellitus,E11.9,44054006,6.8,lab,yes,1500,no
-P024,,no,test,41,male,2,11,Type 2 Diabetes Mellitus,E11.9,44054006,7.0,lab,yes,1000,no
-P025,,no,learn,53,male,2,10,Type 2 Diabetes Mellitus,E11.9,44054006,7.4,lab,yes,1500,no
-P026,,no,test,70,male,2,15,Type 2 Diabetes Mellitus,E11.9,44054006,7.0,lab,yes,1500,no
-P027,,no,learn,42,male,2,19,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1000,no
-P028,,no,test,47,female,2,19,Type 2 Diabetes Mellitus,E11.9,44054006,8.6,lab,yes,1500,no
-P029,,no,tune,63,male,2,12,Type 2 Diabetes Mellitus,E11.9,44054006,7.4,lab,yes,1000,no
-P030,,no,learn,42,male,2,17,Type 2 Diabetes Mellitus,E11.9,44054006,8.7,lab,yes,1000,no
-P031,,no,learn,35,female,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,6.8,lab,yes,1000,no
-P032,,no,learn,60,male,2,1,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,lab,yes,1500,no
-P033,,no,tune,73,male,2,2,Type 2 Diabetes Mellitus,E11.9,44054006,10.6,lab,yes,1000,no
-P034,,no,learn,51,female,2,5,Type 2 Diabetes Mellitus,E11.9,44054006,7.3,lab,yes,1000,no
-P035,,no,tune,59,male,2,1,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1500,no
-P036,,no,learn,70,male,2,8,Type 2 Diabetes Mellitus,E11.9,44054006,9.3,lab,yes,1000,yes
-P037,,no,tune,57,male,2,20,Type 2 Diabetes Mellitus,E11.9,44054006,7.5,lab,yes,1000,no
-P038,,no,learn,52,female,2,8,Type 2 Diabetes Mellitus,E11.9,44054006,9.3,lab,yes,1000,yes
-P039,,no,learn,42,male,2,17,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1000,no
-P040,,no,learn,63,male,2,7,Type 2 Diabetes Mellitus,E11.9,44054006,7.4,lab,yes,1000,no
-P041,,no,learn,66,female,2,9,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1500,no
-P042,,no,test,48,male,2,3,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,lab,yes,1000,no
-P043,,no,tune,74,male,2,9,Type 2 Diabetes Mellitus,E11.9,44054006,8.2,lab,yes,1500,no
-P044,,no,learn,41,female,2,8,Type 2 Diabetes Mellitus,E11.9,44054006,9.1,lab,yes,1000,no
-P045,,no,learn,72,male,2,7,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,lab,yes,1000,no
-P046,,no,test,38,female,2,2,Type 2 Diabetes Mellitus,E11.9,44054006,6.9,lab,yes,1500,no
-P047,,no,test,49,female,2,9,Type 2 Diabetes Mellitus,E11.9,44054006,7.2,lab,yes,1000,no
-P048,,no,learn,40,male,2,11,Type 2 Diabetes Mellitus,E11.9,44054006,7.9,lab,yes,1500,no
-P049,,no,learn,59,female,2,1,Type 2 Diabetes Mellitus,E11.9,44054006,6.6,lab,yes,1000,no
-P050,,no,test,58,female,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,7.3,lab,yes,1000,no
-P051,,no,test,51,female,2,18,Type 2 Diabetes Mellitus,E11.9,44054006,7.3,lab,yes,1500,no
-P052,,no,learn,59,male,2,18,Type 2 Diabetes Mellitus,E11.9,44054006,7.4,lab,yes,1500,no
-P053,,no,learn,67,female,2,10,Type 2 Diabetes Mellitus,E11.9,44054006,7.9,lab,yes,1000,no
-P054,,no,learn,74,male,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,9.0,lab,yes,1000,yes
-P055,,no,tune,49,female,2,13,Type 2 Diabetes Mellitus,E11.9,44054006,11.0,lab,yes,1000,yes
-P056,,no,learn,63,male,2,14,Type 2 Diabetes Mellitus,E11.9,44054006,6.7,lab,yes,1500,no
-P057,,no,learn,47,female,2,10,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P058,,no,learn,47,male,2,2,Type 2 Diabetes Mellitus,E11.9,44054006,7.9,lab,yes,1000,no
-P059,,no,learn,44,female,2,10,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P060,,no,learn,52,male,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,9.0,lab,yes,1000,no
-P061,,no,learn,53,female,2,11,Type 2 Diabetes Mellitus,E11.9,44054006,9.4,lab,yes,1500,yes
-P062,,no,learn,49,male,2,14,Type 2 Diabetes Mellitus,E11.9,44054006,8.4,lab,yes,1000,no
-P063,,no,learn,73,male,2,14,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P064,,no,learn,40,female,2,11,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P065,,no,test,65,male,2,10,Type 2 Diabetes Mellitus,E11.9,44054006,9.2,lab,yes,1000,no
-P066,,no,learn,47,male,2,20,Type 2 Diabetes Mellitus,E11.9,44054006,8.7,lab,yes,1000,no
-P067,,no,tune,54,female,2,16,Type 2 Diabetes Mellitus,E11.9,44054006,6.9,lab,yes,1000,no
-P068,,no,test,64,female,2,13,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1500,no
-P069,,no,learn,55,male,2,12,Type 2 Diabetes Mellitus,E11.9,44054006,9.5,lab,yes,1000,yes
-P070,,no,learn,36,female,2,15,Type 2 Diabetes Mellitus,E11.9,44054006,7.4,lab,yes,1000,no
-P071,,no,learn,72,female,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,6.8,lab,yes,1000,no
-P072,,no,learn,69,female,2,19,Type 2 Diabetes Mellitus,E11.9,44054006,9.4,lab,yes,1000,no
-P073,,no,learn,64,male,2,18,Type 2 Diabetes Mellitus,E11.9,44054006,8.1,lab,yes,1500,no
-P074,,no,tune,69,male,2,4,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1000,no
-P075,,no,learn,49,female,2,4,Type 2 Diabetes Mellitus,E11.9,44054006,8.5,lab,yes,1000,no
-P076,,no,learn,51,male,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,6.8,lab,yes,1500,no
-P077,,no,learn,50,female,2,18,Type 2 Diabetes Mellitus,E11.9,44054006,10.9,lab,yes,1000,yes
-P078,,no,learn,39,female,2,19,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P079,,no,learn,57,female,2,12,Type 2 Diabetes Mellitus,E11.9,44054006,6.8,lab,yes,1000,no
-P080,,no,learn,54,female,2,16,Type 2 Diabetes Mellitus,E11.9,44054006,9.4,lab,yes,1000,no
-P081,,no,learn,75,female,2,19,Type 2 Diabetes Mellitus,E11.9,44054006,6.9,lab,yes,1000,no
-P082,,no,learn,68,female,2,1,Type 2 Diabetes Mellitus,E11.9,44054006,8.6,lab,yes,1000,no
-P083,,no,learn,45,female,2,14,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P084,,no,learn,38,male,2,6,Type 2 Diabetes Mellitus,E11.9,44054006,7.5,lab,yes,1500,no
-P085,,no,learn,72,female,2,11,Type 2 Diabetes Mellitus,E11.9,44054006,8.4,lab,yes,1000,no
-P086,,no,learn,55,male,2,7,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P087,,no,learn,73,female,2,19,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1500,no
-P088,,no,learn,52,female,2,5,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,lab,yes,1000,no
-P089,,no,learn,68,female,2,1,Type 2 Diabetes Mellitus,E11.9,44054006,10.0,lab,yes,1500,no
-P090,,no,test,42,female,2,12,Type 2 Diabetes Mellitus,E11.9,44054006,6.7,lab,yes,1500,no
-P091,,no,learn,71,female,2,20,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,lab,yes,1000,no
-P092,,no,tune,44,male,2,5,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1500,no
-P093,,no,learn,46,male,2,7,Type 2 Diabetes Mellitus,E11.9,44054006,8.2,lab,yes,1000,no
-P094,,no,test,55,female,2,3,Type 2 Diabetes Mellitus,E11.9,44054006,7.7,lab,yes,1000,no
-P095,,no,learn,68,female,2,9,Type 2 Diabetes Mellitus,E11.9,44054006,7.7,lab,yes,1000,no
-P096,,no,test,37,female,2,17,Type 2 Diabetes Mellitus,E11.9,44054006,8.3,lab,yes,1000,no
-P097,,no,learn,49,female,2,11,Type 2 Diabetes Mellitus,E11.9,44054006,7.8,lab,yes,1000,no
-P098,,no,learn,59,male,2,3,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,lab,yes,1000,no
-P099,,no,learn,75,female,2,2,Type 2 Diabetes Mellitus,E11.9,44054006,7.5,lab,yes,1000,no
-P100,,no,learn,50,male,2,19,Type 2 Diabetes Mellitus,E11.9,44054006,8.1,lab,yes,1500,no
+person_id,source_patient_id,display_name,is_demo,split,age_years,sex,bmi,diabetes_type,years_with_diabetes,diagnosis_name,icd10_code,snomed_code,hba1c_percent,hba1c_ifcc_mmol_mol,fasting_glucose_mg_dl,postprandial_glucose_mg_dl,fasting_c_peptide_nmol_l,postprandial_c_peptide_nmol_l,creatinine_mg_dl,egfr,total_cholesterol_mg_dl,triglycerides_mg_dl,hdl_mg_dl,ldl_mg_dl,on_metformin,on_insulin,on_acarbose,on_dpp4,on_sglt2,hypoglycemic_agents_raw,comorbidities
+P002,2000_0_20201230,Patient P002,no,learn,57,male,23.6,2,25.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,59.6,82.4,162.4,0.27,0.91,1.19,68.0,157.4,54.0,88.2,71.9,no,no,no,no,no,Gansulin 40R ,hypertension
+P003,2001_0_20201102,Patient P003,no,learn,69,female,26.5,2,14.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.4,57.4,137.7,277.7,0.64,2.32,0.46,101.0,168.6,78.8,52.6,111.8,yes,no,no,no,no,"metformin, Humulin 70/30",hypertension
+P004,2002_0_20210513,Patient P004,no,learn,57,male,24.2,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,9.2,77.1,158.4,443.0,0.39,0.68,0.81,105.0,205.3,116.9,51.4,142.3,yes,yes,yes,no,no,"insulin aspart 50/50, acarbose, metformin, glimepiride","hypertension, hyperuricemia, nephrolithiasis, kidney cyst, prostatic hyperplasia, hepatic dysfunction, chronic hepatitis B"
+P005,2003_0_20210615,Patient P005,no,learn,58,female,23.2,2,22.0,Type 2 Diabetes Mellitus,E11.9,44054006,9.5,80.3,194.4,238.5,0.44,0.81,0.42,166.0,182.9,153.2,35.2,114.1,yes,yes,yes,no,no,"metformin, acarbose, Novolin 30R","hypertension, vitamin D deficiency"
+P006,2004_0_20211028,Patient P006,no,learn,78,female,25.0,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.6,92.4,257.4,228.1,0.37,0.4,0.55,113.0,101.7,135.5,27.5,46.0,no,yes,no,no,no,insulin aspart 70/30,"atrial fibrillation, vitamin D deficiency, pulmonary nodule, thyroid nodule, cerebrovascular disease, Alzheimer's disease, urinary tract infection, anxiety"
+P007,2005_0_20211201,Patient P007,no,learn,67,female,22.5,2,0.0,Type 2 Diabetes Mellitus,E11.9,44054006,12.7,115.3,336.6,585.9,0.65,1.16,0.54,120.0,284.2,677.6,42.9,156.2,no,no,no,no,no,voglibose ,"hypertension, hyperlipidemia, fatty liver disease, vitamin D deficiency"
+P008,2006_0_20211112,Patient P008,no,learn,35,female,19.3,2,8.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.7,104.4,156.6,274.0,0.28,0.41,0.31,257.0,239.4,217.0,39.8,175.9,no,yes,no,no,no,Novolin R,"thyroid nodule, hyperlipidemia, pulmonary nodule"
+P009,2007_0_20220108,Patient P009,no,learn,68,male,18.9,2,0.0,Type 2 Diabetes Mellitus,E11.9,44054006,12.7,115.3,158.4,275.0,0.56,0.48,0.99,80.0,243.2,131.1,99.0,126.8,no,no,no,no,no,voglibose ,hyperlipidemia
+P010,2008_0_20220118,Patient P010,no,learn,61,male,24.7,2,12.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.4,68.3,167.4,301.1,0.27,0.7,0.79,106.0,112.5,70.0,34.4,70.4,yes,no,yes,yes,no,"pioglitazone, acarbose, metformin, sitagliptin","hypertension, vitamin D deficiency"
+P011,2009_0_20211103,Patient P011,no,learn,64,male,23.4,2,0.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.8,94.5,124.2,217.4,0.29,0.87,0.54,165.0,129.9,137.3,27.5,84.7,no,yes,no,no,no,Novolin R,"fatty liver disease, thyroid nodule, nephrolithiasis, hydronephrosis, pulmonary nodule, prostatic hyperplasia"
+P012,2010_0_20220111,Patient P012,no,learn,37,male,23.8,2,0.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.8,94.5,176.4,395.8,0.2,0.85,0.45,223.0,232.8,146.1,38.7,191.0,no,yes,no,no,no,Novolin R,"hyperlipidemia, fatty liver disease, thyroid nodule, conjunctivitis, prostatic hyperplasia"
+P013,2011_0_20220123,Patient P013,no,learn,56,female,23.1,2,9.0,Type 2 Diabetes Mellitus,E11.9,44054006,9.1,76.0,163.8,171.5,0.51,1.25,0.49,210.0,215.4,326.8,38.3,171.7,yes,no,no,yes,no,"metformin, sitagliptin, gliclazide","hypertension, hypokalemia, hyperlipidemia, fatty liver disease, thyroid nodule, pulmonary nodule"
+P014,2012_0_20220126,Patient P014,no,learn,62,male,35.0,2,7.0,Type 2 Diabetes Mellitus,E11.9,44054006,9.0,74.9,158.4,250.2,0.73,1.75,0.97,83.0,138.4,132.9,36.0,90.1,yes,no,no,no,no,"metformin, liraglutide","hypertension, vitamin D deficiency, prostatic hyperplasia, pulmonary nodule, kidney cyst"
+P015,2013_0_20220123,Patient P015,no,learn,84,male,23.1,2,9.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.3,100.0,334.8,333.0,0.2,0.67,0.66,123.0,117.2,159.4,32.5,69.6,yes,yes,no,no,no,"Novolin 30R, metformin, voglibose ","hyperlipidemia, fatty liver disease, hyperuricemia, nephrolithiasis, vitamin D deficiency, prostatic hyperplasia, pulmonary nodule, hypertension"
+P016,2014_0_20201224,Patient P016,no,learn,42,female,34.1,2,7.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.5,69.4,101.2,138.6,0.6,1.0,0.75,99.0,115.6,87.7,49.9,65.7,yes,yes,no,no,no," insulin degludec, metformin ","hypertension, hyperlipidemia"
+P001,2015_0_20210203,Rohan Sharma,yes,learn,55,male,22.9,2,4.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.1,65.0,152.3,311.9,0.34,1.0,0.78,102.0,174.8,118.7,51.4,123.0,yes,yes,no,no,no,"pioglitazone, metformin, insulin degludec ",none
+P017,2016_0_20201224,Patient P017,no,learn,56,female,20.2,2,1.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.3,45.4,159.8,167.2,0.44,1.25,0.64,90.0,185.6,66.4,68.4,132.6,no,no,no,yes,no,sitagliptin,none
+P018,2017_0_20210102,Patient P018,no,learn,66,female,17.1,2,1.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,59.6,108.7,164.3,0.23,1.25,0.9,90.0,185.6,159.4,42.5,112.1,no,yes,no,no,no,"voglibose, insulin degludec",pancreatic cancer
+P019,2018_0_20210420,Patient P019,no,learn,66,female,19.9,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.7,71.6,167.4,167.9,0.2,0.19,0.61,105.0,213.5,113.4,72.7,123.4,yes,yes,yes,no,no,"insulin aspart 70/30, metformin, acarbose","hypertension, thyroid nodule, osteoporosis"
+P020,2019_0_20210513,Patient P020,no,learn,66,male,24.6,2,13.0,Type 2 Diabetes Mellitus,E11.9,44054006,13.2,120.8,135.0,340.0,0.19,0.43,0.78,106.0,164.0,107.2,34.4,109.0,no,yes,no,no,no,insulin aspart 70/30,none
+P021,2020_0_20210423,Patient P021,no,learn,61,male,21.5,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.1,54.1,120.6,192.6,0.19,0.89,0.65,132.0,128.4,120.5,32.5,84.7,yes,yes,no,no,no,"insulin glarigine, metformin","liver cyst, cholelithiasis, kidney cyst, thyroid nodule, prostatic hyperplasia, osteoporosis"
+P022,2021_0_20211013,Patient P022,no,learn,78,female,19.0,2,16.0,Type 2 Diabetes Mellitus,E11.9,44054006,15.4,144.8,194.4,298.1,0.16,0.15,0.64,95.0,174.4,68.2,49.9,114.8,no,yes,yes,no,no,"insulin aspart 70/30, acarbose","hypertension, vitamin D deficiency, cataract, enlarged adrenal gland"
+P023,2022_0_20210419,Patient P023,no,learn,47,male,23.5,2,4.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.5,69.4,124.2,251.1,0.11,0.56,0.82,107.0,199.2,292.3,32.1,119.1,yes,yes,yes,no,no,"insulin detemir, acarbose, metformin","hepatic dysfunction, hyperlipidemia, fatty liver disease, liver cyst, gallbladder polyp, thyroid nodule"
+P024,2023_0_20210812,Patient P024,no,learn,72,female,23.4,2,4.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.8,105.5,198.0,185.0,0.5,0.99,0.6,104.0,210.8,198.4,38.7,141.9,no,yes,yes,no,no,"Novolin 30R, acarbose","liver cyst, fatty liver disease, pulmonary nodule, thyroid nodule"
+P025,2024_0_20210429,Patient P025,no,learn,67,female,22.9,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,14.7,137.2,199.8,304.4,0.23,0.29,0.64,99.0,230.5,127.5,52.2,140.0,no,yes,yes,no,no,"insulin aspart 70/30, acarbose","hypertension, vitamin D deficiency, thyroid nodule"
+P026,2025_0_20210506,Patient P026,no,learn,63,male,21.8,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,13.8,127.3,232.2,225.7,0.42,0.19,0.51,174.0,142.3,99.2,44.9,84.7,no,yes,no,no,no,"Novolin R, insulin glarigine",none
+P027,2026_0_20210916,Patient P027,no,learn,58,female,19.2,2,0.2,Type 2 Diabetes Mellitus,E11.9,44054006,13.6,125.1,216.0,403.4,0.41,0.74,0.71,90.0,201.1,109.8,47.2,129.9,no,yes,no,no,no,Novolin 30R,thyroid nodule
+P028,2027_0_20210521,Patient P028,no,learn,71,male,27.5,2,5.0,Type 2 Diabetes Mellitus,E11.9,44054006,9.3,78.1,165.6,229.0,0.47,0.88,0.93,85.0,230.9,263.9,45.6,149.7,yes,yes,yes,no,no,"insulin glarigine, metformin, acarbose","hypertension, Parkinson's disease, cataract, pulmonary nodule, hyperlipidemia, thyroid nodule, vitamin D deficiency, prostatic hyperplasia"
+P029,2028_0_20210426,Patient P029,no,learn,66,male,22.5,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,12.7,115.3,160.2,240.3,0.57,0.7,1.33,57.0,241.7,229.4,35.6,162.8,no,yes,yes,no,no,"insulin aspart 70/30, acarbose","hypertension, hypertension, hyperuricemia, hyperlipidemia, thyroid nodule, vitamin D deficiency, pulmonary nodule, fatty liver disease, cholelithiasis, prostatic hyperplasia"
+P030,2029_0_20210526,Patient P030,no,learn,63,male,24.8,2,8.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.2,66.1,140.4,259.6,0.18,0.43,0.65,133.0,159.7,151.5,49.9,75.0,yes,yes,no,no,no,"insulin aspart 70/30, metformin  ","pancreatic cancer, osteopenia, hepatic dysfunction, pulmonary nodule"
+P031,2030_0_20210531,Patient P031,no,learn,68,male,25.4,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,13.2,120.8,111.6,221.9,0.21,0.27,0.95,84.0,175.2,179.8,29.8,112.9,no,yes,no,no,no,"insulin aspart 70/30, gliclazide","hypertension, hyperuricemia, hyperlipidemia"
+P032,2031_0_20210601,Patient P032,no,learn,63,male,20.9,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,12.1,108.8,183.6,316.1,0.15,0.3,0.72,145.0,129.2,59.3,44.1,66.5,yes,no,no,no,no,"pioglitazone, metformin, gliquidone",hypertension
+P033,2032_0_20210727,Patient P033,no,learn,47,male,25.2,2,0.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.5,91.3,198.0,361.3,0.9,1.0,0.71,126.0,227.0,204.6,50.7,146.9,no,yes,no,no,no,Novolin 30R,"hyperlipidemia, hepatic dysfunction, fatty liver disease, pulmonary nodule, kidney cyst, vitamin D deficiency"
+P034,2033_0_20210615,Patient P034,no,learn,38,male,32.0,2,2.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.4,101.1,214.2,329.8,0.26,0.55,0.68,139.0,259.5,351.6,35.2,148.1,yes,yes,no,no,no,"metformin, insulin detemir",hypertension
+P035,2034_0_20210624,Patient P035,no,learn,54,male,24.1,2,2.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.2,88.0,167.4,165.6,0.37,0.89,0.72,121.0,97.1,101.9,36.3,44.1,no,yes,no,no,no,Novolin R,"prostatic hyperplasia, kidney cyst"
+P036,2035_0_20210629,Patient P036,no,learn,78,male,24.3,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.3,100.0,133.2,330.1,0.48,0.92,1.38,53.0,257.5,271.0,32.9,196.1,yes,yes,yes,no,no,"insulin detemir, Novolin R, acarbose, metformin",hypertension
+P037,2036_0_20210803,Patient P037,no,learn,22,male,24.8,2,8.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.9,95.6,207.0,314.3,0.38,0.56,0.46,247.0,234.7,344.5,33.3,153.1,no,yes,no,no,no,"insulin detemir, Novolin R","hepatic dysfunction, hyperlipidemia, fatty liver disease, hypokalemia, lumbar herniated disc, periodontitis"
+P038,2037_0_20201221,Patient P038,no,learn,49,male,24.5,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,7.3,56.3,140.9,196.9,0.63,1.25,0.9,90.0,185.6,159.4,42.5,112.1,no,no,no,yes,no,sitagliptin  ,none
+P039,2038_0_20210608,Patient P039,no,learn,46,male,20.3,2,1.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.4,101.1,275.4,427.9,0.53,0.54,0.69,133.0,155.1,142.6,26.7,112.9,no,yes,no,no,no,Novolin 30R,"hepatic dysfunction, hypertension"
+P040,2039_0_20210615,Patient P040,no,learn,50,female,25.6,2,8.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.4,57.4,187.2,323.3,0.29,0.92,0.35,210.0,178.3,72.6,39.8,126.5,no,yes,no,no,no,Novolin R,none
+P041,2040_0_20210729,Patient P041,no,learn,58,female,23.8,2,0.0,Type 2 Diabetes Mellitus,E11.9,44054006,9.8,83.6,356.4,610.4,0.48,0.42,0.46,146.0,196.8,126.7,42.5,137.7,no,yes,no,no,no,Novolin R,"hyperlipidemia, fatty liver disease, urinary tract infection, cataract, thyroid nodule, osteoporosis, chronic hepatitis B, chronic gastritis, gastric polyp, colorectal polyp"
+P042,2041_0_20210813,Patient P042,no,learn,71,male,26.6,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.7,93.5,158.4,315.9,0.26,0.76,0.62,137.0,209.2,108.1,37.5,151.2,yes,yes,no,no,no,"Novolin R, metformin   ","urinary tract infection, hydronephrosis, pulmonary nodule, cataract, hyperlipidemia, thyroid nodule, vitamin D deficiency, prostatic hyperplasia, osteoporosis, sinus bradycardia, sinus arrhythmia"
+P043,2042_0_20211019,Patient P043,no,tune,40,female,36.7,2,13.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.7,104.4,338.9,315.9,0.47,0.77,0.59,119.0,201.5,160.3,39.8,150.4,no,yes,no,no,no,Novolin 30R,"hypertension, hypokalemia, hyperlipidemia, fatty liver disease, thyroid nodule"
+P044,2043_0_20210513,Patient P044,no,tune,61,female,22.3,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,13.5,124.1,275.4,487.4,0.26,0.38,0.55,120.0,139.6,93.9,53.4,64.6,no,yes,no,no,no," insulin detemir, Novolin R","hypertension, chronic atrophic gastritis"
+P045,2044_0_20211101,Patient P045,no,learn,71,female,22.8,2,30.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,59.6,55.8,211.0,0.04,0.26,0.83,72.0,236.7,93.0,56.8,158.9,no,yes,yes,yes,no,"insulin aspart 70/30, acarbose, sitagliptin  ","hypertension, Alzheimer's disease"
+P046,2045_0_20201216,Patient P046,no,learn,69,male,24.3,2,8.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.4,68.3,197.3,367.4,0.55,1.25,0.84,72.0,185.6,159.4,42.5,112.1,yes,yes,no,no,no,"insulin degludec, gliclazide, voglibose, metformin ",none
+P047,2046_0_20201216,Patient P047,no,learn,37,male,25.2,2,3.0,Type 2 Diabetes Mellitus,E11.9,44054006,5.3,34.4,161.8,212.4,1.14,1.25,0.9,90.0,269.9,444.6,32.9,70.8,yes,no,no,no,no,metformin,hyperlipidemia
+P048,2047_0_20210420,Patient P048,no,learn,41,female,26.6,2,2.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.3,45.4,93.6,173.9,0.43,2.24,0.58,123.0,260.6,178.9,36.7,203.4,yes,no,no,no,no,metformin,none
+P049,2048_0_20210426,Patient P049,no,learn,83,female,19.8,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.6,48.6,126.0,185.0,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,no,no,no,yes,no,sitagliptin  ,"hypertension, atrial fibrillation"
+P050,2049_0_20210426,Patient P050,no,tune,37,male,29.2,2,11.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.6,103.3,126.0,160.7,0.3,0.56,0.7,135.0,211.9,151.5,31.7,170.1,no,yes,no,no,no,insulin aspart 70/30,none
+P051,2050_0_20210510,Patient P051,no,learn,68,female,19.0,2,0.2,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,59.6,158.4,333.9,0.62,2.59,0.53,122.0,181.4,138.2,43.7,129.2,no,no,no,no,no,gliclazide,hyperlipidemia
+P052,2051_0_20210512,Patient P052,no,learn,52,male,26.4,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.4,46.5,126.0,185.0,0.49,1.25,0.78,111.0,186.8,93.0,42.9,119.1,yes,no,no,no,yes,"canagliflozin, metformin ",none
+P053,2052_0_20210511,Patient P053,no,tune,54,male,23.1,2,2.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.6,92.4,208.8,327.4,0.53,1.07,0.75,141.7,225.4,128.4,55.3,154.7,no,yes,no,no,no, insulin aspart 70/30,none
+P054,2053_0_20210518,Patient P054,no,learn,47,male,24.2,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.8,72.7,199.8,277.0,0.2,0.69,0.99,82.0,186.4,148.8,31.3,116.0,yes,no,no,no,no,metformin,none
+P055,2054_0_20210524,Patient P055,no,learn,37,female,29.1,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,6.6,48.6,117.0,201.2,0.99,4.42,0.61,119.0,140.0,175.4,37.1,37.9,no,no,no,no,no,none,"hypertension, hypothyroidism, hysteromyoma"
+P056,2055_0_20210524,Patient P056,no,learn,65,female,22.3,2,6.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.0,53.0,144.0,193.9,0.16,0.74,0.5,132.0,169.8,64.7,66.1,79.7,yes,no,yes,no,yes,"acarbose, dapagliflozin, metformin",none
+P057,2056_0_20210524,Patient P057,no,learn,44,female,29.3,2,1.0,Type 2 Diabetes Mellitus,E11.9,44054006,5.9,41.0,93.6,185.0,0.43,1.25,0.7,96.0,157.8,134.6,47.2,96.3,no,no,no,no,no,none,"cholecystitis, hysteromyoma, thyroid nodule"
+P058,2057_0_20210525,Patient P058,no,learn,79,female,23.4,2,30.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.0,53.0,165.6,185.0,0.55,1.25,0.75,79.0,131.5,78.8,50.7,62.6,no,yes,no,no,no,insulin aspart 70/30,hypertension
+P059,2058_0_20210524,Patient P059,no,learn,48,female,21.2,2,0.7,Type 2 Diabetes Mellitus,E11.9,44054006,6.2,44.3,111.6,155.3,0.32,1.33,0.55,125.0,189.5,444.6,33.3,87.0,yes,no,no,no,no,metformin,none
+P060,2059_0_20210525,Patient P060,no,learn,84,male,26.4,2,40.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.0,53.0,129.6,164.5,0.31,0.17,1.11,67.0,161.6,122.2,51.8,78.9,no,yes,no,no,no,insulin aspart 70/30,"hypertension, prostatic hyperplasia, hypoparathyroidism, hypokalemia, vitamin D deficiency, cataract, cholelithiasis, kidney cyst, cerebrovascular disease, lung lesion"
+P061,2060_0_20201214,Patient P061,no,learn,92,male,27.7,2,5.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.3,67.2,169.0,270.0,1.22,1.25,0.9,90.0,176.3,144.4,44.9,172.1,no,no,yes,no,yes,"acarbose, dapagliflozin, gliclazide   ",hypertension
+P062,2061_0_20210601,Patient P062,no,learn,69,male,23.3,2,15.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.7,49.7,131.4,185.0,0.55,1.25,0.92,88.0,129.2,143.5,39.1,71.5,no,no,no,no,no,repaglinide ,none
+P063,2062_0_20210601,Patient P063,no,learn,65,female,21.8,2,5.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.9,51.9,140.4,185.0,0.5,1.25,0.55,118.0,301.2,173.6,50.3,203.8,no,no,no,no,no,none,psoriasis
+P064,2063_0_20210608,Patient P064,no,learn,63,male,24.0,2,1.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.1,43.2,113.4,223.9,0.28,1.32,0.8,104.0,184.8,122.2,36.3,142.7,yes,no,no,no,no,metformin ,none
+P065,2064_0_20210608,Patient P065,no,learn,67,male,24.6,2,15.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,131.4,185.0,0.55,1.25,0.68,123.0,162.0,228.5,34.0,103.6,yes,no,no,no,no,metformin ,hypertension
+P066,2065_0_20210615,Patient P066,no,learn,77,female,24.9,2,24.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.2,66.1,95.4,185.0,0.55,1.25,1.26,44.0,247.1,251.5,46.8,157.8,yes,no,no,no,no,metformin ,"hypertension, hyperlipidemia"
+P067,2066_0_20210615,Patient P067,no,learn,72,male,23.5,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,135.0,185.0,0.55,1.25,0.8,101.0,148.9,95.7,42.2,96.3,no,no,no,no,no,gliclazide ,none
+P068,2067_0_20210615,Patient P068,no,learn,68,male,22.1,2,2.5,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,135.0,185.0,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,no,no,no,no,metformin ,none
+P069,2068_0_20210616,Patient P069,no,learn,63,female,26.4,2,8.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.3,45.4,136.8,256.3,0.41,1.88,0.83,74.0,205.3,147.9,38.7,143.9,no,no,yes,no,no,"acarbose, repaglinide  ","cataract, hyperlipidemia, fatty liver disease, osteoporosis"
+P070,2069_0_20210621,Patient P070,no,learn,85,female,22.2,2,16.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.9,62.8,167.4,185.0,0.31,1.25,0.37,178.0,167.8,147.9,31.7,99.8,no,no,no,no,no,gliclazide  ,none
+P071,2070_0_20210629,Patient P071,no,learn,62,male,21.0,2,6.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.2,55.2,106.2,215.6,0.15,0.85,0.52,172.0,147.3,81.5,32.5,99.0,no,yes,yes,no,no,"Novolin 30R, acarbose",none
+P072,2071_0_20210705,Patient P072,no,learn,63,male,26.8,2,15.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.2,55.2,135.0,185.0,0.55,1.25,1.02,79.0,191.8,190.4,42.9,127.2,yes,no,no,no,yes,"dapagliflozin, liraglutide,pioglitazone, metformin",myocardial bridging
+P073,2072_0_20210706,Patient P073,no,learn,59,male,25.7,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.1,65.0,167.4,234.2,0.68,2.17,0.55,121.0,254.1,156.8,49.9,148.9,yes,no,no,no,no,"repaglinide, metformin ","hypertension, hyperlipidemia,  parotid gland carcinoma, hepatic dysfunction, urinary tract infection, hyperuricemia, pulmonary nodule, fatty liver disease, thyroid nodule, osteopenia"
+P074,2073_0_20210703,Patient P074,no,tune,97,male,22.0,2,0.0,Type 2 Diabetes Mellitus,E11.9,44054006,13.6,125.1,432.0,185.0,0.55,1.25,0.97,76.0,165.5,136.4,32.9,126.5,no,yes,no,no,no,Novolin 30R,"hypertension, hyperlipidemia, thyroid nodule, sinus bradycardia, fatty liver disease, kidney cyst"
+P075,2074_0_20210707,Patient P075,no,tune,31,male,26.2,2,0.6,Type 2 Diabetes Mellitus,E11.9,44054006,11.5,102.2,284.4,440.6,0.72,0.73,0.62,160.0,146.6,170.9,26.7,97.4,no,yes,no,no,no,"insulin detemir, Novolin R",none
+P076,2075_0_20210720,Patient P076,no,tune,50,female,28.0,2,4.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.0,42.1,172.8,185.0,0.55,1.25,0.49,144.0,180.2,120.5,46.8,121.8,yes,no,no,no,no,metformin ,hypertension
+P077,2076_0_20210720,Patient P077,no,learn,52,male,24.2,2,9.0,Type 2 Diabetes Mellitus,E11.9,44054006,9.6,81.4,241.2,369.9,0.6,0.86,0.81,106.0,196.1,155.0,39.1,141.5,yes,no,no,no,no,metformin  ,none
+P078,2077_0_20210803,Patient P078,no,tune,38,male,26.2,2,0.7,Type 2 Diabetes Mellitus,E11.9,44054006,6.1,43.2,95.4,113.2,0.65,2.04,0.8,116.0,196.1,215.2,37.1,145.4,yes,no,no,yes,no,"sitagliptin, metformin  ",none
+P079,2078_0_20210803,Patient P079,no,tune,58,male,22.8,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.8,50.8,129.6,212.6,0.4,1.33,1.07,75.0,257.2,170.9,41.0,178.3,no,no,yes,no,no,acarbose  ,hypertension
+P080,2079_0_20210809,Patient P080,no,tune,72,male,22.1,2,0.7,Type 2 Diabetes Mellitus,E11.9,44054006,9.5,80.3,207.0,185.0,0.63,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,no,no,no,no,metformin ,none
+P081,2080_0_20210816,Patient P081,no,tune,51,female,24.4,2,5.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,104.4,201.8,0.53,1.74,0.9,90.0,185.6,159.4,42.5,112.1,no,no,no,no,no,gliclazide ,hypertension
+P082,2081_0_20210817,Patient P082,no,tune,57,male,24.6,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,135.0,185.0,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,no,no,no,no,metformin ,hypertension
+P083,2082_0_20210907,Patient P083,no,tune,51,female,27.3,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,12.5,113.1,244.8,396.4,0.36,0.45,1.54,34.0,154.7,80.6,41.0,98.6,yes,no,no,no,no,metformin ,hypertension
+P084,2083_0_20201214,Patient P084,no,tune,68,male,24.8,2,7.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.1,43.2,133.2,189.0,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,yes,no,no,no,"insulin degludec, metformin",none
+P085,2084_0_20211013,Patient P085,no,tune,61,female,23.2,2,5.0,Type 2 Diabetes Mellitus,E11.9,44054006,6.7,49.7,262.8,185.0,0.55,1.25,0.78,80.0,172.1,89.5,41.8,126.8,no,no,no,no,no, gliquidone  ,hypertension
+P086,2085_0_20200907,Patient P086,no,test,37,female,21.8,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,4.3,23.5,93.4,97.0,0.67,1.25,0.9,90.0,185.6,63.8,74.2,83.9,no,no,no,no,no,none,none
+P087,2086_0_20200914,Patient P087,no,test,57,male,22.1,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.5,69.4,160.2,243.0,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,no,no,no,no,metformin ,thyroid nodule
+P088,2087_0_20201012,Patient P088,no,test,67,female,20.6,2,0.4,Type 2 Diabetes Mellitus,E11.9,44054006,7.6,59.6,90.0,144.0,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,no,no,yes,no,"sitagliptin, metformin ",none
+P089,2088_0_20201123,Patient P089,no,test,64,female,23.4,2,7.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,179.1,340.2,1.08,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,no,no,no,no,"metformin, voglibose  ",none
+P090,2089_0_20201019,Patient P090,no,test,65,male,22.5,2,21.0,Type 2 Diabetes Mellitus,E11.9,44054006,7.3,56.3,149.4,287.8,1.18,1.25,0.9,90.0,185.6,194.9,41.4,168.2,yes,no,yes,no,no,"metformin, acarbose, gliclazide",none
+P091,2090_0_20201130,Patient P091,no,test,72,male,21.9,2,10.0,Type 2 Diabetes Mellitus,E11.9,44054006,11.1,97.8,192.6,304.2,0.78,1.25,0.9,90.0,188.3,146.1,36.3,156.6,no,yes,no,no,no,"insulin glarigine, insulin glulisine",none
+P092,2091_0_20201029,Patient P092,no,test,60,male,23.6,2,7.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,104.4,136.8,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,no,no,no,yes,no,"gliclazide, sitagliptin  ",none
+P093,2092_0_20201109,Patient P093,no,test,49,male,24.3,2,0.5,Type 2 Diabetes Mellitus,E11.9,44054006,6.3,45.4,128.3,186.3,1.11,1.25,1.03,86.0,212.3,149.7,48.0,153.1,no,no,yes,yes,no,"acarbose, sitagliptin     ","hypertension, hyperlipidemia             "
+P094,2093_0_20201109,Patient P094,no,test,65,female,21.2,2,0.5,Type 2 Diabetes Mellitus,E11.9,44054006,7.0,53.0,93.6,167.4,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,yes,no,no,yes,no,"sitagliptin, metformin ",none
+P095,2094_0_20211109,Patient P095,no,test,74,female,25.5,2,15.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.6,92.4,162.0,291.6,0.55,1.25,0.61,101.0,165.1,310.9,42.9,87.8,no,yes,no,no,no,"insulin glargine, Humulin R, voglibose  ","hypertension, fatty liver disease, hypothyroidism"
+P096,2095_0_20201116,Patient P096,no,test,66,male,21.0,2,7.0,Type 2 Diabetes Mellitus,E11.9,44054006,8.0,66.0,180.0,234.0,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,no,yes,yes,no,no,"acarbose, insulin aspart 70/30 ",none
+P097,2096_0_20201116,Patient P097,no,test,60,female,26.4,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,7.5,58.5,140.4,225.9,1.24,1.25,0.9,90.0,185.6,82.4,79.7,141.1,no,no,no,yes,no,sitagliptin  ,fatty liver disease
+P098,2097_0_20201116,Patient P098,no,test,71,female,23.1,2,20.0,Type 2 Diabetes Mellitus,E11.9,44054006,10.1,86.9,162.0,288.0,0.55,1.25,0.81,73.0,228.2,195.7,57.2,150.4,no,yes,no,yes,no,"sitagliptin, gliclazide, insulin degludec ",hypertension
+P099,2098_0_20201106,Patient P099,no,test,64,female,26.2,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,9.3,78.1,173.7,262.8,0.98,1.25,0.9,90.0,185.6,159.4,42.5,112.1,no,no,no,yes,no,sitagliptin   ,"hyperlipidemia, hepatic dysfunction"
+P100,2099_0_20201116,Patient P100,no,test,44,female,29.0,2,0.1,Type 2 Diabetes Mellitus,E11.9,44054006,7.2,55.2,124.9,227.2,0.55,1.25,0.9,90.0,185.6,159.4,42.5,112.1,no,no,no,no,no,none,none

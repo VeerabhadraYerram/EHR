@@ -45,6 +45,27 @@ services:
       exit 0;
       "
 
+  digital-twin:
+    build:
+      context: ./services/digital-twin
+      dockerfile: Dockerfile
+    container_name: ehr-digital-twin
+    restart: unless-stopped
+    ports:
+      - "8004:8004"
+    volumes:
+      - ./data/digital_twin:/data/digital_twin:ro
+    environment:
+      - ENVIRONMENT=production
+      - DATA_DIR=/data/digital_twin
+    depends_on:
+      - ehr-postgres
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8004/health')\""]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
 volumes:
   ehr_pgdata:
   ehr_miniodata:

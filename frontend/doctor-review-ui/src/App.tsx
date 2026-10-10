@@ -1,24 +1,32 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
-import { PatientDashboard } from "./pages/PatientDashboard";
+import { DoctorLogin } from "./pages/DoctorLogin";
+import { DoctorDashboard } from "./pages/DoctorDashboard";
 import { DoctorVerificationQueue } from "./pages/DoctorVerificationQueue";
 import { UnifiedTimeline } from "./pages/UnifiedTimeline";
-import { DigitalTwin } from "./pages/DigitalTwin";
+
+interface DoctorUser {
+  name: string;
+  email: string;
+  specialty: string;
+  hospital: string;
+}
 
 function NavigationBar() {
   const location = useLocation();
 
   const navLinks = [
-    { path: "/twin", label: "01 // Digital Twin" },
-    { path: "/", label: "02 // Dashboard" },
-    { path: "/review", label: "03 // Verification Queue" },
-    { path: "/timeline", label: "04 // Unified Timeline" }
+    { path: "/", label: "01 // Doctor Portal (Patient Tracker & Glycemic Twin)" },
+    { path: "/review", label: "02 // Verification Queue" },
+    { path: "/timeline", label: "03 // Unified Timeline" },
   ];
 
   return (
     <nav className="nav-bar-container">
       {navLinks.map((item) => {
-        const isActive = location.pathname === item.path || (item.path === "/" && location.pathname === "/dashboard");
+        const isActive =
+          location.pathname === item.path ||
+          (item.path === "/" && (location.pathname === "/twin" || location.pathname === "/dashboard"));
         return (
           <Link
             key={item.path}
@@ -38,6 +46,23 @@ export default function App() {
     return (localStorage.getItem("ehr-theme") as "light" | "dark") || "light";
   });
 
+  const [doctor, setDoctor] = useState<DoctorUser | null>(() => {
+    const saved = localStorage.getItem("ehr-doctor-session");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return {
+      name: "Dr. Vikram Malhotra, MD",
+      email: "dr.vikram@happiesthealth.com",
+      specialty: "Chief Endocrinologist & Diabetologist",
+      hospital: "Happiest Health Diabetes Care Centre",
+    };
+  });
+
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("ehr-theme", theme);
@@ -45,6 +70,16 @@ export default function App() {
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
+
+  const handleLogin = (docUser: DoctorUser) => {
+    setDoctor(docUser);
+    localStorage.setItem("ehr-doctor-session", JSON.stringify(docUser));
+  };
+
+  const handleLogout = () => {
+    setDoctor(null);
+    localStorage.removeItem("ehr-doctor-session");
   };
 
   return (
@@ -55,27 +90,61 @@ export default function App() {
           <div className="brand-icon">+</div>
           <div>
             <div className="brand-title">EHR // Clinical Intelligence</div>
-            <div className="brand-subtitle">Type 2 diabetes twin · clinic file and today’s readings</div>
+            <div className="brand-subtitle">
+              {doctor
+                ? `${doctor.hospital} · ${doctor.specialty}`
+                : "Type 2 Diabetes Metabolic Digital Twin Platform"}
+            </div>
           </div>
         </div>
 
         <div className="system-status-pills">
           <div className="status-indicator">
-            <span className="status-dot"></span>
-            PostgreSQL: 5432
+            <span className="status-dot green"></span>
+            Twin API: 8004
           </div>
           <div className="status-indicator">
             <span className="status-dot"></span>
-            MinIO S3: 9000
+            Shanghai Cohort: 100 Pts
           </div>
-          <div className="status-indicator">
-            <span className="status-dot"></span>
-            EMPI: 8002
-          </div>
-          <div className="status-indicator">
-            <span className="status-dot"></span>
-            Fusion: 8003
-          </div>
+
+          {/* Logged in Doctor Identity & Sign Out */}
+          {doctor && (
+            <div
+              className="status-indicator"
+              style={{
+                background: "var(--bg-surface-elevated)",
+                border: "1px solid var(--border-strong)",
+                fontWeight: 600,
+              }}
+            >
+              <span style={{
+                background: "var(--brand-icon-bg)",
+                color: "var(--brand-icon-color)",
+                padding: "2px 6px",
+                borderRadius: "2px",
+                fontSize: "10px",
+                fontWeight: 800,
+                letterSpacing: "0.5px"
+              }}>MD</span>
+              <span>{doctor.name}</span>
+              <button
+                onClick={handleLogout}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#ef4444",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  padding: "0 4px",
+                }}
+                title="Sign Out of Doctor Portal"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
 
           {/* Theme Toggle Button */}
           <button
@@ -89,19 +158,33 @@ export default function App() {
         </div>
       </header>
 
-      {/* Navigation Sub-Bar */}
-      <NavigationBar />
+      {/* Render Login Screen if not signed in */}
+      {!doctor ? (
+        <main style={{ flex: 1, background: "var(--bg-main)" }}>
+          <DoctorLogin onLogin={handleLogin} />
+        </main>
+      ) : (
+        <>
+          {/* Navigation Sub-Bar */}
+          <NavigationBar />
 
-      <main style={{ flex: 1, background: "var(--bg-main)", transition: "background-color 0.2s ease" }}>
-        <Routes>
-          <Route path="/twin" element={<DigitalTwin />} />
-          <Route path="/" element={<PatientDashboard />} />
-          <Route path="/dashboard" element={<PatientDashboard />} />
-          <Route path="/review" element={<DoctorVerificationQueue />} />
-          <Route path="/timeline" element={<UnifiedTimeline />} />
-          <Route path="/fhir" element={<div style={{ padding: 60, textAlign: "center", color: "var(--text-muted)", fontFamily: "var(--font-mono)" }}>FHIR PERSISTENCE STORE // WEEK 7</div>} />
-        </Routes>
-      </main>
+          <main
+            style={{
+              flex: 1,
+              background: "var(--bg-main)",
+              transition: "background-color 0.2s ease",
+            }}
+          >
+            <Routes>
+              <Route path="/" element={<DoctorDashboard />} />
+              <Route path="/twin" element={<DoctorDashboard />} />
+              <Route path="/dashboard" element={<DoctorDashboard />} />
+              <Route path="/review" element={<DoctorVerificationQueue />} />
+              <Route path="/timeline" element={<UnifiedTimeline />} />
+            </Routes>
+          </main>
+        </>
+      )}
     </BrowserRouter>
   );
 }

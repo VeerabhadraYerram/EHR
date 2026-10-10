@@ -365,7 +365,7 @@ export const PatientDashboard: React.FC = () => {
                   padding: 4
                 }}
               >
-                ✕
+                &times;
               </button>
             </div>
 

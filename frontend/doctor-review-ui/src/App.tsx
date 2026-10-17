@@ -101,7 +101,7 @@ export default function App() {
         <div className="system-status-pills">
           <div className="status-indicator">
             <span className="status-dot green"></span>
-            Twin API: 8004
+            Twin API: 8000 (Active)
           </div>
           <div className="status-indicator">
             <span className="status-dot"></span>

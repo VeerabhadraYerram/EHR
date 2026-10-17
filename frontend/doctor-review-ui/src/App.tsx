@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Component, type ReactNode, type ErrorInfo } from "react";
 import { BrowserRouter, Routes, Route, Link, useLocation } from "react-router-dom";
 import { DoctorLogin } from "./pages/DoctorLogin";
 import { DoctorDashboard } from "./pages/DoctorDashboard";
@@ -10,6 +10,56 @@ interface DoctorUser {
   email: string;
   specialty: string;
   hospital: string;
+}
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+}
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Clinical Workspace Error Boundary caught:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: "40px", maxWidth: "700px", margin: "40px auto", background: "var(--bg-surface)", border: "1px solid var(--border-strong)", borderRadius: "6px" }}>
+          <h2 style={{ color: "#ef4444", fontSize: "18px", marginBottom: "12px" }}>Clinical Workspace Recovery</h2>
+          <p style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.5", marginBottom: "16px" }}>
+            The clinical interface encountered an issue. You can reload the workspace session.
+          </p>
+          <pre style={{ background: "var(--bg-surface-elevated)", padding: "12px", borderRadius: "4px", fontSize: "11px", color: "var(--text-muted)", overflowX: "auto", marginBottom: "16px" }}>
+            {this.state.error?.message || "Unknown error"}
+          </pre>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false, error: null });
+              window.location.reload();
+            }}
+            style={{ padding: "8px 16px", background: "var(--btn-primary-bg)", color: "var(--btn-primary-text)", border: "none", borderRadius: "4px", fontWeight: "700", cursor: "pointer" }}
+          >
+            Reload Clinical Workspace
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function NavigationBar() {
@@ -175,13 +225,15 @@ export default function App() {
               transition: "background-color 0.2s ease",
             }}
           >
-            <Routes>
-              <Route path="/" element={<DoctorDashboard />} />
-              <Route path="/twin" element={<DoctorDashboard />} />
-              <Route path="/dashboard" element={<DoctorDashboard />} />
-              <Route path="/review" element={<DoctorVerificationQueue />} />
-              <Route path="/timeline" element={<UnifiedTimeline />} />
-            </Routes>
+            <ErrorBoundary>
+              <Routes>
+                <Route path="/" element={<DoctorDashboard />} />
+                <Route path="/twin" element={<DoctorDashboard />} />
+                <Route path="/dashboard" element={<DoctorDashboard />} />
+                <Route path="/review" element={<DoctorVerificationQueue />} />
+                <Route path="/timeline" element={<UnifiedTimeline />} />
+              </Routes>
+            </ErrorBoundary>
           </main>
         </>
       )}

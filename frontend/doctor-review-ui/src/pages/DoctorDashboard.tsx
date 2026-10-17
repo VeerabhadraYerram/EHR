@@ -311,30 +311,21 @@ export function DoctorDashboard() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  if (loading) {
-    return (
-      <div className="doc-loading-container">
-        <div className="doc-spinner"></div>
-        <div className="doc-loading-text">Loading Doctor Clinical Intelligence Cohort...</div>
-      </div>
-    );
-  }
-
-  if (error || !cohort || !patient || !dayData) {
-    return (
-      <div className="doc-error-container">
-        <div className="doc-error-box">{error || "Unable to display clinical workspace."}</div>
-      </div>
-    );
-  }
-
-  const readings = dayData.readings || [];
-  const tasks = dayData.tasks || [];
-  const stats = dayData.stats;
+  const readings = dayData?.readings || [];
+  const tasks = dayData?.tasks || [];
+  const stats = dayData?.stats || {
+    mean_glucose: 120,
+    min_glucose: 70,
+    max_glucose: 180,
+    spikes_count: 0,
+    total_meals: 0,
+    total_carbs_g: 0,
+    tir_percent: 100,
+  };
 
   // Active moment for the prospective scrubber
   const activeIdx = Math.min(
-    Math.max(0, scrubberIndex !== null ? scrubberIndex : readings.length - 1),
+    Math.max(0, scrubberIndex !== null ? scrubberIndex : Math.max(0, readings.length - 1)),
     Math.max(0, readings.length - 1)
   );
   const currentReading = readings[activeIdx] || readings[0] || {
@@ -371,7 +362,17 @@ export function DoctorDashboard() {
 
   // Dynamic prospective risk scoring based on moment t
   const dynamicRisk = useMemo(() => {
-    if (!patient || !currentReading) return patient?.risk_status;
+    if (!patient || !currentReading) {
+      return {
+        tier: "CALM" as const,
+        spike_imminent: false,
+        spike_probability: 0.05,
+        projected_peak_mg_dl: 120,
+        projected_peak_time_min: 60,
+        reason_simple: "Stable euglycemia.",
+        reason_medical: "Basal equilibrium.",
+      };
+    }
 
     const G_now = currentReading.glucose_mg_dl;
     const futureSlice = readings.slice(activeIdx + 1, Math.min(activeIdx + 9, readings.length));
@@ -875,62 +876,82 @@ export function DoctorDashboard() {
   }, [readings]);
 
   // FHIR Bundle representation
-  const fhirJson = JSON.stringify(
-    {
-      resourceType: "Bundle",
-      type: "collection",
-      timestamp: new Date().toISOString(),
-      entry: [
-        {
-          resource: {
-            resourceType: "Observation",
-            id: `obs-${patient.person_id}-${selectedDate}`,
-            status: "final",
-            code: {
-              coding: [{ system: "http://loinc.org", code: "15074-8", display: "Glucose [Mass/volume] in Interstitial fluid" }],
+  const fhirJson = useMemo(() => {
+    if (!patient || !stats) return "{}";
+    return JSON.stringify(
+      {
+        resourceType: "Bundle",
+        type: "collection",
+        timestamp: new Date().toISOString(),
+        entry: [
+          {
+            resource: {
+              resourceType: "Observation",
+              id: `obs-${patient.person_id}-${selectedDate}`,
+              status: "final",
+              code: {
+                coding: [{ system: "http://loinc.org", code: "15074-8", display: "Glucose [Mass/volume] in Interstitial fluid" }],
+              },
+              subject: { reference: `Patient/${patient.person_id}`, display: patient.display_name },
+              valueQuantity: { value: stats.mean_glucose, unit: "mg/dL", system: "http://unitsofmeasure.org" },
+              referenceRange: [{ low: { value: 70 }, high: { value: 180 } }],
             },
-            subject: { reference: `Patient/${patient.person_id}`, display: patient.display_name },
-            valueQuantity: { value: stats.mean_glucose, unit: "mg/dL", system: "http://unitsofmeasure.org" },
-            referenceRange: [{ low: { value: 70 }, high: { value: 180 } }],
           },
-        },
-        {
-          resource: {
-            resourceType: "RiskAssessment",
-            id: `risk-${patient.person_id}-${selectedDate}`,
-            status: "final",
-            subject: { reference: `Patient/${patient.person_id}`, display: patient.display_name },
-            condition: { coding: [{ system: "http://snomed.info/sct", code: "44054006", display: "Postprandial Hyperglycemic Spike" }] },
-            prediction: [
-              {
-                probabilityDecimal: patient.risk_status.spike_probability,
-                qualitativeRisk: { text: `${patient.risk_status.tier} Risk` },
-                rationale: patient.risk_status.reason_medical,
-              },
-            ],
+          {
+            resource: {
+              resourceType: "RiskAssessment",
+              id: `risk-${patient.person_id}-${selectedDate}`,
+              status: "final",
+              subject: { reference: `Patient/${patient.person_id}`, display: patient.display_name },
+              condition: { coding: [{ system: "http://snomed.info/sct", code: "44054006", display: "Postprandial Hyperglycemic Spike" }] },
+              prediction: [
+                {
+                  probabilityDecimal: patient.risk_status.spike_probability,
+                  qualitativeRisk: { text: `${patient.risk_status.tier} Risk` },
+                  rationale: patient.risk_status.reason_medical,
+                },
+              ],
+            },
           },
-        },
-        {
-          resource: {
-            resourceType: "CarePlan",
-            id: `careplan-${patient.person_id}-${selectedDate}`,
-            status: "active",
-            intent: "plan",
-            subject: { reference: `Patient/${patient.person_id}`, display: patient.display_name },
-            activity: displayBranches.map((c) => ({
-              detail: {
-                kind: "CommunicationRequest",
-                description: `${c.label}: Reduces projected peak by ${c.peak_reduction_mg_dl} mg/dL (Simulated Peak: ${c.simulated_peak_mg_dl} mg/dL). ${c.mechanism} [Clarke Safety: ${c.clarke_zone}]`,
-                status: c.spike_averted ? "scheduled" : "in-progress",
-              },
-            })),
+          {
+            resource: {
+              resourceType: "CarePlan",
+              id: `careplan-${patient.person_id}-${selectedDate}`,
+              status: "active",
+              intent: "plan",
+              subject: { reference: `Patient/${patient.person_id}`, display: patient.display_name },
+              activity: displayBranches.map((c) => ({
+                detail: {
+                  kind: "CommunicationRequest",
+                  description: `${c.label}: Reduces projected peak by ${c.peak_reduction_mg_dl} mg/dL (Simulated Peak: ${c.simulated_peak_mg_dl} mg/dL). ${c.mechanism} [Clarke Safety: ${c.clarke_zone}]`,
+                  status: c.spike_averted ? "scheduled" : "in-progress",
+                },
+              })),
+            },
           },
-        },
-      ],
-    },
-    null,
-    2
-  );
+        ],
+      },
+      null,
+      2
+    );
+  }, [patient, selectedDate, stats, displayBranches]);
+
+  if (loading) {
+    return (
+      <div className="doc-loading-container">
+        <div className="doc-spinner"></div>
+        <div className="doc-loading-text">Loading Doctor Clinical Intelligence Cohort...</div>
+      </div>
+    );
+  }
+
+  if (error || !cohort || !patient || !dayData) {
+    return (
+      <div className="doc-error-container">
+        <div className="doc-error-box">{error || "Unable to display clinical workspace."}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="doctor-dashboard-root">

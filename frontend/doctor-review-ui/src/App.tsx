@@ -62,32 +62,106 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-function NavigationBar() {
+function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => void }) {
   const location = useLocation();
 
-  const navLinks = [
-    { path: "/", label: "01 // Doctor Portal (Patient Tracker & Glycemic Twin)" },
-    { path: "/review", label: "02 // Verification Queue" },
-    { path: "/timeline", label: "03 // Unified Timeline" },
+  interface NavItem {
+    path: string;
+    alias?: string[];
+    num: string;
+    icon: string;
+    title: string;
+    sub: string;
+    badge?: string;
+  }
+
+  const navItems: NavItem[] = [
+    {
+      path: "/",
+      alias: ["/twin", "/dashboard"],
+      num: "01",
+      icon: "🩺",
+      title: "Doctor Portal",
+      sub: "Patient Tracker & Glycemic Twin",
+    },
+    {
+      path: "/review",
+      num: "02",
+      icon: "📋",
+      title: "Verification Queue",
+      sub: "Lab & Sensor Cross-Validation",
+      badge: "3 Alerts",
+    },
+    {
+      path: "/timeline",
+      num: "03",
+      icon: "⏱",
+      title: "Unified Timeline",
+      sub: "Longitudinal EHR Clinical Feed",
+    },
   ];
 
   return (
-    <nav className="nav-bar-container">
-      {navLinks.map((item) => {
-        const isActive =
-          location.pathname === item.path ||
-          (item.path === "/" && (location.pathname === "/twin" || location.pathname === "/dashboard"));
-        return (
-          <Link
-            key={item.path}
-            to={item.path}
-            className={`nav-link-item ${isActive ? "active" : ""}`}
+    <aside className={`app-sidebar ${isOpen ? "expanded" : "collapsed"}`}>
+      <div className="sidebar-inner">
+        <div className="sidebar-nav-list">
+          {navItems.map((item) => {
+            const isActive =
+              location.pathname === item.path ||
+              (item.alias && item.alias.includes(location.pathname));
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`sidebar-nav-item ${isActive ? "active" : ""}`}
+                title={!isOpen ? `${item.num} // ${item.title} - ${item.sub}` : undefined}
+              >
+                <div className="sidebar-item-icon">{item.icon}</div>
+                {isOpen && (
+                  <div className="sidebar-item-info">
+                    <div className="sidebar-item-top">
+                      <span className="sidebar-item-num">{item.num}</span>
+                      <span className="sidebar-item-title">{item.title}</span>
+                      {item.badge && <span className="sidebar-badge">{item.badge}</span>}
+                    </div>
+                    <div className="sidebar-item-sub">{item.sub}</div>
+                  </div>
+                )}
+                {isActive && <div className="sidebar-active-indicator" />}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Sidebar Footer */}
+        <div className="sidebar-footer">
+          {isOpen ? (
+            <div className="sidebar-status-card">
+              <div className="sidebar-status-title">
+                <span className="status-dot green"></span>
+                <span>FastAPI Twin Engine</span>
+              </div>
+              <div className="sidebar-status-sub">Port 8000 • Calibrated XGBoost</div>
+            </div>
+          ) : (
+            <div className="sidebar-collapsed-dot" title="FastAPI Twin Engine (8000 Active)">
+              <span className="status-dot green"></span>
+            </div>
+          )}
+
+          <button
+            className="sidebar-toggle-btn"
+            onClick={onToggle}
+            title={isOpen ? "Collapse Navigation Sidebar" : "Expand Navigation Sidebar"}
+            aria-label={isOpen ? "Collapse Navigation Sidebar" : "Expand Navigation Sidebar"}
           >
-            {item.label}
-          </Link>
-        );
-      })}
-    </nav>
+            <span className="sidebar-toggle-arrow">{isOpen ? "◀" : "▶"}</span>
+            {isOpen && <span className="sidebar-toggle-label">Collapse Menu</span>}
+          </button>
+        </div>
+      </div>
+    </aside>
   );
 }
 
@@ -95,6 +169,7 @@ export default function App() {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
     return (localStorage.getItem("ehr-theme") as "light" | "dark") || "light";
   });
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
 
   const [doctor, setDoctor] = useState<DoctorUser | null>(() => {
     const saved = localStorage.getItem("ehr-doctor-session");
@@ -137,6 +212,13 @@ export default function App() {
       {/* Minimalist Top Header */}
       <header className="top-nav">
         <div className="brand-section">
+          <button
+            className="header-hamburger-btn"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            title={sidebarOpen ? "Collapse navigation sidebar" : "Expand navigation sidebar"}
+          >
+            <span>☰</span>
+          </button>
           <div className="brand-icon">+</div>
           <div>
             <div className="brand-title">EHR // Clinical Intelligence</div>
@@ -214,17 +296,9 @@ export default function App() {
           <DoctorLogin onLogin={handleLogin} />
         </main>
       ) : (
-        <>
-          {/* Navigation Sub-Bar */}
-          <NavigationBar />
-
-          <main
-            style={{
-              flex: 1,
-              background: "var(--bg-main)",
-              transition: "background-color 0.2s ease",
-            }}
-          >
+        <div className="app-main-layout">
+          <AppSidebar isOpen={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
+          <div className="app-workspace-viewport">
             <ErrorBoundary>
               <Routes>
                 <Route path="/" element={<DoctorDashboard />} />
@@ -234,8 +308,8 @@ export default function App() {
                 <Route path="/timeline" element={<UnifiedTimeline />} />
               </Routes>
             </ErrorBoundary>
-          </main>
-        </>
+          </div>
+        </div>
       )}
     </BrowserRouter>
   );

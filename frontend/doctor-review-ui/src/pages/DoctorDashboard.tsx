@@ -958,61 +958,6 @@ export function DoctorDashboard() {
       {/* Toast Notification */}
       {toastMessage && <div className="doc-toast">{toastMessage}</div>}
 
-      {/* Top Clinical Tracker Bar */}
-      <section className="doc-executive-bar">
-        <div className="tracker-card total">
-          <div className="tracker-tag neutral">COHORT</div>
-          <div className="tracker-body">
-            <span className="tracker-value">{cohort.metadata.total_patients}</span>
-            <span className="tracker-label">Monitored Patients</span>
-          </div>
-        </div>
-
-        <div
-          className={`tracker-card alert ${filterTier === "HIGH" ? "active" : ""}`}
-          onClick={() => setFilterTier(filterTier === "HIGH" ? "ALL" : "HIGH")}
-          title="Click to filter imminent spike alerts"
-        >
-          <div className="tracker-tag alert">SPIKE</div>
-          <div className="tracker-body">
-            <span className="tracker-value text-danger">{cohort.metadata.high_risk_alerts}</span>
-            <span className="tracker-label">Spike Alerts Imminent</span>
-          </div>
-        </div>
-
-        <div
-          className={`tracker-card watch ${filterTier === "WATCH" ? "active" : ""}`}
-          onClick={() => setFilterTier(filterTier === "WATCH" ? "ALL" : "WATCH")}
-          title="Click to filter watch list"
-        >
-          <div className="tracker-tag watch">WATCH</div>
-          <div className="tracker-body">
-            <span className="tracker-value text-amber">{cohort.metadata.watch_count}</span>
-            <span className="tracker-label">Watch List</span>
-          </div>
-        </div>
-
-        <div
-          className={`tracker-card stable ${filterTier === "CALM" ? "active" : ""}`}
-          onClick={() => setFilterTier(filterTier === "CALM" ? "ALL" : "CALM")}
-          title="Click to filter stable patients"
-        >
-          <div className="tracker-tag stable">STABLE</div>
-          <div className="tracker-body">
-            <span className="tracker-value text-success">{cohort.metadata.calm_count}</span>
-            <span className="tracker-label">Stable In-Target</span>
-          </div>
-        </div>
-
-        <div className="tracker-card tir">
-          <div className="tracker-tag tir">TIR</div>
-          <div className="tracker-body">
-            <span className="tracker-value">{cohort.metadata.average_cohort_tir_percent}%</span>
-            <span className="tracker-label">Cohort Avg TIR (70-180)</span>
-          </div>
-        </div>
-      </section>
-
       {/* Main Workspace Layout */}
       <div className="doc-workspace-grid">
         {/* Left Column: Patient Triage Directory */}
@@ -1021,6 +966,46 @@ export function DoctorDashboard() {
             <div className="triage-title-row">
               <span className="triage-title">Patients Directory</span>
               <span className="triage-badge">{filteredPatients.length} shown</span>
+            </div>
+
+            {/* Compact Cohort Triage Ribbon */}
+            <div className="triage-cohort-strip">
+              <button
+                className={`triage-stat-chip ${filterTier === "ALL" ? "active" : ""}`}
+                onClick={() => setFilterTier("ALL")}
+                title="All Monitored Patients"
+              >
+                <span className="stat-num">{cohort.metadata.total_patients}</span>
+                <span className="stat-txt">All</span>
+              </button>
+              <button
+                className={`triage-stat-chip alert ${filterTier === "HIGH" ? "active" : ""}`}
+                onClick={() => setFilterTier(filterTier === "HIGH" ? "ALL" : "HIGH")}
+                title="Spike Alerts Imminent"
+              >
+                <span className="stat-num text-danger">{cohort.metadata.high_risk_alerts}</span>
+                <span className="stat-txt">Spikes</span>
+              </button>
+              <button
+                className={`triage-stat-chip watch ${filterTier === "WATCH" ? "active" : ""}`}
+                onClick={() => setFilterTier(filterTier === "WATCH" ? "ALL" : "WATCH")}
+                title="Watch List Patients"
+              >
+                <span className="stat-num text-amber">{cohort.metadata.watch_count}</span>
+                <span className="stat-txt">Watch</span>
+              </button>
+              <button
+                className={`triage-stat-chip stable ${filterTier === "CALM" ? "active" : ""}`}
+                onClick={() => setFilterTier(filterTier === "CALM" ? "ALL" : "CALM")}
+                title="Stable In-Target Patients"
+              >
+                <span className="stat-num text-success">{cohort.metadata.calm_count}</span>
+                <span className="stat-txt">Stable</span>
+              </button>
+              <div className="triage-stat-chip tir" title="Cohort Average Time-In-Range (70-180 mg/dL)">
+                <span className="stat-num">{cohort.metadata.average_cohort_tir_percent}%</span>
+                <span className="stat-txt">TIR</span>
+              </div>
             </div>
 
             {/* Search Input */}
@@ -1038,22 +1023,6 @@ export function DoctorDashboard() {
                   ×
                 </button>
               )}
-            </div>
-
-            {/* Risk Tier Filter Chips */}
-            <div className="triage-filter-chips">
-              {(["ALL", "HIGH", "WATCH", "CALM"] as const).map((tier) => (
-                <button
-                  key={tier}
-                  className={`filter-chip ${filterTier === tier ? "active" : ""} ${tier.toLowerCase()}`}
-                  onClick={() => setFilterTier(tier)}
-                >
-                  {tier === "ALL" && `All (${cohort.patients.length})`}
-                  {tier === "HIGH" && `Spike Risk (${cohort.metadata.high_risk_alerts})`}
-                  {tier === "WATCH" && `Watch (${cohort.metadata.watch_count})`}
-                  {tier === "CALM" && `Stable (${cohort.metadata.calm_count})`}
-                </button>
-              ))}
             </div>
           </div>
 
@@ -1129,299 +1098,105 @@ export function DoctorDashboard() {
         </aside>
 
         {/* Right Column: Detailed Patient Profile, CGM Graph, and In-Silico Levers */}
-        <main className="doc-detail-view">
-          {/* Patient Profile Header */}
-          <header className="doc-patient-profile-card">
-            <div className="profile-main-info">
-              <div className="profile-avatar-large">
+        <main className="doc-main-detail-column">
+          {/* 1. Sleek Consolidated Patient Command Bar (~56px high) */}
+          <header className="doc-patient-command-bar">
+            <div className="patient-command-left">
+              <div className={`patient-command-avatar ${patient.risk_status.tier.toLowerCase()}`}>
                 {patient.display_name.split(" ").map((n) => n[0]).join("")}
               </div>
-              <div className="profile-titles">
-                <div className="profile-name-row">
-                  <h2 className="profile-name">{patient.display_name}</h2>
-                  <span className="profile-id-tag">{patient.person_id}</span>
-                  {patient.is_demo && <span className="profile-demo-tag">Flagship Demo Patient</span>}
-                  <span className={`profile-status-badge ${patient.risk_status.tier.toLowerCase()}`}>
-                    {patient.risk_status.tier === "HIGH" ? "Spike Alert Imminent" : patient.risk_status.tier === "WATCH" ? "Watch List" : "Stable In-Target"}
+              <div className="patient-command-identity">
+                <div className="patient-command-name-row">
+                  <h2 className="patient-command-name">{patient.display_name}</h2>
+                  <span className="patient-command-id">{patient.person_id}</span>
+                  {patient.is_demo && <span className="patient-command-demo">DEMO</span>}
+                  <span className={`patient-command-risk ${patient.risk_status.tier.toLowerCase()}`}>
+                    {patient.risk_status.tier === "HIGH" ? "Spike Alert" : patient.risk_status.tier === "WATCH" ? "Watch List" : "Stable In-Target"}
                   </span>
                 </div>
-                <div className="profile-subtext">
-                  Type 2 Diabetes Mellitus ({patient.years_with_diabetes} years) · Comorbidities: {patient.comorbidities}
+                <div className="patient-command-vitals-strip">
+                  <span className="vital-pill">HbA1c <strong className="text-danger">{patient.hba1c_percent}%</strong></span>
+                  <span className="vital-pill">BMI <strong>{patient.bmi}</strong></span>
+                  <span className="vital-pill">C-Peptide <strong>{patient.fasting_c_peptide} nmol/L</strong></span>
+                  <span className="vital-pill">eGFR <strong>{patient.egfr}</strong></span>
+                  <span className="vital-pill" title={patient.medications.join(", ")}>Rx <strong>{patient.medications[0]?.split(" ")[0] || "Metformin"}</strong></span>
                 </div>
               </div>
+            </div>
 
-              {/* Closed-Loop Companion Action in Header */}
-              <div style={{ marginLeft: "auto", display: "flex", gap: "10px", alignItems: "center" }}>
-                {closedLoopConfirmed && (
-                  <div className="closed-loop-confirmed-badge">
-                    <span className="live-pulse-dot"></span>
-                    <span>Synced: {closedLoopConfirmed}</span>
-                  </div>
-                )}
+            <div className="patient-command-right">
+              <div className="command-date-cluster">
                 <button
-                  className="open-companion-btn"
+                  className="command-date-nav-btn"
+                  disabled={patient.available_dates.indexOf(selectedDate) <= 0}
                   onClick={() => {
-                    setPrescribedForCompanion(activeBranch);
-                    setShowCompanionModal(true);
+                    const currIdx = patient.available_dates.indexOf(selectedDate);
+                    if (currIdx > 0) setSelectedDate(patient.available_dates[currIdx - 1]);
                   }}
-                  title="Open live patient mobile phone / smartwatch preview simulator"
+                  title="Previous Day Telemetry"
                 >
-                  <span>📱 Patient Companion (Live Closed-Loop)</span>
+                  ←
                 </button>
-              </div>
-            </div>
-
-            {/* Quick Clinical Metrics Grid */}
-            <div className="profile-vitals-grid">
-              <div className="vital-item">
-                <span className="vital-label">HbA1c Lab</span>
-                <span className="vital-value text-danger">{patient.hba1c_percent}%</span>
-              </div>
-              <div className="vital-item">
-                <span className="vital-label">BMI</span>
-                <span className="vital-value">{patient.bmi} kg/m²</span>
-              </div>
-              <div className="vital-item">
-                <span className="vital-label">Fasting C-Peptide</span>
-                <span className="vital-value">{patient.fasting_c_peptide} nmol/L</span>
-              </div>
-              <div className="vital-item">
-                <span className="vital-label">Renal eGFR</span>
-                <span className="vital-value">{patient.egfr} mL/min</span>
-              </div>
-              <div className="vital-item">
-                <span className="vital-label">Active Meds</span>
-                <span className="vital-value text-truncate" title={patient.medications.join(", ")}>
-                  {patient.medications.join(", ")}
-                </span>
-              </div>
-            </div>
-          </header>
-
-          {/* Date Switcher & Day Metrics Banner */}
-          <div className="doc-date-control-bar">
-            <div className="date-picker-cluster">
-              <button
-                className="date-nav-btn"
-                disabled={patient.available_dates.indexOf(selectedDate) <= 0}
-                onClick={() => {
-                  const currIdx = patient.available_dates.indexOf(selectedDate);
-                  if (currIdx > 0) setSelectedDate(patient.available_dates[currIdx - 1]);
-                }}
-              >
-                ← Prev Day
-              </button>
-
-              <div className="date-select-wrapper">
-                <span className="calendar-label">Date:</span>
                 <select
-                  className="date-select-dropdown"
+                  className="command-date-select"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                 >
                   {patient.available_dates.map((d) => (
                     <option key={d} value={d}>
-                      {d} {d === "2021-02-04" ? "• 4 Meals Logged" : ""}
+                      {d}
                     </option>
                   ))}
                 </select>
+                <button
+                  className="command-date-nav-btn"
+                  disabled={patient.available_dates.indexOf(selectedDate) >= patient.available_dates.length - 1}
+                  onClick={() => {
+                    const currIdx = patient.available_dates.indexOf(selectedDate);
+                    if (currIdx < patient.available_dates.length - 1) {
+                      setSelectedDate(patient.available_dates[currIdx + 1]);
+                    }
+                  }}
+                  title="Next Day Telemetry"
+                >
+                  →
+                </button>
               </div>
 
-              <button
-                className="date-nav-btn"
-                disabled={patient.available_dates.indexOf(selectedDate) >= patient.available_dates.length - 1}
-                onClick={() => {
-                  const currIdx = patient.available_dates.indexOf(selectedDate);
-                  if (currIdx < patient.available_dates.length - 1) {
-                    setSelectedDate(patient.available_dates[currIdx + 1]);
-                  }
-                }}
-              >
-                Next Day →
-              </button>
-            </div>
+              <div className="command-tir-badge" title="Daily Time-in-Range according to active guideline">
+                <span>TIR:</span>
+                <strong>{dynamicTIR}%</strong>
+              </div>
 
-            {/* Daily Summary Chips */}
-            <div className="daily-stats-chips">
-              <span className="day-stat-chip">
-                Meals: <strong>{stats.total_meals}</strong> ({stats.total_carbs_g}g Carbs)
-              </span>
-              <span className={`day-stat-chip ${stats.spikes_count > 0 ? "highlight-spike" : ""}`}>
-                Spikes: <strong>{stats.spikes_count}</strong> (Peak: {stats.max_glucose} mg/dL)
-              </span>
-              <span className="day-stat-chip">
-                TIR ({clinicalGuideline === "ADA" ? "ADA 70–180" : clinicalGuideline === "RSSDI_STRICT" ? "RSSDI Strict 70–140" : "RSSDI Std 70–160"}): <strong>{dynamicTIR}%</strong>
-              </span>
-              <span className="day-stat-chip">
-                Mean: <strong>{stats.mean_glucose} mg/dL</strong>
-              </span>
-            </div>
-          </div>
-
-          {/* Clinical Time-Travel Scrubber & Early Warning Console */}
-          <section className="doc-scrubber-card">
-            <div className="scrubber-top-row">
-              <div className="scrubber-title-group">
-                <h3 className="scrubber-title">
-                  <span>⏱</span> Clinical Time-Travel Scrubber & Early Warning Console
-                </h3>
-                <div className="scrubber-live-pill">
+              {closedLoopConfirmed && (
+                <div className="closed-loop-confirmed-badge" title="Active Wearable Synchronization">
                   <span className="live-pulse-dot"></span>
-                  <span>{isPlaying ? "STREAMING TELEMETRY (LIVE)" : "PROSPECTIVE REPLAY MODE"}</span>
+                  <span>Synced</span>
                 </div>
-              </div>
+              )}
 
-              <div className="scrubber-telemetry-strip">
-                <div className="telemetry-tag">
-                  Time: <strong>{currentReading.time}</strong>
-                </div>
-                <div className="telemetry-tag">
-                  Sensor: <strong>{currentReading.glucose_mg_dl} mg/dL</strong>
-                </div>
-                <div className="telemetry-tag">
-                  Velocity:{" "}
-                  <strong>
-                    {velocity > 0 ? "+" : ""}
-                    {velocity.toFixed(1)} mg/dL/hr {velocity > 8 ? "⇗" : velocity < -8 ? "⇘" : "→"}
-                  </strong>
-                </div>
-                <div className={`telemetry-tag ${dynamicRisk.tier.toLowerCase()}`}>
-                  Alert: <strong>{dynamicRisk.tier} ({Math.round(dynamicRisk.spike_probability * 100)}%)</strong>
-                </div>
-              </div>
-            </div>
-
-            <div className="scrubber-slider-track-wrap">
               <button
-                className="scrubber-step-btn"
-                title="Jump to Start of Day (00:00)"
+                className="command-companion-btn"
                 onClick={() => {
-                  setIsPlaying(false);
-                  setScrubberIndex(0);
+                  setPrescribedForCompanion(activeBranch);
+                  setShowCompanionModal(true);
                 }}
-                disabled={activeIdx === 0}
+                title="Open live patient mobile phone / smartwatch preview simulator"
               >
-                ⏮ 00:00
+                <span>📱 Patient Companion</span>
               </button>
-              <button
-                className="scrubber-step-btn"
-                title="Step Backward 15 Minutes"
-                onClick={() => {
-                  setIsPlaying(false);
-                  setScrubberIndex(Math.max(0, activeIdx - 1));
-                }}
-                disabled={activeIdx === 0}
-              >
-                ◀ -15m
-              </button>
-
-              <button
-                className="scrubber-play-btn"
-                onClick={() => setIsPlaying(!isPlaying)}
-                title={isPlaying ? "Pause Automated Telemetry Playback" : "Auto-Play Telemetry Playback"}
-              >
-                {isPlaying ? "⏸ Pause" : "▶ Play Day"}
-              </button>
-
-              <button
-                className="scrubber-step-btn"
-                title="Step Forward 15 Minutes"
-                onClick={() => {
-                  setIsPlaying(false);
-                  setScrubberIndex(Math.min(readings.length - 1, activeIdx + 1));
-                }}
-                disabled={activeIdx === readings.length - 1}
-              >
-                +15m ▶
-              </button>
-              <button
-                className="scrubber-step-btn"
-                title="Jump to End of Day (23:45)"
-                onClick={() => {
-                  setIsPlaying(false);
-                  setScrubberIndex(readings.length - 1);
-                }}
-                disabled={activeIdx === readings.length - 1}
-              >
-                23:45 ⏭
-              </button>
-
-              <input
-                type="range"
-                min={0}
-                max={Math.max(0, readings.length - 1)}
-                value={activeIdx}
-                onChange={(e) => {
-                  setIsPlaying(false);
-                  setScrubberIndex(Number(e.target.value));
-                }}
-                className="scrubber-range-input"
-                aria-label="Replay telemetry time slider"
-              />
             </div>
+          </header>
 
-            {/* Quick Landmark Bookmarks */}
-            <div className="scrubber-bookmarks-container">
-              <span className="bookmarks-label">Demo Bookmarks:</span>
-              {bookmarks.map((bm) => {
-                const isSelected = activeIdx === bm.index;
-                return (
-                  <button
-                    key={bm.label}
-                    className={`bookmark-chip ${bm.isWarning ? "highlight-warning" : ""} ${isSelected ? "active" : ""}`}
-                    onClick={() => {
-                      setIsPlaying(false);
-                      setScrubberIndex(bm.index);
-                    }}
-                  >
-                    <span>{bm.icon}</span>
-                    <span>{bm.label}</span>
-                    <span style={{ opacity: 0.7, fontSize: "10px" }}>({bm.time})</span>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-
-          {/* Clinical Decision Rationale Banner - Dynamic with Time Scrubber */}
-          <section className={`doc-rationale-banner ${dynamicRisk.tier.toLowerCase()}`}>
-            <div className="rationale-header-row">
-              <div className="rationale-title-col">
-                <span className="rationale-tag">
-                  {dynamicRisk.tier === "HIGH"
-                    ? "CRITICAL INCIDENT EXCURSION ALERT"
-                    : dynamicRisk.tier === "WATCH"
-                    ? "ELEVATED GLYCEMIC MONITORING"
-                    : "EUGLYCEMIC STABILITY IN TARGET"}
-                </span>
-                <span className="rationale-prob">
-                  Calibrated Risk: <strong>{Math.round(dynamicRisk.spike_probability * 100)}%</strong> · Projected Peak: <strong>{dynamicRisk.projected_peak_mg_dl} mg/dL</strong> · At <strong>{currentReading.time}</strong>
-                </span>
-              </div>
-              <span className="rationale-source-badge">TreeSHAP Inference</span>
-            </div>
-
-            <div className="rationale-content-grid">
-              <div className="rationale-block simple">
-                <span className="block-label">Sensor Observation & Trajectory</span>
-                <p className="block-text">{getCondensedSimpleRationale(dynamicRisk.reason_simple)}</p>
-              </div>
-              <div className="rationale-block medical">
-                <span className="block-label">Biophysical Kinetic Attribution</span>
-                <p className="block-text">{getCondensedMedicalRationale(dynamicRisk.reason_medical)}</p>
-              </div>
-            </div>
-          </section>
-
-          {/* Wearable CGM Line Graph Card */}
-          <section className="doc-chart-card">
+          {/* 2. THE HERO VIEW: Wearable CGM Line Graph Card with Integrated Time-Travel Scrubber */}
+          <section className="doc-hero-chart-card">
             <div className="chart-card-header">
               <div className="chart-title-group">
                 <h3 className="chart-title">Continuous Glucose Monitoring Telemetry (15-min Intervals)</h3>
                 <span className="chart-sensor-badge">Abbott FreeStyle Libre Sensor</span>
               </div>
 
-              {/* Clinical Protocol Switcher & Clarke Error Grid Trigger Badge (P3) */}
+              {/* Clinical Protocol Switcher & Clarke Error Grid Trigger Badge */}
               <div className="doc-chart-controls-cluster">
                 <div className="doc-guideline-pill-group">
                   <button
@@ -1468,23 +1243,23 @@ export function DoctorDashboard() {
               {/* Chart Legend */}
               <div className="chart-legend-row">
                 <div className="legend-item">
-                  <span className="legend-dot green"></span> Safe Target (70–{targetHigh})
+                  <span className="legend-dot green"></span> Safe ({targetLow}–{targetHigh})
                 </div>
                 <div className="legend-item">
-                  <span className="legend-line solid-black"></span> Past Telemetry (Recorded)
+                  <span className="legend-line solid-black"></span> Past Telemetry
                 </div>
                 <div className="legend-item">
-                  <span className="legend-line" style={{ borderTop: "2px dashed var(--text-muted)", opacity: 0.5 }}></span> Future Ground Truth
+                  <span className="legend-line" style={{ borderTop: "2px dashed var(--text-muted)", opacity: 0.5 }}></span> Ground Truth
                 </div>
                 <div className="legend-item">
-                  <span className="legend-dot red"></span> Spike Marker (≥{targetHigh})
+                  <span className="legend-dot red"></span> Spike (≥{targetHigh})
                 </div>
                 <div className="legend-item">
-                  <span className="legend-line dashed-cyan"></span> 2h Forward Forecast
+                  <span className="legend-line dashed-cyan"></span> 2h Forecast
                 </div>
                 {activeIntervention && (
                   <div className="legend-item">
-                    <span className="legend-line dashed-emerald"></span> In-Silico Simulated ({activeBranch?.label || "Intervention"})
+                    <span className="legend-line dashed-emerald"></span> In-Silico Simulated
                   </div>
                 )}
               </div>
@@ -1765,10 +1540,153 @@ export function DoctorDashboard() {
                     </div>
                   )}
                   {readingPoints[hoverIndex].r.is_spike && (
-                    <div className="tooltip-spike-warning">Spike Threshold Exceeded (≥ 180 mg/dL)</div>
+                    <div className="tooltip-spike-warning">Spike Threshold Exceeded (≥ {targetHigh} mg/dL)</div>
                   )}
                 </div>
               )}
+            </div>
+
+            {/* Integrated Clinical Time-Travel Scrubber Bar */}
+            <div className="chart-integrated-scrubber">
+              <div className="scrubber-control-row">
+                <div className="scrubber-playback-buttons">
+                  <button
+                    className="scrubber-step-btn"
+                    title="Jump to Start of Day (00:00)"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setScrubberIndex(0);
+                    }}
+                    disabled={activeIdx === 0}
+                  >
+                    ⏮ 00:00
+                  </button>
+                  <button
+                    className="scrubber-step-btn"
+                    title="Step Backward 15 Minutes"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setScrubberIndex(Math.max(0, activeIdx - 1));
+                    }}
+                    disabled={activeIdx === 0}
+                  >
+                    ◀ -15m
+                  </button>
+                  <button
+                    className="scrubber-play-btn"
+                    onClick={() => setIsPlaying(!isPlaying)}
+                    title={isPlaying ? "Pause Automated Telemetry Playback" : "Auto-Play Telemetry Playback"}
+                  >
+                    {isPlaying ? "⏸ Pause" : "▶ Play Day"}
+                  </button>
+                  <button
+                    className="scrubber-step-btn"
+                    title="Step Forward 15 Minutes"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setScrubberIndex(Math.min(readings.length - 1, activeIdx + 1));
+                    }}
+                    disabled={activeIdx === readings.length - 1}
+                  >
+                    +15m ▶
+                  </button>
+                  <button
+                    className="scrubber-step-btn"
+                    title="Jump to End of Day (23:45)"
+                    onClick={() => {
+                      setIsPlaying(false);
+                      setScrubberIndex(readings.length - 1);
+                    }}
+                    disabled={activeIdx === readings.length - 1}
+                  >
+                    23:45 ⏭
+                  </button>
+                </div>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={Math.max(0, readings.length - 1)}
+                  value={activeIdx}
+                  onChange={(e) => {
+                    setIsPlaying(false);
+                    setScrubberIndex(Number(e.target.value));
+                  }}
+                  className="scrubber-range-input"
+                  aria-label="Replay telemetry time slider"
+                />
+
+                <div className="scrubber-telemetry-strip">
+                  <div className="telemetry-tag">
+                    Time: <strong>{currentReading.time}</strong>
+                  </div>
+                  <div className="telemetry-tag">
+                    Sensor: <strong>{currentReading.glucose_mg_dl} mg/dL</strong>
+                  </div>
+                  <div className="telemetry-tag">
+                    Velocity:{" "}
+                    <strong>
+                      {velocity > 0 ? "+" : ""}
+                      {velocity.toFixed(1)} mg/dL/hr {velocity > 8 ? "⇗" : velocity < -8 ? "⇘" : "→"}
+                    </strong>
+                  </div>
+                  <div className={`telemetry-tag ${dynamicRisk.tier.toLowerCase()}`}>
+                    Alert: <strong>{dynamicRisk.tier} ({Math.round(dynamicRisk.spike_probability * 100)}%)</strong>
+                  </div>
+                </div>
+              </div>
+
+              {/* Demo Bookmarks Strip */}
+              <div className="scrubber-bookmarks-container">
+                <span className="bookmarks-label">Demo Bookmarks:</span>
+                {bookmarks.map((bm) => {
+                  const isSelected = activeIdx === bm.index;
+                  return (
+                    <button
+                      key={bm.label}
+                      className={`bookmark-chip ${bm.isWarning ? "highlight-warning" : ""} ${isSelected ? "active" : ""}`}
+                      onClick={() => {
+                        setIsPlaying(false);
+                        setScrubberIndex(bm.index);
+                      }}
+                    >
+                      <span>{bm.icon}</span>
+                      <span>{bm.label}</span>
+                      <span style={{ opacity: 0.7, fontSize: "10px" }}>({bm.time})</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+
+          {/* 3. Clinical Decision Rationale Banner - Positioned Right Below the Graph */}
+          <section className={`doc-rationale-banner ${dynamicRisk.tier.toLowerCase()}`}>
+            <div className="rationale-header-row">
+              <div className="rationale-title-col">
+                <span className="rationale-tag">
+                  {dynamicRisk.tier === "HIGH"
+                    ? "CRITICAL INCIDENT EXCURSION ALERT"
+                    : dynamicRisk.tier === "WATCH"
+                    ? "ELEVATED GLYCEMIC MONITORING"
+                    : "EUGLYCEMIC STABILITY IN TARGET"}
+                </span>
+                <span className="rationale-prob">
+                  Calibrated Risk: <strong>{Math.round(dynamicRisk.spike_probability * 100)}%</strong> · Projected Peak: <strong>{dynamicRisk.projected_peak_mg_dl} mg/dL</strong> · At <strong>{currentReading.time}</strong>
+                </span>
+              </div>
+              <span className="rationale-source-badge">TreeSHAP Inference</span>
+            </div>
+
+            <div className="rationale-content-grid">
+              <div className="rationale-block simple">
+                <span className="block-label">Sensor Observation & Trajectory</span>
+                <p className="block-text">{getCondensedSimpleRationale(dynamicRisk.reason_simple)}</p>
+              </div>
+              <div className="rationale-block medical">
+                <span className="block-label">Biophysical Kinetic Attribution</span>
+                <p className="block-text">{getCondensedMedicalRationale(dynamicRisk.reason_medical)}</p>
+              </div>
             </div>
           </section>
 

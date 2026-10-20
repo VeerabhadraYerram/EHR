@@ -1,4 +1,15 @@
 import React, { useState, useEffect } from "react";
+import {
+  SmartphoneIcon,
+  ClockHistoryIcon,
+  ActivityIcon,
+  ClipboardCheckIcon,
+  UserIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  ZapIcon,
+  AlertTriangleIcon,
+} from "./Icons";
 
 export interface PrescribedIntervention {
   intervention_type: string;
@@ -171,13 +182,15 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                 className={`switch-btn ${deviceMode === "phone" ? "active" : ""}`}
                 onClick={() => setDeviceMode("phone")}
               >
-                📱 Phone
+                <SmartphoneIcon size={13} />
+                <span>Phone</span>
               </button>
               <button
                 className={`switch-btn ${deviceMode === "watch" ? "active" : ""}`}
                 onClick={() => setDeviceMode("watch")}
               >
-                ⌚ Smartwatch
+                <ClockHistoryIcon size={13} />
+                <span>Smartwatch</span>
               </button>
             </div>
 
@@ -229,7 +242,7 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                   <div className="phone-status-icons">
                     <span>5G</span>
                     <span>●●●●</span>
-                    <span>94% 🔋</span>
+                    <span>94%</span>
                   </div>
                 </div>
 
@@ -254,19 +267,22 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                     className={`nav-tab-btn ${activeTab === "nudge" ? "active" : ""}`}
                     onClick={() => setActiveTab("nudge")}
                   >
-                    🔔 Doctor Nudge
+                    <ActivityIcon size={13} />
+                    <span>Doctor Nudge</span>
                   </button>
                   <button
                     className={`nav-tab-btn ${activeTab === "vision" ? "active" : ""}`}
                     onClick={() => setActiveTab("vision")}
                   >
-                    🍛 Meal Vision
+                    <ClipboardCheckIcon size={13} />
+                    <span>Meal Vision</span>
                   </button>
                   <button
                     className={`nav-tab-btn ${activeTab === "chat" ? "active" : ""}`}
                     onClick={() => setActiveTab("chat")}
                   >
-                    💬 Chat ({chatMessages.length})
+                    <UserIcon size={13} />
+                    <span>Chat ({chatMessages.length})</span>
                   </button>
                 </div>
 
@@ -276,7 +292,7 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                     {/* Incoming Push Notification Card */}
                     <div className="push-alert-card">
                       <div className="push-alert-header">
-                        <span className="push-sender-tag">👨‍⚕️ Dr. Vikram Malhotra (CarePlan)</span>
+                        <span className="push-sender-tag">Dr. Vikram Malhotra (CarePlan)</span>
                         <span className="push-time-tag">Just now</span>
                       </div>
                       <div className="push-alert-headline">
@@ -303,7 +319,7 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
 
                       {!walkActive ? (
                         <button className="confirm-action-btn" onClick={handleConfirmAction}>
-                          <span className="btn-icon">🚶</span>
+                          <ActivityIcon size={14} />
                           <span>I'm Starting My Walk (Confirm Action)</span>
                         </button>
                       ) : (
@@ -317,7 +333,10 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                     {walkActive && (
                       <div className="active-workout-card">
                         <div className="workout-card-top">
-                          <span className="workout-title">⚡ GLUT4 Muscle Uptake Active</span>
+                          <span className="workout-title">
+                            <ZapIcon size={14} color="#0ea5e9" />
+                            <span>GLUT4 Muscle Uptake Active</span>
+                          </span>
                           <span className="workout-live-pill">LIVE TRACKING</span>
                         </div>
 
@@ -342,7 +361,7 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                         </div>
 
                         <div className="closed-loop-sync-banner">
-                          <span className="sync-icon">📡</span>
+                          <ShieldCheckIcon size={14} color="#10b981" />
                           <span>Bi-directional sync active: Dr. Vikram Malhotra notified of your exercise.</span>
                         </div>
                       </div>
@@ -355,7 +374,10 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                   <div className="phone-tab-content vision-tab">
                     <div className="meal-card">
                       <div className="meal-card-header">
-                        <span className="meal-time-tag">🍛 Lunch Snapshot (12:30 PM)</span>
+                        <span className="meal-time-tag">
+                          <ClockHistoryIcon size={12} />
+                          <span>Lunch Snapshot (12:30 PM)</span>
+                        </span>
                         <span className="vision-badge">Vision AI Parsed</span>
                       </div>
                       <div className="meal-title">North Indian Lunch Thali</div>
@@ -380,7 +402,10 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                       </div>
 
                       <div className="vision-insight-box">
-                        <div className="insight-title">💡 Digital Twin Biophysical Insight</div>
+                        <div className="insight-title">
+                          <SparklesIcon size={14} color="#0ea5e9" />
+                          <span>Digital Twin Biophysical Insight</span>
+                        </div>
                         <p>
                           High gut absorption rate Ra(t) exceeded insulin-mediated clearance capacity Rd(t), inducing steep +24 mg/dL/hr velocity. A 20-min post-meal walk directly activates contraction-mediated GLUT4 transporters.
                         </p>
@@ -449,7 +474,7 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
                     </div>
 
                     <div className="watch-alert-strip">
-                      <span className="watch-alert-icon">⚠️</span>
+                      <AlertTriangleIcon size={13} color="#ef4444" />
                       <span className="watch-alert-text">SPIKE PREDICTED: {projectedPeak}</span>
                     </div>
 

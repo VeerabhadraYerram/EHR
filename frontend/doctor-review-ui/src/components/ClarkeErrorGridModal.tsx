@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ActivityIcon, ZapIcon, TrendingUpIcon } from "./Icons";
 
 export interface TrajectoryComparisonPoint {
   horizon: number;
@@ -281,19 +282,19 @@ export const ClarkeErrorGridModal: React.FC<ClarkeErrorGridModalProps> = ({
               <span className="card-tag">ASIAN INDIAN PHENOTYPE ADAPTATION</span>
               <div className="phenotype-content">
                 <div className="phenotype-item">
-                  <span className="phenotype-icon">🧬</span>
+                  <span className="phenotype-icon"><ActivityIcon size={16} color="#0ea5e9" /></span>
                   <div>
                     <strong>Thin-Fat Phenotype:</strong> Elevated visceral fat and hepatic steatosis despite normal BMI (≤ 25 kg/m²).
                   </div>
                 </div>
                 <div className="phenotype-item">
-                  <span className="phenotype-icon">⚡</span>
+                  <span className="phenotype-icon"><ZapIcon size={16} color="#ef4444" /></span>
                   <div>
                     <strong>Premature Beta-Cell Exhaustion:</strong> Fasting C-Peptide baseline (0.55 nmol/L) indicates reduced insulin reserve, accelerating postprandial excursions.
                   </div>
                 </div>
                 <div className="phenotype-item">
-                  <span className="phenotype-icon">🍛</span>
+                  <span className="phenotype-icon"><TrendingUpIcon size={16} color="#f59e0b" /></span>
                   <div>
                     <strong>Carbohydrate Surge Kinetics:</strong> Diets rich in refined carbohydrates induce steep absorption velocity (dG/dt &gt; 20 mg/dL/hr).
                   </div>

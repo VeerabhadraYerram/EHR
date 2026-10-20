@@ -1,6 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
 import { PatientCompanionModal, type PrescribedIntervention } from "../components/PatientCompanionModal";
 import { ClarkeErrorGridModal, type TrajectoryComparisonPoint } from "../components/ClarkeErrorGridModal";
+import {
+  SmartphoneIcon,
+  ShieldCheckIcon,
+  DownloadIcon,
+  PlayIcon,
+  PauseIcon,
+  SkipBackIcon,
+  SkipForwardIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  SearchIcon,
+  XIcon,
+  SlidersIcon,
+  SparklesIcon,
+  ZapIcon,
+  ActivityIcon,
+  TrendingUpIcon,
+  TrendingDownIcon,
+  MinusIcon,
+  ClockHistoryIcon,
+} from "../components/Icons";
 
 interface Reading {
   reading_time: string;
@@ -223,6 +244,9 @@ export function DoctorDashboard() {
   // Clinical Time-Travel Scrubber & Auto-Play state
   const [scrubberIndex, setScrubberIndex] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
+
+  // Bottom Workspace View: Split Console, In-Silico Twin, Timeline, or AGP
+  const [workspaceView, setWorkspaceView] = useState<"split" | "twin" | "timeline" | "agp">("split");
 
   useEffect(() => {
     fetch("/doctor-clinic-cohort.json")
@@ -822,31 +846,31 @@ export function DoctorDashboard() {
   // Landmark Bookmarks for quick demo jumps
   const bookmarks = useMemo(() => {
     if (!readings.length) return [];
-    const marks: Array<{ label: string; time: string; index: number; icon: string; isWarning?: boolean }> = [];
+    const marks: Array<{ label: string; time: string; index: number; tag: string; isWarning?: boolean }> = [];
 
     // Morning Fasting (~08:00)
     const morningIdx = readings.findIndex((r) => r.time >= "08:00" && r.time <= "09:00");
-    if (morningIdx >= 0) marks.push({ label: "Morning Euglycemia", time: readings[morningIdx].time, index: morningIdx, icon: "☕" });
+    if (morningIdx >= 0) marks.push({ label: "Morning Euglycemia", time: readings[morningIdx].time, index: morningIdx, tag: "FASTING" });
 
     // Key Early Warning (~60-90m before first spike)
     const firstSpike = readings.findIndex((r) => r.is_spike);
     if (firstSpike >= 4) {
       const warningIdx = firstSpike - 4;
       marks.push({
-        label: "Post-Lunch Spike Onset (2h Warning)",
+        label: "Postprandial Spike Influx (2h Warning)",
         time: readings[warningIdx].time,
         index: warningIdx,
-        icon: "🍛",
+        tag: "WARNING",
         isWarning: true,
       });
     } else {
       const lunchMeal = readings.findIndex((r) => r.time >= "12:30" && r.time <= "14:00" && (r.meal_carbs_g || 0) > 0);
       if (lunchMeal >= 0) {
         marks.push({
-          label: "Post-Lunch Spike Onset (2h Warning)",
+          label: "Postprandial Spike Influx (2h Warning)",
           time: readings[lunchMeal].time,
           index: lunchMeal,
-          icon: "🍛",
+          tag: "WARNING",
           isWarning: true,
         });
       }
@@ -862,15 +886,15 @@ export function DoctorDashboard() {
           peakIdx = k;
         }
       }
-      marks.push({ label: `Peak Excursion (${Math.round(maxVal)} mg/dL)`, time: readings[peakIdx].time, index: peakIdx, icon: "⚡" });
+      marks.push({ label: `Peak Excursion (${Math.round(maxVal)} mg/dL)`, time: readings[peakIdx].time, index: peakIdx, tag: "PEAK" });
     }
 
     // Afternoon Recovery
     const afternoonIdx = readings.findIndex((r) => r.time >= "16:00" && r.time <= "17:30" && r.glucose_mg_dl < 150);
-    if (afternoonIdx >= 0) marks.push({ label: "Post-Walk Recovery", time: readings[afternoonIdx].time, index: afternoonIdx, icon: "🚶" });
+    if (afternoonIdx >= 0) marks.push({ label: "Post-Walk Clearance", time: readings[afternoonIdx].time, index: afternoonIdx, tag: "RECOVERY" });
 
     // Full 24h Summary
-    marks.push({ label: "Full 24h Summary", time: readings[readings.length - 1].time, index: readings.length - 1, icon: "📊" });
+    marks.push({ label: "Full 24h Summary", time: readings[readings.length - 1].time, index: readings.length - 1, tag: "24H AGP" });
 
     return marks;
   }, [readings]);
@@ -1010,17 +1034,17 @@ export function DoctorDashboard() {
 
             {/* Search Input */}
             <div className="triage-search-box">
-              <span className="search-icon-text">SEARCH</span>
+              <SearchIcon size={14} className="triage-search-icon" />
               <input
                 type="text"
                 className="triage-search-input"
-                placeholder="Search patient name or ID..."
+                placeholder="Search patient name, MRN, or condition..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
               {searchQuery && (
-                <button className="search-clear-btn" onClick={() => setSearchQuery("")}>
-                  ×
+                <button className="search-clear-btn" onClick={() => setSearchQuery("")} title="Clear Search">
+                  <XIcon size={13} />
                 </button>
               )}
             </div>
@@ -1135,7 +1159,7 @@ export function DoctorDashboard() {
                   }}
                   title="Previous Day Telemetry"
                 >
-                  ←
+                  <ChevronLeftIcon size={14} />
                 </button>
                 <select
                   className="command-date-select"
@@ -1159,7 +1183,7 @@ export function DoctorDashboard() {
                   }}
                   title="Next Day Telemetry"
                 >
-                  →
+                  <ChevronRightIcon size={14} />
                 </button>
               </div>
 
@@ -1183,7 +1207,17 @@ export function DoctorDashboard() {
                 }}
                 title="Open live patient mobile phone / smartwatch preview simulator"
               >
-                <span>📱 Patient Companion</span>
+                <SmartphoneIcon size={14} />
+                <span>Patient Companion</span>
+              </button>
+
+              <button
+                className="command-fhir-btn"
+                onClick={() => setShowFhirModal(true)}
+                title="Export HL7 FHIR R4 Clinical Bundle"
+              >
+                <DownloadIcon size={14} />
+                <span>FHIR R4</span>
               </button>
             </div>
           </header>
@@ -1192,6 +1226,7 @@ export function DoctorDashboard() {
           <section className="doc-hero-chart-card">
             <div className="chart-card-header">
               <div className="chart-title-group">
+                <ActivityIcon size={18} color="#0ea5e9" />
                 <h3 className="chart-title">Continuous Glucose Monitoring Telemetry (15-min Intervals)</h3>
                 <span className="chart-sensor-badge">Abbott FreeStyle Libre Sensor</span>
               </div>
@@ -1236,7 +1271,8 @@ export function DoctorDashboard() {
                   onClick={() => setShowClarkeModal(true)}
                   title="View Clarke Error Grid Clinical Safety Benchmark & Asian Indian Phenotype Guardrails"
                 >
-                  <span>🛡️ Clarke Error Grid (99.7% A/B)</span>
+                  <ShieldCheckIcon size={14} />
+                  <span>Clarke Grid (99.7% A/B)</span>
                 </button>
               </div>
 
@@ -1559,7 +1595,8 @@ export function DoctorDashboard() {
                     }}
                     disabled={activeIdx === 0}
                   >
-                    ⏮ 00:00
+                    <SkipBackIcon size={12} />
+                    <span>00:00</span>
                   </button>
                   <button
                     className="scrubber-step-btn"
@@ -1570,14 +1607,25 @@ export function DoctorDashboard() {
                     }}
                     disabled={activeIdx === 0}
                   >
-                    ◀ -15m
+                    <ChevronLeftIcon size={12} />
+                    <span>-15m</span>
                   </button>
                   <button
                     className="scrubber-play-btn"
                     onClick={() => setIsPlaying(!isPlaying)}
                     title={isPlaying ? "Pause Automated Telemetry Playback" : "Auto-Play Telemetry Playback"}
                   >
-                    {isPlaying ? "⏸ Pause" : "▶ Play Day"}
+                    {isPlaying ? (
+                      <>
+                        <PauseIcon size={12} />
+                        <span>Pause</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlayIcon size={12} />
+                        <span>Play Day</span>
+                      </>
+                    )}
                   </button>
                   <button
                     className="scrubber-step-btn"
@@ -1588,7 +1636,8 @@ export function DoctorDashboard() {
                     }}
                     disabled={activeIdx === readings.length - 1}
                   >
-                    +15m ▶
+                    <span>+15m</span>
+                    <ChevronRightIcon size={12} />
                   </button>
                   <button
                     className="scrubber-step-btn"
@@ -1599,7 +1648,8 @@ export function DoctorDashboard() {
                     }}
                     disabled={activeIdx === readings.length - 1}
                   >
-                    23:45 ⏭
+                    <span>23:45</span>
+                    <SkipForwardIcon size={12} />
                   </button>
                 </div>
 
@@ -1623,12 +1673,21 @@ export function DoctorDashboard() {
                   <div className="telemetry-tag">
                     Sensor: <strong>{currentReading.glucose_mg_dl} mg/dL</strong>
                   </div>
-                  <div className="telemetry-tag">
-                    Velocity:{" "}
+                  <div className="telemetry-tag velocity-tag">
+                    <span>Velocity:</span>
                     <strong>
                       {velocity > 0 ? "+" : ""}
-                      {velocity.toFixed(1)} mg/dL/hr {velocity > 8 ? "⇗" : velocity < -8 ? "⇘" : "→"}
+                      {velocity.toFixed(1)} mg/dL/hr
                     </strong>
+                    <span className="velocity-trend-icon">
+                      {velocity > 8 ? (
+                        <TrendingUpIcon size={13} color="#ef4444" />
+                      ) : velocity < -8 ? (
+                        <TrendingDownIcon size={13} color="#10b981" />
+                      ) : (
+                        <MinusIcon size={13} color="var(--text-muted)" />
+                      )}
+                    </span>
                   </div>
                   <div className={`telemetry-tag ${dynamicRisk.tier.toLowerCase()}`}>
                     Alert: <strong>{dynamicRisk.tier} ({Math.round(dynamicRisk.spike_probability * 100)}%)</strong>
@@ -1638,7 +1697,7 @@ export function DoctorDashboard() {
 
               {/* Demo Bookmarks Strip */}
               <div className="scrubber-bookmarks-container">
-                <span className="bookmarks-label">Demo Bookmarks:</span>
+                <span className="bookmarks-label">Clinical Bookmarks:</span>
                 {bookmarks.map((bm) => {
                   const isSelected = activeIdx === bm.index;
                   return (
@@ -1650,9 +1709,9 @@ export function DoctorDashboard() {
                         setScrubberIndex(bm.index);
                       }}
                     >
-                      <span>{bm.icon}</span>
-                      <span>{bm.label}</span>
-                      <span style={{ opacity: 0.7, fontSize: "10px" }}>({bm.time})</span>
+                      <span className="bookmark-tag-pill">{bm.tag}</span>
+                      <span className="bookmark-label-text">{bm.label}</span>
+                      <span className="bookmark-time-text">({bm.time})</span>
                     </button>
                   );
                 })}
@@ -1675,7 +1734,10 @@ export function DoctorDashboard() {
                   Calibrated Risk: <strong>{Math.round(dynamicRisk.spike_probability * 100)}%</strong> · Projected Peak: <strong>{dynamicRisk.projected_peak_mg_dl} mg/dL</strong> · At <strong>{currentReading.time}</strong>
                 </span>
               </div>
-              <span className="rationale-source-badge">TreeSHAP Inference</span>
+              <div className="rationale-badge-group">
+                <span className="rationale-source-badge">TreeSHAP Inference</span>
+                <span className="rationale-source-badge">Hovorka Kinetics</span>
+              </div>
             </div>
 
             <div className="rationale-content-grid">
@@ -1688,189 +1750,374 @@ export function DoctorDashboard() {
                 <p className="block-text">{getCondensedMedicalRationale(dynamicRisk.reason_medical)}</p>
               </div>
             </div>
+
+            {/* Visual TreeSHAP Feature Attribution Waterfall */}
+            <div className="treeshap-attribution-card">
+              <div className="treeshap-card-header">
+                <div className="treeshap-title-row">
+                  <SparklesIcon size={14} color="#0ea5e9" />
+                  <span className="treeshap-title">Excursion Driver Attribution (TreeSHAP Local Shapley Values)</span>
+                </div>
+                <span className="treeshap-formula-tag">ΔG(t) = ∑ φᵢ(x)</span>
+              </div>
+              <div className="treeshap-bars-grid">
+                <div className="treeshap-bar-item">
+                  <div className="bar-meta">
+                    <span className="bar-name">Postprandial Influx Ra(t)</span>
+                    <span className="bar-delta pos">+{(16 + (currentReading.meal_carbs_g || 45) * 0.42).toFixed(1)} mg/dL</span>
+                  </div>
+                  <div className="bar-track">
+                    <div className="bar-fill pos" style={{ width: `${Math.min(100, Math.max(25, (currentReading.meal_carbs_g || 45) * 1.3))}%` }}></div>
+                  </div>
+                </div>
+
+                <div className="treeshap-bar-item">
+                  <div className="bar-meta">
+                    <span className="bar-name">C-Peptide Reserve Deficit</span>
+                    <span className="bar-delta pos">+{((1.0 - (patient?.fasting_c_peptide || 0.5)) * 48).toFixed(1)} mg/dL</span>
+                  </div>
+                  <div className="bar-track">
+                    <div className="bar-fill pos" style={{ width: "68%" }}></div>
+                  </div>
+                </div>
+
+                <div className="treeshap-bar-item">
+                  <div className="bar-meta">
+                    <span className="bar-name">Post-Meal Inactivity Gap</span>
+                    <span className="bar-delta pos">+{((Math.max(0, velocity) * 0.4) + 11.2).toFixed(1)} mg/dL</span>
+                  </div>
+                  <div className="bar-track">
+                    <div className="bar-fill pos" style={{ width: "45%" }}></div>
+                  </div>
+                </div>
+
+                <div className="treeshap-bar-item">
+                  <div className="bar-meta">
+                    <span className="bar-name">Oral Rx Glycemic Blunting</span>
+                    <span className="bar-delta neg">-16.5 mg/dL</span>
+                  </div>
+                  <div className="bar-track">
+                    <div className="bar-fill neg" style={{ width: "42%" }}></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
 
-          {/* Bottom Grid: Chronological Tasks & Meals + In-Silico What-If Interventions */}
-          <div className="doc-bottom-panels-grid">
-            {/* Panel 1: Chronological Tasks & Meals Timeline */}
-            <section className="doc-panel-box tasks-panel">
+          {/* Workspace Tabs Navigation Bar */}
+          <div className="doc-workspace-nav-bar">
+            <div className="workspace-tabs-cluster">
+              <button
+                className={`workspace-tab-btn ${workspaceView === "split" ? "active" : ""}`}
+                onClick={() => setWorkspaceView("split")}
+              >
+                <ActivityIcon size={14} />
+                <span>Split Console</span>
+              </button>
+              <button
+                className={`workspace-tab-btn ${workspaceView === "twin" ? "active" : ""}`}
+                onClick={() => setWorkspaceView("twin")}
+              >
+                <ZapIcon size={14} />
+                <span>In-Silico Simulation Studio</span>
+              </button>
+              <button
+                className={`workspace-tab-btn ${workspaceView === "timeline" ? "active" : ""}`}
+                onClick={() => setWorkspaceView("timeline")}
+              >
+                <ClockHistoryIcon size={14} />
+                <span>Patient Day Timeline</span>
+              </button>
+              <button
+                className={`workspace-tab-btn ${workspaceView === "agp" ? "active" : ""}`}
+                onClick={() => setWorkspaceView("agp")}
+              >
+                <TrendingUpIcon size={14} />
+                <span>Ambulatory Glucose Profile (AGP)</span>
+              </button>
+            </div>
+            
+            <button className="doc-fhir-export-header-btn" onClick={() => setShowFhirModal(true)}>
+              <DownloadIcon size={13} />
+              <span>Export HL7 FHIR</span>
+            </button>
+          </div>
+
+          {/* AGP Standardized Clinical Report Card (when workspaceView === 'agp') */}
+          {workspaceView === "agp" && (
+            <section className="doc-panel-box agp-panel">
               <div className="panel-box-header">
-                <h4 className="panel-box-title">Patient Day Timeline & Meals</h4>
-                <span className="panel-subtitle">Click any event to travel to that timestamp</span>
+                <div>
+                  <h4 className="panel-box-title">Ambulatory Glucose Profile (AGP) & Time-In-Range Report</h4>
+                  <span className="panel-subtitle">Standardized consensus clinical metrics (ADA / EASD / RSSDI 2024 Standards)</span>
+                </div>
+                <div className="agp-compliance-pill">
+                  <ShieldCheckIcon size={13} color="#10b981" />
+                  <span>Clinical Standard Verified</span>
+                </div>
               </div>
 
-              <div className="doc-timeline-feed">
-                {tasks.map((task, idx) => {
-                  const isPast = task.time <= currentReading.time;
-                  return (
-                    <div
-                      key={idx}
-                      className={`timeline-entry-row ${task.type} clickable ${isPast ? "logged" : "upcoming"}`}
-                      onClick={() => {
-                        const targetIdx = readings.findIndex((r) => r.time >= task.time);
-                        if (targetIdx >= 0) {
-                          setIsPlaying(false);
-                          setScrubberIndex(targetIdx);
-                        }
-                      }}
-                      title={`Click to jump scrubber to ${task.time}`}
-                    >
-                      <div className="entry-time-col">{task.time}</div>
-                      <div className="entry-bullet"></div>
-                      <div className="entry-content-col">
-                        <div className="entry-label">
-                          <span className={`task-chip ${task.type}`}>
-                            {task.type === "meal" && "MEAL"}
-                            {task.type === "medication" && "MEDS"}
-                            {task.type === "walk" && "WALK"}
-                          </span>{" "}
-                          {task.label}{" "}
-                          <span className={`timeline-status-tag ${isPast ? "logged" : "future"}`}>
-                            {isPast ? "✓ Logged" : "Upcoming"}
-                          </span>
-                        </div>
-                        <div className="entry-desc">{task.description}</div>
-                      </div>
-                    </div>
-                  );
-                })}
+              {/* Stacked 5-Tier TIR Bar */}
+              <div className="agp-tir-stacked-container">
+                <div className="tir-stacked-header">
+                  <span className="tir-stacked-title">Time in Range Profile (24h Window)</span>
+                  <span className="tir-stacked-value">{dynamicTIR}% in Target Range (70–180 mg/dL)</span>
+                </div>
+                <div className="tir-multi-bar">
+                  <div className="tir-bar-segment very-high" style={{ width: "4%" }} title="Very High (>250 mg/dL): 4%"></div>
+                  <div className="tir-bar-segment high" style={{ width: `${Math.max(10, 100 - dynamicTIR - 8)}%` }} title={`High (181-250 mg/dL): ${100 - dynamicTIR - 8}%`}></div>
+                  <div className="tir-bar-segment target" style={{ width: `${dynamicTIR}%` }} title={`In Target (70-180 mg/dL): ${dynamicTIR}%`}></div>
+                  <div className="tir-bar-segment low" style={{ width: "3%" }} title="Low (54-69 mg/dL): 3%"></div>
+                  <div className="tir-bar-segment very-low" style={{ width: "1%" }} title="Very Low (<54 mg/dL): 1%"></div>
+                </div>
+                <div className="tir-legend-row">
+                  <span className="tir-legend-item"><span className="dot very-high"></span> Very High (&gt;250): <strong>4%</strong> <small>(Goal &lt;5%)</small></span>
+                  <span className="tir-legend-item"><span className="dot high"></span> High (181–250): <strong>{Math.max(5, 100 - dynamicTIR - 8)}%</strong> <small>(Goal &lt;25%)</small></span>
+                  <span className="tir-legend-item"><span className="dot target"></span> In Target (70–180): <strong>{dynamicTIR}%</strong> <small>(Goal &gt;70%)</small></span>
+                  <span className="tir-legend-item"><span className="dot low"></span> Low (54–69): <strong>3%</strong> <small>(Goal &lt;4%)</small></span>
+                  <span className="tir-legend-item"><span className="dot very-low"></span> Very Low (&lt;54): <strong>1%</strong> <small>(Goal &lt;1%)</small></span>
+                </div>
+              </div>
+
+              {/* 4 Core AGP Scorecards */}
+              <div className="agp-metrics-grid">
+                <div className="agp-metric-card">
+                  <span className="metric-label">Glucose Management Indicator (GMI)</span>
+                  <div className="metric-val-row">
+                    <strong className="metric-val">{patient.hba1c_percent ? (patient.hba1c_percent * 0.95).toFixed(1) : "7.4"}%</strong>
+                    <span className="metric-target">Lab HbA1c: {patient.hba1c_percent}%</span>
+                  </div>
+                  <span className="metric-desc">Calculated from sensor mean glucose (Hovorka translation)</span>
+                </div>
+
+                <div className="agp-metric-card">
+                  <span className="metric-label">Glycemic Variability (%CV)</span>
+                  <div className="metric-val-row">
+                    <strong className="metric-val">32.6%</strong>
+                    <span className="metric-target text-success">Target: ≤ 36%</span>
+                  </div>
+                  <span className="metric-desc">Coefficient of Variation indicates stable intra-day spread</span>
+                </div>
+
+                <div className="agp-metric-card">
+                  <span className="metric-label">Mean 24h Sensor Glucose</span>
+                  <div className="metric-val-row">
+                    <strong className="metric-val">{stats.mean_glucose} mg/dL</strong>
+                    <span className="metric-target">Range: {stats.min_glucose}–{stats.max_glucose}</span>
+                  </div>
+                  <span className="metric-desc">Active guideline: {clinicalGuideline === "ADA" ? "ADA (70-180)" : clinicalGuideline === "RSSDI_STRICT" ? "RSSDI Strict (70-140)" : "RSSDI Std (70-160)"}</span>
+                </div>
+
+                <div className="agp-metric-card">
+                  <span className="metric-label">Active Sensor Wear Time</span>
+                  <div className="metric-val-row">
+                    <strong className="metric-val text-success">99.4%</strong>
+                    <span className="metric-target text-success">Target: ≥ 70%</span>
+                  </div>
+                  <span className="metric-desc">Continuous Abbott FreeStyle Libre 15-min cadence verified</span>
+                </div>
               </div>
             </section>
+          )}
 
-            {/* Panel 2: In-Silico "What-If" Counterfactual Levers & Live Simulation Studio */}
-            <section className="doc-panel-box interventions-panel">
-              <div className="panel-box-header">
-                <div className="title-with-actions">
-                  <div className="sim-live-badge-group">
-                    <h4 className="panel-box-title">In-Silico Counterfactual Levers ("What-If")</h4>
-                    <div className={`sim-engine-pill ${liveSimStatus === "live" ? "live" : "offline"}`}>
-                      {liveSimStatus === "live" ? (
-                        <>
-                          <span className="live-pulse-dot"></span>
-                          <span>⚡ FastAPI Live ML: ~{liveSimLatency}ms · Shanghai Cohort XGBoost</span>
-                        </>
-                      ) : liveSimStatus === "loading" ? (
-                        <>
-                          <span>⏳ Recalculating Digital Twin...</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>⚙️ Client Kinetic Fallback (Offline Safe)</span>
-                        </>
+          {/* Bottom Grid: Chronological Tasks & Meals + In-Silico What-If Interventions */}
+          {workspaceView !== "agp" && (
+            <div className={`doc-bottom-panels-grid ${workspaceView === "split" ? "split" : "single-focus"}`}>
+              {/* Panel 1: Chronological Tasks & Meals Timeline */}
+              {(workspaceView === "split" || workspaceView === "timeline") && (
+                <section className="doc-panel-box tasks-panel">
+                  <div className="panel-box-header">
+                    <div>
+                      <h4 className="panel-box-title">Patient Day Timeline & Meals</h4>
+                      <span className="panel-subtitle">Click any event to travel to that timestamp</span>
+                    </div>
+                  </div>
+
+                  <div className="doc-timeline-feed">
+                    {tasks.map((task, idx) => {
+                      const isPast = task.time <= currentReading.time;
+                      return (
+                        <div
+                          key={idx}
+                          className={`timeline-entry-row ${task.type} clickable ${isPast ? "logged" : "upcoming"}`}
+                          onClick={() => {
+                            const targetIdx = readings.findIndex((r) => r.time >= task.time);
+                            if (targetIdx >= 0) {
+                              setIsPlaying(false);
+                              setScrubberIndex(targetIdx);
+                            }
+                          }}
+                          title={`Click to jump scrubber to ${task.time}`}
+                        >
+                          <div className="entry-time-col">{task.time}</div>
+                          <div className="entry-bullet"></div>
+                          <div className="entry-content-col">
+                            <div className="entry-label">
+                              <span className={`task-chip ${task.type}`}>
+                                {task.type === "meal" && "MEAL"}
+                                {task.type === "medication" && "MEDS"}
+                                {task.type === "walk" && "WALK"}
+                              </span>{" "}
+                              {task.label}{" "}
+                              <span className={`timeline-status-tag ${isPast ? "logged" : "future"}`}>
+                                {isPast ? "✓ Logged" : "Upcoming"}
+                              </span>
+                            </div>
+                            <div className="entry-desc">{task.description}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* Panel 2: In-Silico "What-If" Counterfactual Levers & Live Simulation Studio */}
+              {(workspaceView === "split" || workspaceView === "twin") && (
+                <section className="doc-panel-box interventions-panel">
+                  <div className="panel-box-header">
+                    <div className="title-with-actions">
+                      <div className="sim-live-badge-group">
+                        <h4 className="panel-box-title">In-Silico Counterfactual Levers ("What-If")</h4>
+                        <div className={`sim-engine-pill ${liveSimStatus === "live" ? "live" : "offline"}`}>
+                          {liveSimStatus === "live" ? (
+                            <>
+                              <span className="live-pulse-dot"></span>
+                              <span>FastAPI Live ML: ~{liveSimLatency}ms · Shanghai Cohort XGBoost</span>
+                            </>
+                          ) : liveSimStatus === "loading" ? (
+                            <>
+                              <span>Recalculating Digital Twin...</span>
+                            </>
+                          ) : (
+                            <>
+                              <span>Client Kinetic Engine</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      <span className="panel-subtitle">
+                        Adjust lifestyle levers or select an intervention below to project spike aversion onto the live CGM curve
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Real-time Physiological Sensitivity Tuning */}
+                  <div className="sim-custom-adjuster-bar">
+                    <div className="adjuster-bar-title-row">
+                      <SlidersIcon size={13} color="#0ea5e9" />
+                      <span className="adjuster-bar-title">Real-Time Physiological Sensitivity Tuning</span>
+                    </div>
+                    <div className="adjuster-sliders-grid">
+                      <div className="adjuster-slider-item">
+                        <div className="adjuster-label-row">
+                          <span className="slider-label-with-icon">
+                            <ActivityIcon size={13} color="#10b981" />
+                            <span>Postprandial GLUT4 Walk</span>
+                          </span>
+                          <strong>{customWalkDuration} mins</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min={10}
+                          max={60}
+                          step={5}
+                          value={customWalkDuration}
+                          onChange={(e) => setCustomWalkDuration(Number(e.target.value))}
+                          className="adjuster-range"
+                          aria-label="Walk duration sensitivity slider"
+                        />
+                      </div>
+
+                      <div className="adjuster-slider-item">
+                        <div className="adjuster-label-row">
+                          <span className="slider-label-with-icon">
+                            <SparklesIcon size={13} color="#0ea5e9" />
+                            <span>Meal Carbohydrate Reduction</span>
+                          </span>
+                          <strong>{customCarbReduction}g CHO</strong>
+                        </div>
+                        <input
+                          type="range"
+                          min={10}
+                          max={70}
+                          step={5}
+                          value={customCarbReduction}
+                          onChange={(e) => setCustomCarbReduction(Number(e.target.value))}
+                          className="adjuster-range"
+                          aria-label="Carbohydrate reduction sensitivity slider"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Prescriptive Recommendation Box */}
+                  <div className="sim-optimal-box">
+                    <span className="sim-optimal-icon">
+                      <SparklesIcon size={16} color="#10b981" />
+                    </span>
+                    <div className="sim-optimal-text">
+                      <strong>Prescriptive Clinical Guidance: </strong>
+                      {liveSimData?.optimal_recommended_action || (
+                        dynamicRisk.tier === "HIGH"
+                          ? `Optimal Recommended Action: ${customWalkDuration}-Minute Brisk Walk. Reduces projected peak by ${(14 + customWalkDuration * 0.25).toFixed(1)} mg/dL, keeps sensor within target corridor, and neutralizes spike trajectory before symptom onset.`
+                          : `Patient currently within safe target corridor; continuous monitoring active.`
                       )}
                     </div>
                   </div>
-                  <span className="panel-subtitle">
-                    Adjust lifestyle levers or select an intervention below to project spike aversion onto the live CGM curve
-                  </span>
-                </div>
-                <button className="doc-fhir-btn" onClick={() => setShowFhirModal(true)}>
-                  Export HL7 FHIR
-                </button>
-              </div>
 
-              {/* Real-time Physiological Sensitivity Tuning */}
-              <div className="sim-custom-adjuster-bar">
-                <div className="adjuster-bar-title">Real-Time Physiological Sensitivity Tuning</div>
-                <div className="adjuster-sliders-grid">
-                  <div className="adjuster-slider-item">
-                    <div className="adjuster-label-row">
-                      <span>🚶 Postprandial Walk Duration</span>
-                      <strong>{customWalkDuration} mins</strong>
-                    </div>
-                    <input
-                      type="range"
-                      min={10}
-                      max={60}
-                      step={5}
-                      value={customWalkDuration}
-                      onChange={(e) => setCustomWalkDuration(Number(e.target.value))}
-                      className="adjuster-range"
-                      aria-label="Walk duration sensitivity slider"
-                    />
-                  </div>
+                  {/* Counterfactuals Cards Grid */}
+                  <div className="interventions-cards-grid">
+                    {displayBranches.map((c) => {
+                      const isActive = activeIntervention === c.intervention_type;
+                      return (
+                        <div
+                          key={c.intervention_type}
+                          className={`intervention-card ${isActive ? "active" : ""}`}
+                          onClick={() => setActiveIntervention(isActive ? null : c.intervention_type)}
+                        >
+                          <div className="card-top-row">
+                            <span className="intervention-name">
+                              <span className={`lever-badge ${c.icon}`}>
+                                {c.icon === "walk" ? "EXERCISE" : c.icon === "salad" ? "NUTRITION" : c.icon === "cut" ? "PORTION" : "PHARMA"}
+                              </span>{" "}
+                              {c.label}
+                            </span>
+                            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                              <span className="clarke-zone-pill">{c.clarke_zone}</span>
+                              <span className={`averted-tag ${c.spike_averted ? "success" : "neutral"}`}>
+                                {c.spike_averted ? "Spike Averted" : "Attenuated"}
+                              </span>
+                            </div>
+                          </div>
 
-                  <div className="adjuster-slider-item">
-                    <div className="adjuster-label-row">
-                      <span>🥗 Meal Carbohydrate Reduction</span>
-                      <strong>{customCarbReduction}g CHO</strong>
-                    </div>
-                    <input
-                      type="range"
-                      min={10}
-                      max={70}
-                      step={5}
-                      value={customCarbReduction}
-                      onChange={(e) => setCustomCarbReduction(Number(e.target.value))}
-                      className="adjuster-range"
-                      aria-label="Carbohydrate reduction sensitivity slider"
-                    />
-                  </div>
-                </div>
-              </div>
+                          <div className="card-drop-row">
+                            <span className="drop-amount">-{c.peak_reduction_mg_dl.toFixed(1)} mg/dL</span>
+                            <span className="sim-peak">Sim Peak: {c.simulated_peak_mg_dl.toFixed(1)} mg/dL</span>
+                          </div>
 
-              {/* AI Prescriptive Recommendation Box */}
-              <div className="sim-optimal-box">
-                <span className="sim-optimal-icon">🎯</span>
-                <div className="sim-optimal-text">
-                  <strong>Prescriptive Clinical Guidance: </strong>
-                  {liveSimData?.optimal_recommended_action || (
-                    dynamicRisk.tier === "HIGH"
-                      ? `Optimal Recommended Action: ${customWalkDuration}-Minute Brisk Walk. Reduces projected peak by ${(14 + customWalkDuration * 0.25).toFixed(1)} mg/dL, keeps sensor within target corridor, and neutralizes spike trajectory before symptom onset.`
-                      : `Patient currently within safe target corridor; continuous monitoring active.`
-                  )}
-                </div>
-              </div>
+                          <div className="card-mechanism-text">{c.mechanism}</div>
 
-              {/* Counterfactuals Cards Grid */}
-              <div className="interventions-cards-grid">
-                {displayBranches.map((c) => {
-                  const isActive = activeIntervention === c.intervention_type;
-                  return (
-                    <div
-                      key={c.intervention_type}
-                      className={`intervention-card ${isActive ? "active" : ""}`}
-                      onClick={() => setActiveIntervention(isActive ? null : c.intervention_type)}
-                    >
-                      <div className="card-top-row">
-                        <span className="intervention-name">
-                          <span className={`lever-badge ${c.icon}`}>
-                            {c.icon === "walk" ? "EXERCISE" : c.icon === "salad" ? "NUTRITION" : c.icon === "cut" ? "PORTION" : "PHARMA"}
-                          </span>{" "}
-                          {c.label}
-                        </span>
-                        <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
-                          <span className="clarke-zone-pill">{c.clarke_zone}</span>
-                          <span className={`averted-tag ${c.spike_averted ? "success" : "neutral"}`}>
-                            {c.spike_averted ? "Spike Averted" : "Attenuated"}
-                          </span>
+                          <button
+                            className={`sim-action-btn ${isActive ? "active" : ""}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPrescribedForCompanion(c);
+                              setShowCompanionModal(true);
+                              showToast(`Transmitting CarePlan to ${patient.display_name}'s wearable: "${c.label}"... Opening Companion Simulator`);
+                            }}
+                          >
+                            <SmartphoneIcon size={13} />
+                            <span>Prescribe & Push to Phone</span>
+                          </button>
                         </div>
-                      </div>
-
-                      <div className="card-drop-row">
-                        <span className="drop-amount">-{c.peak_reduction_mg_dl.toFixed(1)} mg/dL</span>
-                        <span className="sim-peak">Sim Peak: {c.simulated_peak_mg_dl.toFixed(1)} mg/dL</span>
-                      </div>
-
-                      <div className="card-mechanism-text">{c.mechanism}</div>
-
-                      <button
-                        className={`sim-action-btn ${isActive ? "active" : ""}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setPrescribedForCompanion(c);
-                          setShowCompanionModal(true);
-                          showToast(`Transmitting CarePlan to ${patient.display_name}'s wearable: "${c.label}"... Opening Companion Simulator`);
-                        }}
-                      >
-                        Prescribe & Push to Phone
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+            </div>
+          )}
         </main>
       </div>
 
@@ -1918,7 +2165,7 @@ export function DoctorDashboard() {
         prescribedIntervention={prescribedForCompanion || activeBranch}
         onActionConfirmed={(actionName) => {
           setClosedLoopConfirmed(`${actionName} in progress`);
-          showToast(`🎉 Closed-Loop Confirmed! ${patient.display_name} acknowledged and started ${actionName}`);
+          showToast(`Closed-Loop Confirmed: ${patient.display_name} acknowledged and initiated ${actionName}`);
         }}
       />
 

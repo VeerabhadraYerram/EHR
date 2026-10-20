@@ -4,6 +4,18 @@ import { DoctorLogin } from "./pages/DoctorLogin";
 import { DoctorDashboard } from "./pages/DoctorDashboard";
 import { DoctorVerificationQueue } from "./pages/DoctorVerificationQueue";
 import { UnifiedTimeline } from "./pages/UnifiedTimeline";
+import {
+  PulseLogoIcon,
+  StethoscopeIcon,
+  ClipboardCheckIcon,
+  ClockHistoryIcon,
+  SunIcon,
+  MoonIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  LogOutIcon,
+  ActivityIcon,
+} from "./components/Icons";
 
 interface DoctorUser {
   name: string;
@@ -38,12 +50,14 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "40px", maxWidth: "700px", margin: "40px auto", background: "var(--bg-surface)", border: "1px solid var(--border-strong)", borderRadius: "6px" }}>
-          <h2 style={{ color: "#ef4444", fontSize: "18px", marginBottom: "12px" }}>Clinical Workspace Recovery</h2>
+        <div style={{ padding: "40px", maxWidth: "700px", margin: "40px auto", background: "var(--bg-surface)", border: "1px solid var(--border-strong)", borderRadius: "8px", boxShadow: "var(--shadow-md)" }}>
+          <h2 style={{ color: "#f43f5e", fontSize: "18px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <span>⚠️</span> Clinical Workspace Recovery
+          </h2>
           <p style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.5", marginBottom: "16px" }}>
-            The clinical interface encountered an issue. You can reload the workspace session.
+            The clinical interface encountered an unexpected state. Patient safety guardrails preserved session state.
           </p>
-          <pre style={{ background: "var(--bg-surface-elevated)", padding: "12px", borderRadius: "4px", fontSize: "11px", color: "var(--text-muted)", overflowX: "auto", marginBottom: "16px" }}>
+          <pre style={{ background: "var(--bg-surface-elevated)", padding: "12px", borderRadius: "6px", fontSize: "11px", color: "var(--text-muted)", overflowX: "auto", marginBottom: "16px", border: "1px solid var(--border-subtle)" }}>
             {this.state.error?.message || "Unknown error"}
           </pre>
           <button
@@ -51,7 +65,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               this.setState({ hasError: false, error: null });
               window.location.reload();
             }}
-            style={{ padding: "8px 16px", background: "var(--btn-primary-bg)", color: "var(--btn-primary-text)", border: "none", borderRadius: "4px", fontWeight: "700", cursor: "pointer" }}
+            style={{ padding: "8px 18px", background: "var(--btn-primary-bg)", color: "var(--btn-primary-text)", border: "none", borderRadius: "6px", fontWeight: "700", cursor: "pointer", fontSize: "12px" }}
           >
             Reload Clinical Workspace
           </button>
@@ -69,7 +83,7 @@ function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => voi
     path: string;
     alias?: string[];
     num: string;
-    icon: string;
+    icon: ReactNode;
     title: string;
     sub: string;
     badge?: string;
@@ -80,14 +94,14 @@ function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => voi
       path: "/",
       alias: ["/twin", "/dashboard"],
       num: "01",
-      icon: "🩺",
+      icon: <StethoscopeIcon size={18} />,
       title: "Doctor Portal",
       sub: "Patient Tracker & Glycemic Twin",
     },
     {
       path: "/review",
       num: "02",
-      icon: "📋",
+      icon: <ClipboardCheckIcon size={18} />,
       title: "Verification Queue",
       sub: "Lab & Sensor Cross-Validation",
       badge: "3 Alerts",
@@ -95,7 +109,7 @@ function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => voi
     {
       path: "/timeline",
       num: "03",
-      icon: "⏱",
+      icon: <ClockHistoryIcon size={18} />,
       title: "Unified Timeline",
       sub: "Longitudinal EHR Clinical Feed",
     },
@@ -105,6 +119,9 @@ function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => voi
     <aside className={`app-sidebar ${isOpen ? "expanded" : "collapsed"}`}>
       <div className="sidebar-inner">
         <div className="sidebar-nav-list">
+          <div className="sidebar-section-label">
+            {isOpen ? "Clinical Navigation" : "•••"}
+          </div>
           {navItems.map((item) => {
             const isActive =
               location.pathname === item.path ||
@@ -115,7 +132,7 @@ function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => voi
                 key={item.path}
                 to={item.path}
                 className={`sidebar-nav-item ${isActive ? "active" : ""}`}
-                title={!isOpen ? `${item.num} // ${item.title} - ${item.sub}` : undefined}
+                title={!isOpen ? `${item.num} // ${item.title} — ${item.sub}` : undefined}
               >
                 <div className="sidebar-item-icon">{item.icon}</div>
                 {isOpen && (
@@ -139,24 +156,26 @@ function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => voi
           {isOpen ? (
             <div className="sidebar-status-card">
               <div className="sidebar-status-title">
-                <span className="status-dot green"></span>
+                <span className="live-pulse-dot"></span>
                 <span>FastAPI Twin Engine</span>
               </div>
               <div className="sidebar-status-sub">Port 8000 • Calibrated XGBoost</div>
             </div>
           ) : (
             <div className="sidebar-collapsed-dot" title="FastAPI Twin Engine (8000 Active)">
-              <span className="status-dot green"></span>
+              <span className="live-pulse-dot"></span>
             </div>
           )}
 
           <button
-            className="sidebar-toggle-btn"
+            className="sidebar-collapse-btn"
             onClick={onToggle}
-            title={isOpen ? "Collapse Navigation Sidebar" : "Expand Navigation Sidebar"}
+            title={isOpen ? "Collapse Navigation Sidebar (Ctrl+B)" : "Expand Navigation Sidebar (Ctrl+B)"}
             aria-label={isOpen ? "Collapse Navigation Sidebar" : "Expand Navigation Sidebar"}
           >
-            <span className="sidebar-toggle-arrow">{isOpen ? "◀" : "▶"}</span>
+            <span className="sidebar-toggle-arrow">
+              {isOpen ? <ChevronLeftIcon size={15} /> : <ChevronRightIcon size={15} />}
+            </span>
             {isOpen && <span className="sidebar-toggle-label">Collapse Menu</span>}
           </button>
         </div>
@@ -167,9 +186,10 @@ function AppSidebar({ isOpen, onToggle }: { isOpen: boolean; onToggle: () => voi
 
 export default function App() {
   const [theme, setTheme] = useState<"light" | "dark">(() => {
-    return (localStorage.getItem("ehr-theme") as "light" | "dark") || "light";
+    return (localStorage.getItem("ehr-theme") as "light" | "dark") || "dark";
   });
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [currentTime, setCurrentTime] = useState<string>("");
 
   const [doctor, setDoctor] = useState<DoctorUser | null>(() => {
     const saved = localStorage.getItem("ehr-doctor-session");
@@ -193,6 +213,36 @@ export default function App() {
     localStorage.setItem("ehr-theme", theme);
   }, [theme]);
 
+  // Live Hospital Clock
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setCurrentTime(
+        now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+      );
+    };
+    updateClock();
+    const interval = setInterval(updateClock, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Keyboard shortcut Ctrl+B / Cmd+B to toggle sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setSidebarOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const toggleTheme = () => {
     setTheme((prev) => (prev === "dark" ? "light" : "dark"));
   };
@@ -209,19 +259,26 @@ export default function App() {
 
   return (
     <BrowserRouter>
-      {/* Minimalist Top Header */}
+      {/* Enterprise Top Navigation Bar */}
       <header className="top-nav">
         <div className="brand-section">
           <button
             className="header-hamburger-btn"
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            title={sidebarOpen ? "Collapse navigation sidebar" : "Expand navigation sidebar"}
+            title={sidebarOpen ? "Collapse navigation sidebar (Ctrl+B)" : "Expand navigation sidebar (Ctrl+B)"}
           >
-            <span>☰</span>
+            <ActivityIcon size={16} />
           </button>
-          <div className="brand-icon">+</div>
-          <div>
-            <div className="brand-title">EHR // Clinical Intelligence</div>
+          
+          <div className="brand-logo-container">
+            <PulseLogoIcon size={30} />
+          </div>
+
+          <div className="brand-meta-column">
+            <div className="brand-title-row">
+              <span className="brand-title">EHR // CLINICAL INTELLIGENCE</span>
+              <span className="brand-version-badge">v2.4 Enterprise</span>
+            </div>
             <div className="brand-subtitle">
               {doctor
                 ? `${doctor.hospital} · ${doctor.specialty}`
@@ -231,61 +288,52 @@ export default function App() {
         </div>
 
         <div className="system-status-pills">
-          <div className="status-indicator">
-            <span className="status-dot green"></span>
-            Twin API: 8000 (Active)
-          </div>
-          <div className="status-indicator">
-            <span className="status-dot"></span>
-            Shanghai Cohort: 100 Pts
+          {/* Live Hospital Time */}
+          <div className="status-indicator live-clock" title="Hospital Local Time (24h)">
+            <span className="clock-pulse-dot"></span>
+            <span className="clock-digits">{currentTime || "12:00:00"} IST</span>
           </div>
 
-          {/* Logged in Doctor Identity & Sign Out */}
+          {/* Microservice Live Status */}
+          <div className="status-indicator engine-status" title="FastAPI Metabolic Digital Twin Engine on Port 8000">
+            <span className="live-pulse-dot"></span>
+            <span>Twin ML: 8000 (Active)</span>
+          </div>
+
+          {/* Cohort Population Pill */}
+          <div className="status-indicator cohort-status" title="Active Monitored Shanghai Cohort">
+            <span className="cohort-icon-dot"></span>
+            <span>Shanghai Cohort: 100 Pts</span>
+          </div>
+
+          {/* Logged-in Physician Profile */}
           {doctor && (
-            <div
-              className="status-indicator"
-              style={{
-                background: "var(--bg-surface-elevated)",
-                border: "1px solid var(--border-strong)",
-                fontWeight: 600,
-              }}
-            >
-              <span style={{
-                background: "var(--brand-icon-bg)",
-                color: "var(--brand-icon-color)",
-                padding: "2px 6px",
-                borderRadius: "2px",
-                fontSize: "10px",
-                fontWeight: 800,
-                letterSpacing: "0.5px"
-              }}>MD</span>
-              <span>{doctor.name}</span>
+            <div className="doctor-profile-badge" title={`Signed in as ${doctor.name} (${doctor.specialty})`}>
+              <div className="doctor-avatar-circle">
+                {doctor.name.split(" ").filter(n => !n.startsWith("Dr.")).map(n => n[0]).join("") || "MD"}
+              </div>
+              <div className="doctor-info-text">
+                <span className="doctor-name">{doctor.name}</span>
+                <span className="doctor-role">Attending Physician</span>
+              </div>
               <button
                 onClick={handleLogout}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: "#ef4444",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  padding: "0 4px",
-                }}
-                title="Sign Out of Doctor Portal"
+                className="doctor-signout-btn"
+                title="Secure Sign Out"
               >
-                Sign Out
+                <LogOutIcon size={14} />
               </button>
             </div>
           )}
 
-          {/* Theme Toggle Button */}
+          {/* Theme Mode Toggle Button */}
           <button
             onClick={toggleTheme}
             className="theme-toggle-btn"
-            title="Toggle Bright / Dark Mode"
+            title={`Switch to ${theme === "light" ? "Dark Mode" : "Bright Mode"}`}
           >
-            <span>{theme === "light" ? "◐" : "◑"}</span>
-            <span>{theme === "light" ? "Bright Mode" : "Dark Mode"}</span>
+            {theme === "light" ? <MoonIcon size={15} /> : <SunIcon size={15} />}
+            <span className="theme-toggle-label">{theme === "light" ? "Dark" : "Light"}</span>
           </button>
         </div>
       </header>

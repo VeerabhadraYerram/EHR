@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ActivityIcon, ZapIcon, TrendingUpIcon } from "./Icons";
+import { ActivityIcon, ZapIcon, TrendingUpIcon, XIcon } from "./Icons";
 
 export interface TrajectoryComparisonPoint {
   horizon: number;
@@ -66,7 +66,7 @@ export const ClarkeErrorGridModal: React.FC<ClarkeErrorGridModalProps> = ({
             </p>
           </div>
           <button className="companion-close-btn" onClick={onClose} aria-label="Close Clarke Modal">
-            ✕
+            <XIcon size={16} />
           </button>
         </div>
 

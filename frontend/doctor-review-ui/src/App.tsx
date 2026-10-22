@@ -52,7 +52,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
       return (
         <div style={{ padding: "40px", maxWidth: "700px", margin: "40px auto", background: "var(--bg-surface)", border: "1px solid var(--border-strong)", borderRadius: "8px", boxShadow: "var(--shadow-md)" }}>
           <h2 style={{ color: "#f43f5e", fontSize: "18px", marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-            <span>⚠️</span> Clinical Workspace Recovery
+            Clinical Workspace Recovery
           </h2>
           <p style={{ color: "var(--text-secondary)", fontSize: "13px", lineHeight: "1.5", marginBottom: "16px" }}>
             The clinical interface encountered an unexpected state. Patient safety guardrails preserved session state.

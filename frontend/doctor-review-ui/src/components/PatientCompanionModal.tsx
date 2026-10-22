@@ -9,6 +9,7 @@ import {
   SparklesIcon,
   ZapIcon,
   AlertTriangleIcon,
+  XIcon,
 } from "./Icons";
 
 export interface PrescribedIntervention {
@@ -203,7 +204,7 @@ export const PatientCompanionModal: React.FC<PatientCompanionModalProps> = ({
             </button>
 
             <button className="companion-close-btn" onClick={onClose} aria-label="Close Companion Simulator">
-              ✕
+              <XIcon size={16} />
             </button>
           </div>
         </div>

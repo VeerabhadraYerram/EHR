@@ -113,6 +113,19 @@ export function OrganVisual({
     }
   }
 
+  const organAnimClass = `ot-anim-${organ}`;
+  const pulseDuration =
+    organ === "heart"
+      ? (telemetry?.heart?.pulseDurationSec || 0.82)
+      : undefined;
+
+  const organStyle = pulseDuration
+    ? {
+        animationDuration: `${pulseDuration}s`,
+        transformOrigin: "50% 50%",
+      }
+    : { transformOrigin: "50% 50%" };
+
   return (
     <div className="ot-organ-viewport">
       {/* 1. Left Minimal Indicator: Colored Arrow Ring + Minimal Data & Units */}
@@ -173,24 +186,30 @@ export function OrganVisual({
         </div>
       )}
 
-      {/* 3. Centered Floating Transparent Organ Atlas */}
+      {/* 3. Centered Functional Animated Organ Atlas */}
       {!failed ? (
         <img
-          className="ot-organ-artwork ot-organ-img-centered"
+          className={`ot-organ-artwork ot-organ-img-centered ${organAnimClass}`}
+          style={organStyle}
           src={`/diagnostics/${organ === "brain" ? "brain" : `${organ}-atlas`}.png`}
           alt={`Illustrative ${organInfo[organ].name.toLowerCase()} anatomy`}
           onError={() => setFailed(true)}
         />
       ) : organ === "pancreas" ? (
-        <PancreasArtwork />
+        <div className={`ot-organ-img-centered ${organAnimClass}`} style={organStyle}>
+          <PancreasArtwork />
+        </div>
       ) : organ === "brain" ? (
-        <BrainMap compact />
+        <div className={`ot-organ-img-centered ${organAnimClass}`} style={organStyle}>
+          <BrainMap compact />
+        </div>
       ) : organ === "heart" ? (
         <svg
           viewBox="0 0 320 240"
           role="img"
           aria-label="Schematic heart anatomy"
-          className="ot-organ-img-centered"
+          className={`ot-organ-img-centered ${organAnimClass}`}
+          style={organStyle}
         >
           <g fill="#8adbd218" stroke="#8adbd2" strokeWidth="1.4">
             <path d="M137 78C119 48 74 66 72 104C44 147 110 202 170 219C209 199 247 169 244 124C243 89 218 64 189 78C191 49 182 24 163 22L143 24L147 51L157 62L155 84Z" />
@@ -201,7 +220,8 @@ export function OrganVisual({
           viewBox="0 0 320 240"
           role="img"
           aria-label="Schematic kidneys"
-          className="ot-organ-img-centered"
+          className={`ot-organ-img-centered ${organAnimClass}`}
+          style={organStyle}
         >
           <g fill="#8adbd218" stroke="#8adbd2" strokeWidth="1.4">
             <path d="M89 37C48 29 29 75 35 119C40 165 76 185 104 169C127 155 121 133 105 124C87 114 87 96 102 84C121 69 114 43 89 37ZM231 37C272 29 291 75 285 119C280 165 244 185 216 169C193 155 199 133 215 124C233 114 233 96 218 84C199 69 206 43 231 37Z" />

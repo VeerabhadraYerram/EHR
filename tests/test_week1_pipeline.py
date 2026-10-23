@@ -10,12 +10,15 @@ from sqlalchemy.orm import sessionmaker
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.join(BASE_DIR, "services", "ingestion"))
 
-from models import init_db, PatientDB, EncounterDB, SourceDocumentDB, SourceFragmentDB
+from services.ingestion.models import init_db, PatientDB, EncounterDB, SourceDocumentDB, SourceFragmentDB
 from storage import storage_client
-from adapters.stt_adapter import STTAdapter
-from adapters.ocr_adapter import OCRAdapter
-from adapters.historical_adapter import HistoricalAdapter
-from adapters.hl7_adapter import HL7APIAdapter
+from _service_imports import ingestion_model_imports
+
+with ingestion_model_imports():
+    from adapters.stt_adapter import STTAdapter
+    from adapters.ocr_adapter import OCRAdapter
+    from adapters.historical_adapter import HistoricalAdapter
+    from adapters.hl7_adapter import HL7APIAdapter
 
 # Load NLP extractor dynamically due to hyphen in clinical-processing
 nlp_dir = os.path.join(BASE_DIR, "services", "clinical-processing", "nlp")

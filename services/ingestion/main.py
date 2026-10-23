@@ -1,6 +1,8 @@
 import os
+import sys
 import glob
 import json
+import importlib.util
 from typing import List, Optional, Dict, Any
 from fastapi import FastAPI, Depends, HTTPException, Query, Body, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -236,6 +238,42 @@ def seed_samples(db: Session = Depends(get_db)):
         "message": f"Successfully ingested {len(results)} sample payloads into PostgreSQL and MinIO",
         "ingested": results
     }
+
+def _load_extractor():
+    nlp_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "clinical-processing", "nlp"))
+    models_path = os.path.join(nlp_dir, "nlp_models.py")
+    spec_m = importlib.util.spec_from_file_location("nlp_models", models_path)
+    mod_m = importlib.util.module_from_spec(spec_m)
+    sys.modules["nlp_models"] = mod_m
+    spec_m.loader.exec_module(mod_m)
+
+    extractor_path = os.path.join(nlp_dir, "extractor.py")
+    spec_e = importlib.util.spec_from_file_location("clinical_extractor", extractor_path)
+    mod_e = importlib.util.module_from_spec(spec_e)
+    sys.modules["clinical_extractor"] = mod_e
+    spec_e.loader.exec_module(mod_e)
+    return mod_e.ClinicalEntityExtractor, mod_m.NLPInput
+
+try:
+    ClinicalEntityExtractor, NLPInput = _load_extractor()
+    nlp_extractor = ClinicalEntityExtractor()
+except Exception:
+    nlp_extractor = None
+
+@app.post("/api/v1/nlp/extract")
+def extract_nlp(payload: Dict[str, Any] = Body(...)):
+    """Extracts clinical entities, spans, confidence scores, and negation/temporality context."""
+    if not nlp_extractor:
+        raise HTTPException(status_code=500, detail="Clinical NLP Extractor not initialized")
+    try:
+        input_data = NLPInput(
+            document_id=payload.get("document_id", "DOC-MANUAL"),
+            text=payload.get("text", ""),
+            source_type=payload.get("source_type")
+        )
+        return nlp_extractor.extract(input_data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn

@@ -37,6 +37,7 @@ export interface Patient {
     spike_probability: number;
     projected_peak_mg_dl: number;
     reason_medical?: string;
+    decision_time?: string;
   };
 }
 
@@ -49,6 +50,7 @@ export interface Reading {
   meal_description?: string;
   insulin_units?: number | null;
   minutes_since_meal?: number;
+  last_meal_carbs_g?: number;
   is_spike?: boolean;
 }
 
@@ -103,7 +105,27 @@ export interface PatientSimulation {
     predicted_peak_time_minutes: number;
     continuous_trajectory: TrajectoryPoint[];
     top_shap_drivers: ShapDriver[];
+    event_status?: string;
+    model_applicable?: boolean;
+    warnings?: string[];
+    explanation?: Record<string, unknown>;
+    model_provenance?: Record<string, unknown>;
+    uncertainty_method?: string;
+    features?: Record<string, number>;
+    feature_provenance?: Record<string, unknown>;
   };
   counterfactual_branches: SimulationBranch[];
   optimal_recommended_action: string;
+  features?: Record<string, number>;
+  feature_provenance?: Record<string, unknown>;
+  event_status?: string;
+  explanation?: Record<string, unknown>;
+  model_provenance?: Record<string, unknown>;
+  uncertainty_method?: string;
+  assumptions?: string[];
+}
+
+export interface InterventionSpec {
+  intervention_type: string;
+  parameters: Record<string, number | string>;
 }

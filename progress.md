@@ -1,5 +1,62 @@
 # Progress Log
 
+### [2026-10-24] User-Authorized Repository Release & Full Push to Main
+**Author:** AI Assistant
+
+**Work Completed:**
+- **Verification Suites:** Ran full pytest test suite (53/53 tests passing across data pipeline, twin service, model performance, twin as-of, ingestion/NLP, identity resolution, and workflows) and frontend production build (`npm run build` in 983ms).
+- **Service Orchestration & Ownership:** Stabilized unified runner [run_app.py](file:///c:/Internship/EHR/scripts/run_app.py) with explicit service ownership, readiness probes, and CLI flags (`--skip-infra`, `--twin-mode`, `--check`, `--timeout`).
+- **Workspace Changes Committed:** Staged and synchronized clinical workstation enhancements, digital twin portable models, workflow service, test suites, and documentation with user authorization for remote GitHub push.
+
+### [2026-10-24] Multipage workstation and end-to-end prototype repairs
+**Author:** Codex and implementation/research agents
+
+**Final verification:** 58 tests passed; TypeScript/Vite production build and oxlint passed. All six service readiness checks passed. Browser checked patient switching, selected-time forecast, report equality, anatomy and clinical review; 390px phone overview had no horizontal overflow. Screenshots saved in `docs/ui-verification/`. Remaining test warnings come from legacy pickle reproduction and datetime deprecations.
+
+- Replaced the overwhelming single-screen layout with nine linked pages and a warm off-white/charcoal/green theme, responsive navigation and preserved twin assets.
+- Corrected API routing, initial loading, patient/date cancellation and deep links; centralized every selected-time prediction and genuine backend TreeSHAP. Added complete model-based cohort risk summaries, interactive scenarios and consistent dossier/FHIR exports.
+- Added strict past-only feature construction, real patient column mapping, missing-history states, ongoing-event applicability labels, source provenance and honest uncertainty; removed unsupported safety claims.
+- Added portable fingerprint-verified native model loading, preserving source artifacts; 500-vector/100-patient parity measured zero trajectory error and probability error <=5.96e-8.
+- Added persistent local clinical fact review, dedup/conflict/provenance handling, authored documents, explicit review gates, local FHIR storage and hash-linked audit. Corrected FHIR coding/time/reference edge cases.
+- Fixed combined test imports and isolated integration fixtures; improved startup readiness/ownership and made raw MinIO private.
+- Added sourced research roadmap for actual 3D assets, scan reconstruction, wearables, genomics, auth, hospital integration and validation. Existing artwork unchanged. Production external integrations are documented rather than represented as complete.
+
+
+### [2026-10-24] Hackathon Implementation Audit
+**Author:** Codex
+
+- Inspected the running port-5188 workstation, source, cohort/model artifacts and local ingestion, identity, fusion and twin APIs.
+- Recorded complete, partial and missing capabilities in `docs/HACKATHON_IMPLEMENTATION_AUDIT_2026-10-24.md`.
+- Verified frontend build/lint, 19 digital-twin/data/model tests and 5 NLP tests. Combined repository tests have two collection failures from service module-name collisions.
+- Identified twin API proxy mismatch, initial-patient loading race, inconsistent displayed risks, formula-based frontend forecasts/attributions, patient feature schema mismatches, and unsupported fixed safety labels.
+- Confirmed anatomy uses illustrated PNG/SVG assets and CSS animation rather than actual 3D meshes. No application source was changed.
+
+### [2026-10-24] Main Branch Synchronized (Workstation Enhancements & Physiological Animations)
+**Author:** AI Assistant
+
+**Work Completed:**
+- **Code Synchronization with `origin/main`:**
+  - Pulled 8 new commits up to [`dc1f187`](file:///c:/Internship/EHR) (`feat(diagnostics): add neural signal firing, normal kidney urine flow, islet secretion, and full-width TreeSHAP`).
+  - Integrated physiological function animations (cardiac beat, renal filtration, islet secretion, neural wave), whole-body arterial flow visualization, 100-patient cohort telemetry, live wearables timeline, and glucose trajectory forecast panels.
+- **Frontend Verification & Production Build:**
+  - Verified TypeScript compile and production build (`npm run build`), producing clean output in 1.47s with zero errors.
+  - Verified active frontend dev server responding HTTP 200 on port `5188` (`http://localhost:5188`).
+
+### [2026-10-23] Full Platform Runtime Verification & Container Mesh Stabilization
+**Author:** AI Assistant
+
+**Work Completed:**
+- **Digital Twin Microservice Docker Integration:**
+  - Resolved container filesystem path resolution in [engine.py](file:///c:/Internship/EHR/services/digital-twin/engine.py) and [main.py](file:///c:/Internship/EHR/services/digital-twin/main.py) to respect `DATA_DIR` environment variable with safe root parent fallback.
+  - Built and started `ehr-digital-twin` Docker container; confirmed healthy status on port `8004` (FastAPI + TreeSHAP + Dual-Head inference).
+- **Service Mesh & Frontend Active Verification:**
+  - Verified Doctor Review Frontend (`doctor-review-ui`) dev server active and responding HTTP 200 on port `5188` (`http://localhost:5188`).
+  - Verified Ingestion Subsystem active and responding HTTP 200 on port `8000` (`http://localhost:8000/health`).
+  - Verified Identity Resolution EMPI Subsystem active and responding HTTP 200 on port `8002` (`http://localhost:8002/health`).
+  - Verified Clinical Text Fusion Subsystem active and responding HTTP 200 on port `8003` (`http://localhost:8003/health`).
+  - Verified Metabolic Digital Twin Subsystem active and responding HTTP 200 on port `8004` (`http://localhost:8004/health`).
+  - Verified PostgreSQL 16 on port `5432` (`ehr-postgres`, healthy) and MinIO S3 Web Console on port `9001` (`ehr-minio`).
+
 ### [2026-10-23] User-Authorized Main Branch UI Release
 **Author:** Codex
 
@@ -404,6 +461,72 @@ Append your updates to the top of the log when you complete a significant chunk 
   - Authored comprehensive Data Dictionary ([`data/digital_twin/DATA_DICTIONARY.md`](file:///C:/Users/saiko/OneDrive/Desktop/EHR/EHR/data/digital_twin/DATA_DICTIONARY.md)) and Provenance Manifest ([`data/digital_twin/clinical_cohort_manifest.json`](file:///C:/Users/saiko/OneDrive/Desktop/EHR/EHR/data/digital_twin/clinical_cohort_manifest.json)).
   - Archived legacy synthetic data to [`data/digital_twin_synthetic_legacy/`](file:///C:/Users/saiko/OneDrive/Desktop/EHR/EHR/data/digital_twin_synthetic_legacy/).
   - Built automated test suite ([`tests/test_clinical_data_pipeline.py`](file:///C:/Users/saiko/OneDrive/Desktop/EHR/EHR/tests/test_clinical_data_pipeline.py)) with 6/6 tests passing (100% success).
+
+---
+
+### [2026-10-23] Application Mesh Startup & Cross-Platform Orchestration Verification
+**Author:** AI Assistant
+
+**Work Completed:**
+- **Cross-Platform Runner Enhancement (`scripts/run_app.py`):**
+  - Updated Node/NPM resolution to dynamically discover `npm.cmd` on Windows systems using `shutil.which`.
+  - Configured line-buffered real-time stdout streaming for backend runner orchestration.
+- **Service Mesh & Container Infrastructure Startup:**
+  - Initialized Docker Desktop daemon and verified running containers: PostgreSQL 16 on port `5432` (`ehr-postgres`, healthy) and MinIO S3 on ports `9000` & `9001` (`ehr-minio`).
+  - Activated Ingestion Subsystem (`services/ingestion/main.py`) on port `8000` (FastAPI + SQLAlchemy connected).
+  - Activated Identity Resolution EMPI Subsystem (`services/identity-resolution/main.py`) on port `8002`.
+  - Activated Clinical Text Fusion Subsystem (`services/clinical-processing/fusion/main.py`) on port `8003`.
+  - Launched Doctor Review Frontend (`frontend/doctor-review-ui`) on port `5173` (Vite + React 19).
+- **Service Verification & Health Checks:**
+  - Verified HTTP 200 OK responses across all 3 backend health endpoints (`/health` on ports 8000, 8002, 8003).
+  - Verified HTTP 200 OK response on frontend dev server (`http://localhost:5173/`).
+
+---
+
+### [2026-10-20] Application Runtime Deployment & End-to-End Live Verification
+**Author:** AI Assistant
+
+**Work Completed:**
+- **Infrastructure Activation:**
+  - Brought up core Docker infrastructure: PostgreSQL database on port `5432` and MinIO S3 object storage on ports `9000` (API) & `9001` (Web Console).
+  - Verified pre-seeded data integrity across canonical models (`patients`: 3 records, `source_documents`: 8 records, `identity_match_audits`: 6 records).
+- **Backend Microservices Activation & Routing:**
+  - Started Ingestion Subsystem (`services/ingestion/main.py`) on port `8000` (HTTP 200). Added `/api/v1/nlp/extract` direct integration to enable seamless in-dashboard clinical NLP entity extraction.
+  - Started Identity Resolution / EMPI Subsystem (`services/identity-resolution/main.py`) on port `8002` (HTTP 200) for multi-factor patient matching and physician review queue.
+  - Started Clinical Text Fusion Subsystem (`services/clinical-processing/fusion/main.py`) on port `8003` (HTTP 200) for chronological patient trajectory and synthesized working narrative generation.
+- **Frontend Doctor Review UI Activation:**
+  - Launched Vite dev server on port `5173` (`doctor-review-ui`) serving React 19 + TypeScript.
+- **Automated End-to-End Browser Subagent Verification:**
+  - Ran autonomous browser subagent on `http://localhost:5173`.
+  - Verified Dashboard (`01 // DASHBOARD`) showing active patient session (Rohan Sharma, 8 ingested streams, status pills).
+  - Verified Verification Queue (`02 // VERIFICATION QUEUE`) showing match candidate cards with multi-factor progress gauges.
+  - Verified Unified Timeline (`03 // UNIFIED TIMELINE`) showing normalized chronological trajectory with SHA-256 provenance hashes.
+  - Verified live Bright Mode / Dark Mode theme switching.
+- **Unified App Runner (`scripts/run_app.py`):**
+  - Created a single-command cross-platform orchestration runner to boot the complete container mesh, backend microservices, and frontend simultaneously.
+
+---
+
+### [2026-09-18] Verified Technical PDF Artifacts Repository (`artifacts/`)
+**Author:** AI Assistant
+
+**Work Completed:**
+- **Automated PDF Generation Pipeline (`scripts/generate_artifacts_pdf.py`):**
+  - Engineered a specialized Python PDF generator using `reportlab.platypus` with a custom `NumberedCanvas` managing dynamic page numbering ("Page X of Y"), running headers, confidentiality footers, and table/code formatting.
+- **Week 1 Technical PDF Artifact (`artifacts/week-1/EHR_Week_1_Technical_Artifacts.pdf` - 3 Pages):**
+  - Documented system topology, container mesh, PostgreSQL canonical relational models (`patients`, `encounters`, `source_documents`, `source_fragments`), `pgvector` terminology storage, and MinIO S3 object storage with deterministic SHA-256 integrity digests.
+  - Documented shared data contracts, the 4 ingestion adapters (`STTAdapter`, `OCRAdapter`, `HistoricalAdapter`, `HL7APIAdapter`), the quarantine-on-ingestion invariant, and the Port 8000 REST API.
+  - Documented Clinical AI / NLP baseline (multi-class NER, NegEx negation scope resolution, temporality classification).
+  - Documented exact test suite inputs, assertions, and verification results for `test_week1_pipeline.py` (6/6 tests passing).
+- **Week 2 Technical PDF Artifact (`artifacts/week-2/EHR_Week_2_Technical_Artifacts.pdf` - 3 Pages):**
+  - Documented mathematical formulations for demographic string distance (Jaro-Winkler, ISO DOB tolerance, biological gender, masked national ID, phone, address), clinical phenotype ontology overlap (SNOMED CT & RxNorm Jaccard similarity), deterministic safety vetoes ($|\Delta\text{year}| > 2$ or gender conflict $\rightarrow$ score $\le 0.35$ & quarantine), the 3 confidence decision tiers, forensic audit schema (`identity_match_audits`), and Port 8002 REST API.
+  - Documented strict quarantine safety invariant (`status IN ('INGESTED', 'LINKED', 'PROCESSED')`), zero timeline leakage guarantee, chronological patient trajectory (UTC sorting, MinIO SHA-256 provenance), synthesized 4-section clinical working narrative, and Port 8003 REST API.
+  - Documented React 19 + TypeScript + Vite frontend architecture, the 3 clinical views (Dashboard `/`, Verification Queue `/review`, Unified Timeline `/timeline`), and the dual-theme monochrome design system (Bright Mode vs Dark Mode, CSS variable token engine, zero rainbow colors, `localStorage` persistence).
+  - Documented end-to-end integration test execution (`test_week2_pipeline.py`, 6/6 tests passing), automated browser subagent audit results, and Vite production compilation benchmarks (239ms).
+- **Master Consolidated Technical PDF Artifact (`artifacts/EHR_Platform_Weeks_1_and_2_Master_Artifacts.pdf` - 6 Pages):**
+  - Unified end-to-end technical specification combining executive summary, complete Week 1 and Week 2 implementations, data models, scoring functions, safety invariants, and test verification logs into a single 6-page publication-grade PDF deliverable.
+- **Master Directory Map (`artifacts/README.md`):**
+  - Updated catalog index documenting the PDF deliverables and compilation procedures.
 
 ---
 

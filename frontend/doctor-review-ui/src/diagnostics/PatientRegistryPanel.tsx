@@ -1,6 +1,16 @@
 import { useState, useMemo } from "react";
 import type { Patient } from "./types";
-import { Search, User, Activity, AlertTriangle, ShieldCheck, HeartPulse, Pill, FileText, ChevronRight } from "lucide-react";
+import {
+  Search,
+  User,
+  Activity,
+  AlertTriangle,
+  ShieldCheck,
+  HeartPulse,
+  Pill,
+  FileText,
+  ChevronRight,
+} from "lucide-react";
 
 interface PatientRegistryPanelProps {
   patients: Patient[];
@@ -14,10 +24,14 @@ export default function PatientRegistryPanel({
   onSelectPatient,
 }: PatientRegistryPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [tierFilter, setTierFilter] = useState<"ALL" | "HIGH" | "WATCH" | "CALM">("ALL");
+  const [tierFilter, setTierFilter] = useState<
+    "ALL" | "HIGH" | "WATCH" | "CALM" | "UNKNOWN"
+  >("ALL");
 
   const selectedPatient = useMemo(() => {
-    return patients.find((p) => p.person_id === selectedPatientId) || patients[0];
+    return (
+      patients.find((p) => p.person_id === selectedPatientId) || patients[0]
+    );
   }, [patients, selectedPatientId]);
 
   const counts = useMemo(() => {
@@ -26,6 +40,7 @@ export default function PatientRegistryPanel({
       high: patients.filter((p) => p.risk_status?.tier === "HIGH").length,
       watch: patients.filter((p) => p.risk_status?.tier === "WATCH").length,
       calm: patients.filter((p) => p.risk_status?.tier === "CALM").length,
+      unknown: patients.filter((p) => !p.risk_status).length,
     };
   }, [patients]);
 
@@ -39,7 +54,11 @@ export default function PatientRegistryPanel({
         (p.comorbidities && p.comorbidities.toLowerCase().includes(q)) ||
         (p.split && p.split.toLowerCase().includes(q));
 
-      const matchesTier = tierFilter === "ALL" || p.risk_status?.tier === tierFilter;
+      const matchesTier =
+        tierFilter === "ALL" ||
+        (tierFilter === "UNKNOWN"
+          ? !p.risk_status
+          : p.risk_status?.tier === tierFilter);
       return matchesSearch && matchesTier;
     });
   }, [patients, searchQuery, tierFilter]);
@@ -50,9 +69,9 @@ export default function PatientRegistryPanel({
       <section className="dx-panel dx-registry-panel">
         <header className="dx-panel-heading">
           <h2>
-            <span>COHORT /</span> 100 CLINICAL PATIENTS
+            <span>COHORT /</span> {patients.length} DEMONSTRATION PROFILES
           </h2>
-          <span className="dx-panel-tag">LIVE REGISTRY</span>
+          <span className="dx-panel-tag">API REGISTRY</span>
         </header>
 
         <div className="dx-registry-controls">
@@ -60,19 +79,26 @@ export default function PatientRegistryPanel({
             <Search size={12} className="dx-search-icon" />
             <input
               type="text"
-              placeholder="Search 100 patients by ID, name, comorbidity..."
+              placeholder="Search by ID, name or comorbidity…"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               aria-label="Search patient cohort"
             />
             {searchQuery && (
-              <button className="dx-clear-search" onClick={() => setSearchQuery("")}>
+              <button
+                className="dx-clear-search"
+                onClick={() => setSearchQuery("")}
+              >
                 ×
               </button>
             )}
           </div>
 
-          <div className="dx-tier-filter-row" role="tablist" aria-label="Risk Tier Filter">
+          <div
+            className="dx-tier-filter-row"
+            role="group"
+            aria-label="Risk Tier Filter"
+          >
             <button
               className={`dx-tier-btn ${tierFilter === "ALL" ? "active" : ""}`}
               onClick={() => setTierFilter("ALL")}
@@ -97,19 +123,29 @@ export default function PatientRegistryPanel({
             >
               STABLE ({counts.calm})
             </button>
+            <button
+              className={`dx-tier-btn ${tierFilter === "UNKNOWN" ? "active" : ""}`}
+              onClick={() => setTierFilter("UNKNOWN")}
+            >
+              UNSCORED ({counts.unknown})
+            </button>
           </div>
         </div>
 
-        <div className="dx-patient-scroll-list" role="list">
+        <div
+          className="dx-patient-scroll-list"
+          role="region"
+          aria-label="Patient directory"
+        >
           {filteredPatients.map((p) => {
             const isSelected = p.person_id === selectedPatient?.person_id;
-            const tier = p.risk_status?.tier || "CALM";
+            const tier = p.risk_status?.tier || "UNKNOWN";
             return (
               <button
                 key={p.person_id}
                 className={`dx-patient-card ${tier.toLowerCase()} ${isSelected ? "selected" : ""}`}
                 onClick={() => onSelectPatient(p.person_id)}
-                role="listitem"
+                aria-label={`Select ${p.person_id} ${p.display_name}`}
                 aria-pressed={isSelected}
               >
                 <div className="dx-patient-card-left">
@@ -122,7 +158,8 @@ export default function PatientRegistryPanel({
                       <span>{p.display_name}</span>
                     </div>
                     <div className="dx-patient-meta">
-                      {p.age_years}y · {p.sex.charAt(0).toUpperCase()} · BMI {p.bmi} · {p.years_with_diabetes}y T2DM
+                      {p.age_years}y · {p.sex.charAt(0).toUpperCase()} · BMI{" "}
+                      {p.bmi} · {p.years_with_diabetes}y T2DM
                     </div>
                   </div>
                 </div>
@@ -132,19 +169,30 @@ export default function PatientRegistryPanel({
                     {tier === "HIGH" && <AlertTriangle size={10} />}
                     {tier === "WATCH" && <Activity size={10} />}
                     {tier === "CALM" && <ShieldCheck size={10} />}
-                    <span>{tier}</span>
+                    <span>{tier === "UNKNOWN" ? "UNSCORED" : tier}</span>
                   </div>
                   <div className="dx-patient-hba1c">
                     HbA1c <strong>{p.hba1c_percent}%</strong>
+                    {p.risk_status?.decision_time && (
+                      <small className="risk-asof">
+                        {p.risk_status.decision_time
+                          .slice(0, 16)
+                          .replace("T", " ")}
+                      </small>
+                    )}
                   </div>
                 </div>
 
-                {isSelected && <ChevronRight size={14} className="dx-patient-arrow" />}
+                {isSelected && (
+                  <ChevronRight size={14} className="dx-patient-arrow" />
+                )}
               </button>
             );
           })}
           {filteredPatients.length === 0 && (
-            <div className="dx-empty-list">No patients match "{searchQuery}"</div>
+            <div className="dx-empty-list">
+              No patients match "{searchQuery}"
+            </div>
           )}
         </div>
         <i className="dx-panel-decoration" />
@@ -171,13 +219,19 @@ export default function PatientRegistryPanel({
               <div className="dx-profile-hero-text">
                 <h3>{selectedPatient.display_name}</h3>
                 <p>
-                  <span>{selectedPatient.person_id}</span> · {selectedPatient.age_years} yrs ·{" "}
-                  {selectedPatient.sex.toUpperCase()} · BMI <strong>{selectedPatient.bmi}</strong> ·{" "}
+                  <span>{selectedPatient.person_id}</span> ·{" "}
+                  {selectedPatient.age_years} yrs ·{" "}
+                  {selectedPatient.sex.toUpperCase()} · BMI{" "}
+                  <strong>{selectedPatient.bmi}</strong> ·{" "}
                   {selectedPatient.years_with_diabetes} yrs T2DM
                 </p>
               </div>
-              <div className={`dx-profile-tier-badge ${(selectedPatient.risk_status?.tier || "calm").toLowerCase()}`}>
-                {selectedPatient.risk_status?.tier || "CALM"} RISK
+              <div
+                className={`dx-profile-tier-badge ${(selectedPatient.risk_status?.tier || "unknown").toLowerCase()}`}
+              >
+                {selectedPatient.risk_status
+                  ? `${selectedPatient.risk_status.tier} RISK`
+                  : "UNSCORED"}
               </div>
             </div>
 
@@ -210,7 +264,7 @@ export default function PatientRegistryPanel({
               </div>
 
               <div className="dx-lab-cell">
-                <span className="dx-lab-label">PEAK EXCURSION</span>
+                <span className="dx-lab-label">POSTPRANDIAL LAB GLUCOSE</span>
                 <strong className="dx-lab-value alert">
                   {selectedPatient.postprandial_glucose_mg_dl}
                   <small>mg/dL</small>
@@ -263,33 +317,46 @@ export default function PatientRegistryPanel({
                       </span>
                     ))
                 ) : (
-                  <span className="dx-med-pill">Metformin 500mg BID</span>
+                  <span className="dx-med-pill">
+                    No medication details recorded
+                  </span>
                 )}
-                {selectedPatient.on_metformin === "yes" && !selectedPatient.hypoglycemic_agents_raw?.includes("metformin") && (
-                  <span className="dx-med-pill">Metformin 500mg</span>
-                )}
-                {selectedPatient.on_insulin === "yes" && !selectedPatient.hypoglycemic_agents_raw?.includes("insulin") && (
-                  <span className="dx-med-pill alert">Basal Insulin</span>
-                )}
+                {selectedPatient.on_metformin === "yes" &&
+                  !selectedPatient.hypoglycemic_agents_raw
+                    ?.toLowerCase()
+                    .includes("metformin") && (
+                    <span className="dx-med-pill">
+                      Metformin prescribed · dose not supplied
+                    </span>
+                  )}
+                {selectedPatient.on_insulin === "yes" &&
+                  !selectedPatient.hypoglycemic_agents_raw
+                    ?.toLowerCase()
+                    .includes("insulin") && (
+                    <span className="dx-med-pill alert">
+                      Insulin prescribed · formulation not supplied
+                    </span>
+                  )}
               </div>
             </div>
 
             {/* Comorbidities */}
-            {selectedPatient.comorbidities && selectedPatient.comorbidities !== "none" && (
-              <div className="dx-comorbidities-section">
-                <div className="dx-section-title">
-                  <Activity size={11} />
-                  <span>RECORDED COMORBIDITIES</span>
+            {selectedPatient.comorbidities &&
+              selectedPatient.comorbidities !== "none" && (
+                <div className="dx-comorbidities-section">
+                  <div className="dx-section-title">
+                    <Activity size={11} />
+                    <span>RECORDED COMORBIDITIES</span>
+                  </div>
+                  <div className="dx-comorbid-pills">
+                    {selectedPatient.comorbidities.split(",").map((c, idx) => (
+                      <span key={idx} className="dx-comorbid-tag">
+                        {c.trim()}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <div className="dx-comorbid-pills">
-                  {selectedPatient.comorbidities.split(",").map((c, idx) => (
-                    <span key={idx} className="dx-comorbid-tag">
-                      {c.trim()}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
           </div>
           <i className="dx-panel-decoration" />
         </section>

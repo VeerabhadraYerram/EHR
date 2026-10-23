@@ -1,31 +1,11 @@
-# EHR Diagnostic Workstation
+# EHR Twin workstation
 
-The diagnostic workstation is the only active frontend. Both `/` and `/diagnostics` open the same interface; retired application paths normalize to `/`.
+Run `npm ci` then `npm run dev` here. Open http://localhost:5188/overview.
 
-## Run locally
+Pages: overview, patients, forecast, scenarios, anatomy, review, genomics, reports, evidence. Patient/date/reading selections are encoded in the URL; browser navigation and direct links preserve the selected snapshot.
 
-```bash
-cd frontend/doctor-review-ui
-npm ci
-npm run dev
-```
+Vite proxies twin APIs to 8004, workflow APIs to 8005, identity APIs to 8002, fusion APIs to 8003, terminology to 8001 and other ingestion APIs to 8000. Start services using `python scripts/run_app.py` from the repository root.
 
-Open http://127.0.0.1:5188/.
+The warm paper/charcoal/green interface retains the existing anatomical artwork. Model probabilities, trajectories and genuine TreeSHAP are returned by the backend at the exact selected timestamp. No fabricated fallback forecasts are displayed. Recorded CGM replay is distinguished from live devices; scenarios and organ physiology remain explicitly illustrative.
 
-```bash
-npm run build
-npm run preview
-```
-
-## Interface
-
-- Anatomical and cortical illustrations with interactive overlay controls and a projected view-angle toggle.
-- Illustrative MRI planes, thoracic imaging, physiology signals, genomic sequence exploration, and reconstruction indicators.
-- Demo subject selection, signal pause/resume, simulated acquisition controls, and downloadable concept reports.
-- Responsive layouts, keyboard-accessible dialogs, and reduced-motion support.
-
-All displayed medical signals, imaging, and reconstruction values are illustrative. The interface does not perform clinical diagnosis, medical-image reconstruction, genomic analysis, or live device monitoring. The anatomical view is an illustration with overlays, not a volumetric 3D renderer.
-
-The existing FastAPI services and model/data pipelines remain in the repository. Vite retains `/api` and `/health` proxying to port 8000; the workstation concept does not claim integration with those services.
-
-DM Sans is self-hosted under `public/fonts/`, with its SIL Open Font License included. Anatomical artwork is stored under `public/diagnostics/`; the remaining technical diagrams are implemented as SVG.
+`npm run build` checks TypeScript and produces the bundle. `npm run lint` checks source. Root pytest tests backend data/model/workflow behavior.

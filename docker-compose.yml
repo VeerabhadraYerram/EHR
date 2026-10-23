@@ -38,10 +38,11 @@ services:
       - ehr-minio
     entrypoint: >
       /bin/sh -c "
+      set -e;
       sleep 3;
       /usr/bin/mc alias set local http://ehr-minio:9000 minioadmin minioadmin;
       /usr/bin/mc mb --ignore-existing local/ehr-raw-inputs;
-      /usr/bin/mc anonymous set download local/ehr-raw-inputs;
+      /usr/bin/mc anonymous set none local/ehr-raw-inputs;
       exit 0;
       "
 

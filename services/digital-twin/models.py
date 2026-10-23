@@ -4,10 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Any, Dict, List, Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class ClinicalFeatures(BaseModel):
+    model_config = {"allow_inf_nan": False}
+
     """The 24 standardized clinical input variables driving the Digital Twin."""
 
     age_years: float = Field(..., description="Age in years")
@@ -44,8 +46,8 @@ class TrajectoryPoint(BaseModel):
 
     horizon_minutes: int = Field(..., description="Minutes ahead (+15, +30, ..., +120)")
     projected_glucose_mg_dl: float = Field(..., description="Expected continuous glucose level")
-    lower_bound_p10_mg_dl: float = Field(..., description="10th percentile confidence bound")
-    upper_bound_p90_mg_dl: float = Field(..., description="90th percentile confidence bound")
+    lower_bound_p10_mg_dl: float = Field(..., description="Illustrative lower sensitivity bound (legacy field name; not a calibrated percentile)")
+    upper_bound_p90_mg_dl: float = Field(..., description="Illustrative upper sensitivity bound (legacy field name; not a calibrated percentile)")
 
 
 class SHAPDriver(BaseModel):
@@ -71,6 +73,14 @@ class PredictionResponse(BaseModel):
     predicted_peak_time_minutes: int = Field(..., description="Time horizon of peak (+15 to +120 min)")
     continuous_trajectory: List[TrajectoryPoint] = Field(..., description="8-step forward curve")
     top_shap_drivers: List[SHAPDriver] = Field(..., description="Top 5 mathematical risk drivers")
+    event_status: Literal["incident_forecast", "ongoing_hyperglycemia"] = "incident_forecast"
+    model_applicable: bool = True
+    features: Dict[str, float] = Field(default_factory=dict)
+    feature_provenance: Dict[str, Any] = Field(default_factory=dict)
+    explanation: Dict[str, Any] = Field(default_factory=dict)
+    model_provenance: Dict[str, Any] = Field(default_factory=dict)
+    uncertainty_method: str = "Illustrative sensitivity envelope; not calibrated prediction intervals."
+    warnings: List[str] = Field(default_factory=list)
 
 
 class InterventionSpec(BaseModel):
@@ -88,6 +98,26 @@ class InterventionSpec(BaseModel):
         default_factory=dict,
         description="e.g. {'duration_minutes': 20, 'intensity': 'brisk'}, {'carb_reduction_g': 35}",
     )
+
+
+    @model_validator(mode="after")
+    def validate_parameters(self):
+        ranges = {"duration_minutes": (1, 120), "carb_reduction_g": (0, 150),
+                  "delay_carbs_minutes": (0, 60), "dose_mg": (1, 3000),
+                  "units": (0, 20), "isf_mg_dl_per_unit": (5, 150)}
+        for key, (low, high) in ranges.items():
+            if key in self.parameters:
+                try:
+                    value = float(self.parameters[key])
+                except (ValueError, TypeError) as exc:
+                    raise ValueError(f"{key} must be numeric") from exc
+                if not low <= value <= high:
+                    raise ValueError(f"{key} must be between {low} and {high}")
+        if "intensity" in self.parameters and self.parameters["intensity"] not in ["brisk", "moderate", "gentle"]:
+            raise ValueError("intensity must be brisk, moderate or gentle")
+        if self.intervention_type == "insulin_bolus" and "isf_mg_dl_per_unit" not in self.parameters:
+            raise ValueError("Insulin sensitivity must be explicitly supplied for an educational insulin scenario")
+        return self
 
 
 class SimulationBranchResult(BaseModel):
@@ -108,7 +138,9 @@ class SimulationBranchResult(BaseModel):
     simulated_tir_percent: float
     spike_averted: bool
     hypoglycemia_risk_warning: bool
-    clarke_safety_zone: Literal["Zone A (Safe)", "Zone B (Benign)", "Zone C/D/E (Unsafe)"]
+    clarke_safety_zone: Optional[str] = None
+    simulation_method: str = "Assumption-based physiological sensitivity analysis; not a causal treatment model."
+    clinically_validated: bool = False
     simulated_trajectory: List[TrajectoryPoint]
     clinical_rationale: str
     biophysical_mechanism: str
@@ -118,6 +150,7 @@ class SimulationRequest(BaseModel):
     """Request to evaluate baseline state and multiple in-silico 'What-If' scenarios."""
 
     person_id: Optional[str] = Field("P001")
+    decision_time: Optional[str] = None
     features: Optional[ClinicalFeatures] = Field(None)
     interventions: List[InterventionSpec] = Field(
         default_factory=lambda: [

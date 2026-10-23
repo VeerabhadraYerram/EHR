@@ -1,780 +1,1432 @@
-import { useEffect, useRef, useState, useMemo } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Activity,
   ArrowDownToLine,
-  ArrowLeft,
   ArrowRight,
+  BookOpen,
   Check,
-  ChevronDown,
-  Cross,
-  Layers3,
-  Maximize2,
-  RotateCcw,
+  ChevronRight,
+  ClipboardCheck,
+  Dna,
+  FileText,
+  FlaskConical,
+  HeartPulse,
+  LayoutDashboard,
+  Menu,
+  RefreshCw,
+  Users,
   X,
 } from "lucide-react";
+import type {
+  InterventionSpec,
+  Patient,
+  PatientSimulation,
+  Reading,
+  SimulationBranch,
+} from "./types";
 import {
-  DnaHelix,
-} from "./MedicalVisuals";
-import { OrganVisual } from "./OrganVisuals";
-import { organInfo, twinViews } from "./organDefinitions";
-import type { Organ, TwinView } from "./organDefinitions";
+  downloadJson,
+  fetchPatientDates,
+  fetchPatientReadings,
+  fetchPatientSimulation,
+  fetchPatientsList,
+  requestJson,
+} from "./patientService";
+import { computeKineticTelemetry } from "./kineticEngine";
+import PatientRegistryPanel from "./PatientRegistryPanel";
+import GlucoseForecastPanel from "./GlucoseForecastPanel";
+import LiveWearablesPanel from "./LiveWearablesPanel";
+import AnatomyWorkspace from "./AnatomyWorkspace";
+import ClinicalWorkflowPage from "./ClinicalWorkflowPage";
+import { DnaHelix } from "./MedicalVisuals";
 import "./diagnostics.css";
 import "./organ-twins.css";
 import "./patient-workstation.css";
+import "./clinical-app.css";
 
-import BodyTwinVisual from "./BodyTwinVisual";
-import { computeKineticTelemetry } from "./kineticEngine";
+const pages = [
+  {
+    id: "overview",
+    label: "Overview",
+    icon: LayoutDashboard,
+    description: "A clear view of the patient, right now.",
+  },
+  {
+    id: "patients",
+    label: "Patients",
+    icon: Users,
+    description: "Browse the cohort and inspect the clinical record.",
+  },
+  {
+    id: "forecast",
+    label: "Glucose forecast",
+    icon: Activity,
+    description: "One patient. One timestamp. One model prediction.",
+  },
+  {
+    id: "scenarios",
+    label: "What-if scenarios",
+    icon: FlaskConical,
+    description: "Explore how physiological assumptions change a trajectory.",
+  },
+  {
+    id: "anatomy",
+    label: "Anatomical twins",
+    icon: HeartPulse,
+    description: "Explore the existing body and organ atlas.",
+  },
+  {
+    id: "review",
+    label: "Clinical review",
+    icon: ClipboardCheck,
+    description: "Review source facts, reconcile conflicts and approve care.",
+  },
+  {
+    id: "genomics",
+    label: "Genomics explorer",
+    icon: Dna,
+    description: "An interactive educational sequence explorer.",
+  },
+  {
+    id: "reports",
+    label: "Reports & exports",
+    icon: FileText,
+    description: "Inspect and export the same prediction you see on screen.",
+  },
+  {
+    id: "evidence",
+    label: "Model & evidence",
+    icon: BookOpen,
+    description: "Understand the data, measured performance and limitations.",
+  },
+] as const;
+type Page = (typeof pages)[number]["id"];
+interface CohortRisk {
+  person_id: string;
+  decision_time: string;
+  risk_tier: string;
+  calibrated_spike_probability: number;
+  predicted_peak_glucose_mg_dl: number;
+  model_applicable: boolean;
+}
+function currentPage(): Page {
+  const path = window.location.pathname.split("/")[1];
+  return pages.some((p) => p.id === path) ? (path as Page) : "overview";
+}
+const fmt = (v: unknown) =>
+  v === undefined || v === null || v === "" ? "—" : String(v);
+const riskText = (s: PatientSimulation | null) =>
+  !s
+    ? "Awaiting forecast"
+    : s.baseline.model_applicable === false
+      ? "Ongoing high glucose"
+      : `${Math.round(s.baseline.calibrated_spike_probability * 100)}% · ${s.baseline.risk_tier === "CALM" ? "Low" : s.baseline.risk_tier.toLowerCase()} risk`;
+const DEFAULT_INTERVENTIONS: InterventionSpec[] = [
+  {
+    intervention_type: "postprandial_walk",
+    parameters: { duration_minutes: 20, intensity: "brisk" },
+  },
+  { intervention_type: "carb_reduction", parameters: { carb_reduction_g: 25 } },
+  {
+    intervention_type: "food_sequencing",
+    parameters: { delay_carbs_minutes: 15, preload_type: "fiber_protein" },
+  },
+  {
+    intervention_type: "compound_lifestyle",
+    parameters: { duration_minutes: 20, carb_reduction_g: 25 },
+  },
+  {
+    intervention_type: "confirm_medication",
+    parameters: { drug: "metformin", dose_mg: 500 },
+  },
+];
 
-import type { Patient, Reading, PatientSimulation } from "./types";
-import { fetchPatientsList, fetchPatientReadings, fetchPatientSimulation } from "./patientService";
-import PatientRegistryPanel from "./PatientRegistryPanel";
-import LiveWearablesPanel from "./LiveWearablesPanel";
-import GlucoseForecastPanel from "./GlucoseForecastPanel";
+export default function DiagnosticWorkstation() {
+  const [page, setPage] = useState<Page>(currentPage),
+    [mobileMenu, setMobileMenu] = useState(false);
+  const [patients, setPatients] = useState<Patient[]>([]),
+    [selectedId, setSelectedId] = useState("");
+  const [dates, setDates] = useState<string[]>([]),
+    [date, setDate] = useState("");
+  const [readings, setReadings] = useState<Reading[]>([]),
+    [index, setIndex] = useState(0);
+  const [simulation, setSimulation] = useState<PatientSimulation | null>(null),
+    [snapshots, setSnapshots] = useState<Record<string, PatientSimulation>>({});
+  const [loading, setLoading] = useState(true),
+    [predicting, setPredicting] = useState(false),
+    [error, setError] = useState(""),
+    [predictionError, setPredictionError] = useState("");
+  const [reload, setReload] = useState(0),
+    [running, setRunning] = useState(false),
+    [speed, setSpeed] = useState(1);
+  const [interventions, setInterventions] = useState<InterventionSpec[]>(
+      DEFAULT_INTERVENTIONS,
+    ),
+    [branchId, setBranchId] = useState("");
+  const [toast, setToast] = useState("");
+  const requestedDate = useRef(new URLSearchParams(window.location.search).get("date"));
+  const requestedTime = useRef(new URLSearchParams(window.location.search).get("time"));
+  const [exporting, setExporting] = useState(false);
+  const [cohortRisks, setCohortRisks] = useState<Record<string, CohortRisk>>(
+      {},
+    ),
+    [scoringCohort, setScoringCohort] = useState(false),
+    [cohortError, setCohortError] = useState(""),
+    [cohortReload, setCohortReload] = useState(0);
+  const [alertAcknowledged, setAlertAcknowledged] = useState<
+    Record<string, boolean>
+  >({});
+  const patient = patients.find((p) => p.person_id === selectedId);
+  const reading = readings[index] || null;
+  const shared =
+    simulation?.person_id === selectedId &&
+    simulation?.baseline.decision_time === reading?.reading_time
+      ? simulation
+      : null;
+  const prev = readings[Math.max(0, index - 2)];
+  const telemetry = useMemo(
+    () => computeKineticTelemetry(patient, reading || undefined, prev),
+    [patient, reading, prev],
+  );
+  const historical = useMemo(
+    () => readings.slice(0, index + 1),
+    [readings, index],
+  );
+  const branch =
+    shared?.counterfactual_branches.find(
+      (b) => b.intervention_type === branchId,
+    ) || null;
+  const pageInfo = pages.find((p) => p.id === page)!;
 
-const bases = "ATCGGATCGAGCTAGCATCGTAGCATGCGATC".split("");
-
-const structureNotes: Record<Organ, string[]> = {
-  pancreas: [
-    "Broad part of the pancreas, shown at the anatomical right.",
-    "Central portion of the gland, extending across the upper abdomen.",
-    "Tapered end of the pancreas toward the anatomical left.",
-  ],
-  kidneys: [
-    "Shown on the viewer’s left in this anterior illustration.",
-    "Shown on the viewer’s right in this anterior illustration.",
-    "Medial region where vessels enter and leave the kidney.",
-  ],
-  heart: [
-    "Major vessel emerging from the superior part of the heart.",
-    "External surface of the heart’s lower chambers.",
-    "Inferior tip of the heart, formed by the left ventricle.",
-  ],
-  brain: [
-    "Folded outer surface of the cerebral hemispheres.",
-    "Structure behind and below the cerebrum.",
-    "Connection between the brain and spinal cord.",
-  ],
-};
-
-function Panel({
-  title,
-  tag,
-  children,
-  className = "",
-  action,
-}: {
-  title: string;
-  tag?: string;
-  children: ReactNode;
-  className?: string;
-  action?: () => void;
-}) {
+  useEffect(() => {
+    document.title = `${pageInfo.label} · EHR Twin`;
+  }, [pageInfo.label]);
+  useEffect(() => {
+    const pop = () => {
+      setPage(currentPage());
+      const q = new URLSearchParams(window.location.search);
+      const id = q.get("patient");
+      const d = q.get("date");
+      const t = q.get("time");
+      const patientChanged = Boolean(id && id !== selectedId);
+      const dayChanged = Boolean(d && d !== date);
+      if (patientChanged || dayChanged) {
+        requestedDate.current = d;
+        requestedTime.current = t;
+        setLoading(true);
+        setRunning(false);
+        setReadings([]);
+        setSimulation(null);
+      }
+      if (id && id !== selectedId) {
+        setDate("");
+        setSelectedId(id);
+        setBranchId("");
+        setInterventions(DEFAULT_INTERVENTIONS);
+      } else if (d && dayChanged) {
+        setDate(d);
+      }
+      if (t && !patientChanged && !dayChanged) {
+        const i = readings.findIndex((r) => r.reading_time === t);
+        if (i >= 0) setIndex(i);
+      }
+    };
+    window.addEventListener("popstate", pop);
+    return () => window.removeEventListener("popstate", pop);
+  }, [selectedId, date, readings]);
+  useEffect(() => {
+    const c = new AbortController();
+    setLoading(true);
+    setError("");
+    fetchPatientsList(c.signal)
+      .then((list) => {
+        if (c.signal.aborted) return;
+        setPatients(list);
+        const desired = new URLSearchParams(window.location.search).get(
+          "patient",
+        );
+        setSelectedId(
+          list.some((p) => p.person_id === desired)
+            ? desired!
+            : list.find((p) => p.person_id === "P001")?.person_id ||
+                list[0]?.person_id ||
+                "",
+        );
+        if (!list.length) {
+          setError("The patient registry is empty.");
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") {
+          setError(`Unable to load registry: ${e.message}`);
+          setLoading(false);
+        }
+      });
+    return () => c.abort();
+  }, [reload]);
+  useEffect(() => {
+    if (!selectedId) return;
+    const c = new AbortController();
+    setLoading(true);
+    setError("");
+    setReadings([]);
+    setSimulation(null);
+    setDates([]);
+    fetchPatientDates(selectedId, c.signal)
+      .then((result) => {
+        if (c.signal.aborted) return;
+        setDates(result.dates);
+        const requested = requestedDate.current;
+        requestedDate.current = null;
+        setDate(
+          requested && result.dates.includes(requested)
+            ? requested
+            : result.default_date || result.dates[0] || "",
+        );
+        if (!result.dates.length) {
+          setError("No recorded CGM days exist for this patient.");
+          setLoading(false);
+        }
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") {
+          setError(`Unable to load recording dates: ${e.message}`);
+          setLoading(false);
+        }
+      });
+    return () => c.abort();
+  }, [selectedId, reload]);
+  useEffect(() => {
+    if (!selectedId || !date) return;
+    const c = new AbortController();
+    setLoading(true);
+    setReadings([]);
+    setSimulation(null);
+    setError("");
+    setRunning(false);
+    fetchPatientReadings(selectedId, date, c.signal)
+      .then((rows) => {
+        if (c.signal.aborted) return;
+        setReadings(rows);
+        const requested = requestedTime.current;
+        requestedTime.current = null;
+        const matching = requested
+          ? rows.findIndex((r) => r.reading_time === requested)
+          : -1;
+        let initial =
+          matching >= 0
+            ? matching
+            : rows.findIndex(
+                (r, i) => i >= 8 && r.glucose_mg_dl < 180 && r.time !== "00:00",
+              );
+        if (initial < 0) initial = Math.min(8, Math.max(0, rows.length - 1));
+        setIndex(initial);
+        setLoading(false);
+        if (!rows.length)
+          setError("This recording has no usable glucose readings.");
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") {
+          setError(`Unable to load CGM readings: ${e.message}`);
+          setLoading(false);
+        }
+      });
+    return () => c.abort();
+  }, [selectedId, date, reload]);
+  useEffect(() => {
+    if (!selectedId || !reading) return;
+    const c = new AbortController();
+    setSimulation(null);
+    setPredicting(true);
+    setPredictionError("");
+    const timer = setTimeout(() => {
+      fetchPatientSimulation(
+        selectedId,
+        reading.reading_time,
+        interventions,
+        c.signal,
+      )
+        .then((result) => {
+          if (c.signal.aborted) return;
+          if (
+            result.person_id !== selectedId ||
+            result.baseline.decision_time !== reading.reading_time
+          )
+            throw new Error(
+              "The API returned a different patient or timestamp.",
+            );
+          setSimulation(result);
+          setSnapshots((prev) => ({ ...prev, [selectedId]: result }));
+          setPredicting(false);
+        })
+        .catch((e) => {
+          if (e.name !== "AbortError") {
+            setPredictionError(e.message);
+            setPredicting(false);
+          }
+        });
+    }, 160);
+    return () => {
+      c.abort();
+      clearTimeout(timer);
+    };
+  }, [selectedId, reading, interventions, reload]);
+  useEffect(() => {
+    if (!selectedId || loading || !date || !reading) return;
+    const q = new URLSearchParams({ patient: selectedId });
+    if (date) q.set("date", date);
+    if (reading) q.set("time", reading.reading_time);
+    window.history.replaceState(null, "", `/${page}?${q}`);
+  }, [selectedId, date, reading, page, loading]);
+  useEffect(() => {
+    if (page !== "patients" || !patients.length) return;
+    const c = new AbortController();
+    setScoringCohort(true);
+    setCohortError("");
+    requestJson<{ summaries: CohortRisk[] }>(
+      "/api/v1/twin/cohort/risk-summaries",
+      { signal: c.signal },
+    )
+      .then((result) => {
+        setCohortRisks(
+          Object.fromEntries(result.summaries.map((r) => [r.person_id, r])),
+        );
+        setScoringCohort(false);
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") {
+          setCohortError(e.message);
+          setScoringCohort(false);
+        }
+      });
+    return () => c.abort();
+  }, [page, patients.length, cohortReload]);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(""), 4500);
+    return () => clearTimeout(timer);
+  }, [toast]);
+  function navigate(next: Page) {
+    window.history.pushState(null, "", `/${next}${window.location.search}`);
+    setPage(next);
+    setMobileMenu(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  function selectPatient(id: string) {
+    if (id === selectedId) return;
+    requestedDate.current = null;
+    requestedTime.current = null;
+    setLoading(true);
+    setRunning(false);
+    setReadings([]);
+    setSimulation(null);
+    setDate("");
+    setSelectedId(id);
+    setBranchId("");
+    setInterventions(DEFAULT_INTERVENTIONS);
+  }
+  function refreshData() {
+    requestedDate.current = date || null;
+    requestedTime.current = reading?.reading_time || null;
+    setReload((v) => v + 1);
+  }
+  const displayPatients = patients.map((p) => {
+    const s = p.person_id === selectedId ? shared : (cohortRisks[p.person_id] ? null : snapshots[p.person_id]);
+    const c = p.person_id !== selectedId ? cohortRisks[p.person_id] : undefined;
+    const b = s?.baseline || (c?.model_applicable ? c : null);
+    return {
+      ...p,
+      risk_status:
+        b && b.model_applicable !== false
+          ? {
+              tier: b.risk_tier as "HIGH" | "WATCH" | "CALM",
+              spike_probability: b.calibrated_spike_probability,
+              projected_peak_mg_dl: b.predicted_peak_glucose_mg_dl,
+              decision_time: b.decision_time,
+              reason_medical: `Evaluated at ${b.decision_time}`,
+            }
+          : undefined,
+    };
+  });
+  const acknowledgementKey = shared
+    ? `${shared.person_id}:${shared.decision_time}`
+    : "";
+  const snapshot = {
+    title: "Digital Twin Patient Dossier",
+    cohort:
+      "Research-derived demonstration profiles; source measurements and derived estimates retain provenance.",
+    patient,
+    recording_date: date,
+    as_of: reading?.reading_time,
+    reading,
+    ml_inference: shared?.baseline,
+    counterfactual_simulations: shared?.counterfactual_branches,
+    optimal_recommendation: shared?.optimal_recommended_action,
+    exported_at: new Date().toISOString(),
+  };
+  async function exportFhir() {
+    if (!reading) return;
+    setExporting(true);
+    try {
+      const q = new URLSearchParams({ decision_time: reading.reading_time });
+      const bundle = await requestJson(
+        `/api/v1/twin/fhir/bundle/${selectedId}?${q}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(interventions),
+        },
+      );
+      downloadJson(`twin-${selectedId}-fhir.json`, bundle);
+      setToast("FHIR snapshot exported.");
+    } catch (e) {
+      setToast(`Export failed: ${(e as Error).message}`);
+    } finally {
+      setExporting(false);
+    }
+  }
+  const wearable = (
+    <LiveWearablesPanel
+      readings={readings}
+      currentIndex={index}
+      onIndexChange={setIndex}
+      isRunning={running && !predicting}
+      onToggleRunning={() => setRunning(!running)}
+      playbackSpeed={speed}
+      onSpeedChange={setSpeed}
+    />
+  );
+  const forecastProps = {
+    simulation: shared,
+    currentReading: reading,
+    historicalReadings: historical,
+    futureReadings: readings.slice(index + 1),
+    loading: predicting,
+  };
   return (
-    <section className={`dx-panel ${className}`}>
-      <header className="dx-panel-heading">
-        <h2>{title}</h2>
-        {action ? (
-          <button aria-label={`Expand ${title.toLowerCase()}`} onClick={action}>
-            <Maximize2 size={12} />
+    <div className="diagnostic-workstation clinical-app">
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
+      <aside className={`app-sidebar ${mobileMenu ? "open" : ""}`}>
+        <a
+          className="app-brand"
+          href="/overview"
+          onClick={(e) => {
+            e.preventDefault();
+            navigate("overview");
+          }}
+        >
+          <span className="brand-mark">
+            <HeartPulse size={22} />
+          </span>
+          <div>
+            <strong>
+              ehr<span> / twin</span>
+            </strong>
+            <small>Clinical intelligence</small>
+          </div>
+        </a>
+        <div className="sidebar-section-label">Workspace</div>
+        <nav aria-label="Main navigation">
+          {pages.map((p) => (
+            <a
+              key={p.id}
+              href={`/${p.id}${window.location.search}`}
+              aria-current={page === p.id ? "page" : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(p.id);
+              }}
+            >
+              <p.icon size={18} />
+              <span>{p.label}</span>
+              {page === p.id && <ChevronRight size={14} />}
+            </a>
+          ))}
+        </nav>
+        <div className="sidebar-bottom">
+          <div className="research-dot" />
+          <strong>Research workspace</strong>
+          <p>
+            100 demonstration profiles
+            <br />
+            Recorded CGM · trained ML
+          </p>
+          <small>Local development environment</small>
+        </div>
+      </aside>
+      {mobileMenu && (
+        <button
+          className="sidebar-scrim"
+          aria-label="Close navigation"
+          onClick={() => setMobileMenu(false)}
+        />
+      )}
+      <div className="app-main">
+        <header className="app-topbar">
+          <div className="topbar-crumb">
+            <button
+              className="icon-button mobile-menu"
+              aria-label="Toggle navigation"
+              onClick={() => setMobileMenu(!mobileMenu)}
+            >
+              <Menu size={20} />
+            </button>
+            <span>Workspace</span>
+            <ChevronRight size={13} />
+            <strong>{pageInfo.label}</strong>
+          </div>
+          <div className="topbar-right">
+            <span className={`connection-status ${error ? "offline" : ""}`}>
+              <i />
+              {error
+                ? "Data unavailable"
+                : loading
+                  ? "Loading recording"
+                  : predicting
+                    ? "Updating forecast"
+                    : shared
+                      ? "Model connected"
+                      : "Recorded data"}
+            </span>
+            <button
+              className="icon-button"
+              aria-label="Refresh patient data"
+              onClick={refreshData}
+            >
+              <RefreshCw size={16} />
+            </button>
+            <span className="user-avatar" title="Local research session">
+              DR
+            </span>
+          </div>
+        </header>
+        <main id="main-content" className="page-content">
+          <div className="page-heading">
+            <div>
+              <span className="eyebrow">
+                Patient workspace / {pageInfo.label}
+              </span>
+              <h1>
+                {page === "overview" ? "Patient overview" : pageInfo.label}
+              </h1>
+              <p>{pageInfo.description}</p>
+            </div>
+            {page === "overview" && (
+              <button
+                className="button secondary"
+                onClick={() => navigate("reports")}
+              >
+                <ArrowDownToLine size={15} />
+                Patient report
+              </button>
+            )}
+          </div>
+          <section
+            className="patient-context-bar"
+            aria-label="Selected patient context"
+          >
+            <div className="context-identity">
+              <span className="patient-avatar">
+                {patient?.display_name
+                  .split(" ")
+                  .map((n) => n[0])
+                  .slice(0, 2)
+                  .join("") || "—"}
+              </span>
+              <div>
+                <label htmlFor="patient-switch">Selected patient</label>
+                <select
+                  id="patient-switch"
+                  aria-label="Select patient"
+                  value={selectedId}
+                  onChange={(e) => selectPatient(e.target.value)}
+                  disabled={!patients.length}
+                >
+                  {!patients.length && <option>Loading registry…</option>}
+                  {patients.map((p) => (
+                    <option key={p.person_id} value={p.person_id}>
+                      {p.person_id} · {p.display_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            <div className="context-fact">
+              <span>Profile</span>
+              <strong>
+                {patient ? `${patient.age_years} years · ${patient.sex}` : "—"}
+              </strong>
+            </div>
+            <div className="context-fact">
+              <span>HbA1c</span>
+              <strong>
+                {fmt(patient?.hba1c_percent)} <small>%</small>
+              </strong>
+            </div>
+            <div className="context-fact">
+              <label htmlFor="recording-date">Recorded day</label>
+              <select
+                id="recording-date"
+                value={date}
+                onChange={(e) => {
+                  requestedTime.current = null;
+                  setLoading(true);
+                  setRunning(false);
+                  setReadings([]);
+                  setSimulation(null);
+                  setDate(e.target.value);
+                }}
+                disabled={!dates.length}
+              >
+                {dates.map((d) => (
+                  <option key={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <div className="context-risk">
+              <span>Shared forecast · {reading?.time || "—"}</span>
+              <strong data-testid="shared-risk">
+                {predicting ? "Updating…" : riskText(shared)}
+              </strong>
+            </div>
+          </section>
+          {error && (
+            <div className="notice error" role="alert">
+              <strong>Data could not be loaded.</strong>
+              <p>{error}</p>
+              <button
+                className="button secondary"
+                onClick={refreshData}
+              >
+                Try again
+              </button>
+            </div>
+          )}
+          {predictionError && (
+            <div className="notice warning" role="status">
+              <strong>Forecast unavailable for this reading.</strong>
+              <p>{predictionError}</p>
+              <small>
+                Recorded measurements remain available. Choose a later reading
+                or retry.
+              </small>
+              <button
+                className="text-button"
+                onClick={refreshData}
+              >
+                Retry forecast
+              </button>
+            </div>
+          )}
+          {loading && !error && (
+            <div className="paper-card loading-state" role="status">
+              <span className="loading-spinner" />
+              <h3>Loading the clinical recording</h3>
+              <p>Retrieving patient facts and sensor history from the API.</p>
+            </div>
+          )}
+          {!loading && patient && (
+            <>
+              {page === "overview" && (
+                <>
+                  <div className="overview-top">
+                    <section className="paper-card patient-summary">
+                      <div className="card-heading">
+                        <span className="eyebrow">Today’s focus</span>
+                        <span className="subtle-tag">Type 2 diabetes</span>
+                      </div>
+                      <h2>{patient.display_name}</h2>
+                      <p className="muted">
+                        {patient.person_id} · {patient.years_with_diabetes}{" "}
+                        years with diabetes · BMI {patient.bmi}
+                      </p>
+                      <div className="hero-reading">
+                        <strong>
+                          {reading ? Math.round(reading.glucose_mg_dl) : "—"}
+                        </strong>
+                        <div>
+                          mg/dL<span>Recorded at {reading?.time || "—"}</span>
+                        </div>
+                      </div>
+                      <div className="hero-risk">
+                        <span>Two-hour incident forecast</span>
+                        <strong data-testid="overview-risk">
+                          {predicting ? "Updating…" : riskText(shared)}
+                        </strong>
+                      </div>
+                      <p className="caption">
+                        Review the latest forecast, explore possible scenarios
+                        and keep a record of your decision.
+                      </p>
+                      <button
+                        className="text-button"
+                        onClick={() => navigate("patients")}
+                      >
+                        View clinical profile <ArrowRight size={15} />
+                      </button>
+                    </section>
+                    <GlucoseForecastPanel {...forecastProps} compact />
+                  </div>
+                  <div className="overview-bottom">
+                    <section className="paper-card">
+                      <div className="card-heading">
+                        <div>
+                          <span className="eyebrow">Review next</span>
+                          <h3>
+                            {shared?.baseline.model_applicable === false
+                              ? "Current high reading"
+                              : "Model-guided attention"}
+                          </h3>
+                        </div>
+                        <ClipboardCheck size={20} />
+                      </div>
+                      <p>
+                        {shared?.optimal_recommended_action ||
+                          "A recommendation appears after a model response is available."}
+                      </p>
+                      <p className="caption">
+                        What-if effects are assumption-based estimates. A
+                        clinician reviews any action.
+                      </p>
+                      <div className="button-row">
+                        <button
+                          className="button primary"
+                          onClick={() => navigate("scenarios")}
+                        >
+                          Explore scenarios <ArrowRight size={14} />
+                        </button>
+                        {shared && (
+                          <button
+                            className="button secondary"
+                            disabled={alertAcknowledged[acknowledgementKey]}
+                            onClick={() => {
+                              setAlertAcknowledged((v) => ({
+                                ...v,
+                                [acknowledgementKey]: true,
+                              }));
+                              setToast(
+                                "Marked reviewed for this patient and reading in this session.",
+                              );
+                            }}
+                          >
+                            {alertAcknowledged[acknowledgementKey] ? (
+                              <>
+                                <Check size={14} />
+                                Reviewed
+                              </>
+                            ) : (
+                              "Mark reviewed"
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </section>
+                    <section className="paper-card">
+                      <span className="eyebrow">A connected patient story</span>
+                      <h3>From clinical context to a clearer forecast.</h3>
+                      <div className="quick-links">
+                        <button onClick={() => navigate("anatomy")}>
+                          <HeartPulse size={19} />
+                          <span>
+                            Explore anatomy
+                            <small>Body & four organ views</small>
+                          </span>
+                          <ArrowRight size={16} />
+                        </button>
+                        <button onClick={() => navigate("review")}>
+                          <ClipboardCheck size={19} />
+                          <span>
+                            Clinical review
+                            <small>Verify, reconcile & document</small>
+                          </span>
+                          <ArrowRight size={16} />
+                        </button>
+                        <button onClick={() => navigate("evidence")}>
+                          <BookOpen size={19} />
+                          <span>
+                            Understand the evidence
+                            <small>Data provenance & performance</small>
+                          </span>
+                          <ArrowRight size={16} />
+                        </button>
+                      </div>
+                    </section>
+                  </div>
+                </>
+              )}
+              {page === "patients" && (
+                <>
+                  <div className="cohort-scoring-status">
+                    <p className="caption page-note">
+                      {scoringCohort
+                        ? "Evaluating recorded states for the cohort…"
+                        : "Cohort risks use each profile’s latest eligible recorded moment. The selected patient always uses the current timeline forecast."}{" "}
+                      Source partition labels and laboratory values come from
+                      the patient table.
+                    </p>
+                    <button
+                      className="button secondary"
+                      disabled={scoringCohort}
+                      onClick={() => setCohortReload((v) => v + 1)}
+                    >
+                      {scoringCohort ? "Evaluating…" : "Refresh cohort risks"}
+                    </button>
+                  </div>
+                  {cohortError && (
+                    <p className="notice warning">
+                      Cohort evaluations unavailable: {cohortError}
+                    </p>
+                  )}
+                  <PatientRegistryPanel
+                    patients={displayPatients}
+                    selectedPatientId={selectedId}
+                    onSelectPatient={selectPatient}
+                  />
+                </>
+              )}
+              {page === "forecast" && (
+                <div className="page-stack">
+                  {wearable}
+                  <GlucoseForecastPanel {...forecastProps} />
+                </div>
+              )}
+              {page === "scenarios" && (
+                <div className="page-stack">
+                  <ScenarioControls
+                    appliedSpecs={interventions}
+                    simulation={shared}
+                    busy={predicting}
+                    onRun={setInterventions}
+                    onSelect={setBranchId}
+                    selected={branchId}
+                  />
+                  <GlucoseForecastPanel {...forecastProps} branch={branch} />
+                </div>
+              )}
+              <div hidden={page !== "anatomy"}>
+                <AnatomyWorkspace
+                  key={selectedId}
+                  patient={patient}
+                  reading={reading}
+                  telemetry={telemetry}
+                />
+              </div>
+              {page === "review" && (
+                <ClinicalWorkflowPage patientId={selectedId} />
+              )}
+              {page === "genomics" && <GenomicsPage />}
+              {page === "reports" && (
+                <div className="reports-grid">
+                  <section className="paper-card">
+                    <span className="eyebrow">Patient dossier</span>
+                    <h2>A report with one source of truth.</h2>
+                    <p className="muted">
+                      Includes clinical facts, the exact as-of reading, model
+                      inputs, original TreeSHAP and what-if assumptions.
+                    </p>
+                    <dl className="facts-list">
+                      <div>
+                        <dt>Patient</dt>
+                        <dd>
+                          {patient.display_name} · {selectedId}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Recording</dt>
+                        <dd>
+                          {date} at {reading?.time || "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Incident forecast</dt>
+                        <dd data-testid="report-risk">{riskText(shared)}</dd>
+                      </div>
+                      <div>
+                        <dt>Projected peak</dt>
+                        <dd>
+                          {shared
+                            ? `${shared.baseline.predicted_peak_glucose_mg_dl} mg/dL`
+                            : "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Dataset partition</dt>
+                        <dd>{patient.split}</dd>
+                      </div>
+                    </dl>
+                    <div className="button-row">
+                      <button
+                        className="button primary"
+                        disabled={!shared}
+                        onClick={() => {
+                          downloadJson(
+                            `digital-twin-${selectedId}.json`,
+                            snapshot,
+                          );
+                          setToast("Patient dossier exported.");
+                        }}
+                      >
+                        <ArrowDownToLine size={15} />
+                        Export JSON dossier
+                      </button>
+                      <button
+                        className="button secondary"
+                        disabled={!shared || exporting}
+                        onClick={exportFhir}
+                      >
+                        {exporting ? "Preparing…" : "Export FHIR snapshot"}
+                      </button>
+                      <button
+                        className="button secondary"
+                        disabled={!shared}
+                        onClick={() => window.print()}
+                      >
+                        Print report / PDF
+                      </button>
+                    </div>
+                    <p className="caption">
+                      FHIR export creates a reviewable bundle. Hospital
+                      persistence is a separate clinician-approved workflow.
+                    </p>
+                  </section>
+                  <section className="paper-card">
+                    <span className="eyebrow">Snapshot preview</span>
+                    <h3>Inspect before exporting</h3>
+                    <pre className="snapshot-preview">
+                      {JSON.stringify(snapshot, null, 2)}
+                    </pre>
+                  </section>
+                </div>
+              )}
+              {page === "evidence" && <EvidencePage />}
+            </>
+          )}
+          <footer className="app-footer">
+            <span>ehr / twin</span>
+            <p>
+              Research-derived demonstration cohort · recorded sensor replay ·
+              organ estimates are illustrative
+            </p>
+            <button
+              className="text-button"
+              onClick={() => navigate("evidence")}
+            >
+              Data & model details <ArrowRight size={12} />
+            </button>
+          </footer>
+        </main>
+      </div>
+      {toast && (
+        <div className="app-toast" role="status">
+          <Check size={17} />
+          {toast}
+          <button
+            className="icon-button"
+            aria-label="Dismiss notification"
+            onClick={() => setToast("")}
+          >
+            <X size={14} />
           </button>
-        ) : (
-          <span className="dx-panel-tag">{tag}</span>
-        )}
-      </header>
-      {children}
-      <i className="dx-panel-decoration" />
-    </section>
+        </div>
+      )}
+    </div>
   );
 }
 
-export default function DiagnosticWorkstation() {
-  // 100 Patient Cohort State
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [selectedPatientId, setSelectedPatientId] = useState<string>("P012");
-  const [readings, setReadings] = useState<Reading[]>([]);
-  const [timelineIndex, setTimelineIndex] = useState<number>(0);
-  const [simulation, setSimulation] = useState<PatientSimulation | null>(null);
-  const [isStreaming, setIsStreaming] = useState<boolean>(true);
-  const [streamSpeed, setStreamSpeed] = useState<number>(1);
-
-  // Organ Twin & UI View States
-  const [view, setView] = useState<TwinView>("body");
-  const [tick, setTick] = useState(0);
-  const [modal, setModal] = useState<"genomics" | "report" | null>(null);
-  const [selectedBase, setSelectedBase] = useState(0);
-  const [angle, setAngle] = useState(0);
-  const [zoom, setZoom] = useState(false);
-  const [labels, setLabels] = useState(true);
-  const [structure, setStructure] = useState(0);
-  const [toast, setToast] = useState("");
-  const modalRef = useRef<HTMLDivElement>(null);
-
-  // Initialize 100 patients on load
-  useEffect(() => {
-    document.title = "EHR / 100-Patient Digital Twin Workstation";
-    fetchPatientsList().then((list) => {
-      setPatients(list);
-      if (list.length > 0) {
-        // Default to first high-risk patient or first patient
-        const highRisk = list.find((p) => p.risk_status?.tier === "HIGH");
-        setSelectedPatientId(highRisk ? highRisk.person_id : list[0].person_id);
-      }
-    });
-  }, []);
-
-  // When selected patient changes, load their real readings and ML simulation
-  useEffect(() => {
-    if (!selectedPatientId) return;
-
-    fetchPatientReadings(selectedPatientId).then((rList) => {
-      setReadings(rList);
-      // Set timeline position to ~mid-day or 50% through day for immediate interesting view
-      if (rList.length > 0) {
-        setTimelineIndex(Math.min(52, rList.length - 1));
-      }
-    });
-
-    fetchPatientSimulation(selectedPatientId).then((sim) => {
-      setSimulation(sim);
-    });
-  }, [selectedPatientId]);
-
-  // Selected patient object
-  const currentPatient = useMemo(() => {
-    return patients.find((p) => p.person_id === selectedPatientId) || patients[0];
-  }, [patients, selectedPatientId]);
-
-  // Current wearable reading at scrubber
-  const currentReading = readings[timelineIndex] || readings[readings.length - 1] || null;
-  const prevReading = timelineIndex >= 2 ? readings[timelineIndex - 2] : readings[0];
-
-  // Dynamic Biophysical Kinetic Telemetry across all organs
-  const telemetry = useMemo(() => {
-    return computeKineticTelemetry(currentPatient, currentReading || undefined, prevReading || undefined);
-  }, [currentPatient, currentReading, prevReading]);
-
-  // Organ view navigation
-  const chooseView = (next: TwinView) => {
-    setView(next);
-    setAngle(0);
-    setZoom(false);
-    setStructure(0);
+function ScenarioControls({
+  appliedSpecs,
+  simulation,
+  busy,
+  onRun,
+  onSelect,
+  selected,
+}: {
+  appliedSpecs: InterventionSpec[];
+  simulation: PatientSimulation | null;
+  busy: boolean;
+  onRun: (specs: InterventionSpec[]) => void;
+  onSelect: (id: string) => void;
+  selected: string;
+}) {
+  const initial = {
+    walk: Number(
+      appliedSpecs.find((s) => s.intervention_type === "postprandial_walk")
+        ?.parameters.duration_minutes ?? 20,
+    ),
+    carbs: Number(
+      appliedSpecs.find((s) => s.intervention_type === "carb_reduction")
+        ?.parameters.carb_reduction_g ?? 25,
+    ),
+    delay: Number(
+      appliedSpecs.find((s) => s.intervention_type === "food_sequencing")
+        ?.parameters.delay_carbs_minutes ?? 15,
+    ),
   };
-
-  const cycle = (direction: number) =>
-    chooseView(
-      twinViews[
-        (twinViews.indexOf(view) + direction + twinViews.length) %
-          twinViews.length
-      ],
-    );
-
-  // Animation ticker for DNA helix
-  useEffect(() => {
-    if (!isStreaming) return;
-    const timer = setInterval(() => setTick((t) => t + 1), 1000);
-    return () => clearInterval(timer);
-  }, [isStreaming]);
-
-  // Toast auto-clear
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(""), 3500);
-    return () => clearTimeout(timer);
-  }, [toast]);
-
-  // Modal keyboard accessibility
-  useEffect(() => {
-    if (!modal) return;
-    const previous = document.activeElement as HTMLElement;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    modalRef.current?.focus();
-    const listener = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setModal(null);
-    };
-    document.addEventListener("keydown", listener);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", listener);
-      previous?.focus();
-    };
-  }, [modal]);
-
-  // Clinical report export
-  const exportReport = () => {
-    const report = {
-      title: "Digital Twin Clinical Diagnostic Dossier",
-      patient: currentPatient,
-      telemetry: {
-        current_glucose_mg_dl: currentReading?.glucose_mg_dl,
-        reading_time: currentReading?.reading_time,
-        total_readings_logged: readings.length,
-        biophysical_kinetic_telemetry: telemetry,
+  const [walk, setWalk] = useState(initial.walk),
+    [carbs, setCarbs] = useState(initial.carbs),
+    [delay, setDelay] = useState(initial.delay);
+  const [applied, setApplied] = useState(initial);
+  const dirty =
+    walk !== applied.walk || carbs !== applied.carbs || delay !== applied.delay;
+  function run() {
+    setApplied({ walk, carbs, delay });
+    onRun([
+      {
+        intervention_type: "postprandial_walk",
+        parameters: { duration_minutes: walk, intensity: "brisk" },
       },
-      ml_inference: simulation?.baseline,
-      counterfactual_simulations: simulation?.counterfactual_branches,
-      optimal_recommendation: simulation?.optimal_recommended_action,
-      export_timestamp: new Date().toISOString(),
-    };
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }),
-    );
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `digital-twin-clinical-${selectedPatientId.toLowerCase()}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setToast(`Clinical Dossier for ${currentPatient?.display_name || selectedPatientId} exported.`);
-  };
-
-  // Organ twin context dynamic values from patient EHR and real-time kinetics
-  const contextMetrics = useMemo(() => {
-    if (!currentPatient) return [];
-    if (view === "kidneys") {
-      return [
-        ["eGFR (RENAL CLEARANCE)", `${telemetry.kidneys.egfr} mL/min/1.73 m²`],
-        ["SERUM CREATININE", `${telemetry.kidneys.creatinine} mg/dL`],
-        ["SGLT-2 STATUS", telemetry.kidneys.sglt2Status],
-        ["ACTIVE GLYCOSURIA", `${telemetry.kidneys.glycosuriaRate} mg/min`],
-      ];
-    }
-    if (view === "heart") {
-      return [
-        ["SYMPATHETIC HEART RATE", `${telemetry.heart.heartRate} BPM`],
-        ["VASCULAR SHEAR STRESS", `${telemetry.heart.vascularShearStress}%`],
-        ["HEMODYNAMIC STATE", telemetry.heart.cardioStatus],
-        ["LIPID PANEL (LDL)", `${currentPatient.ldl_mg_dl || 105} mg/dL`],
-      ];
-    }
-    if (view === "brain") {
-      return [
-        ["CENTRAL GLUCOSE SENSOR", `${telemetry.brain.interstitialSensor} mg/dL Interstitial`],
-        ["AUTONOMIC REGULATION", telemetry.brain.brainStatus],
-        ["CIRCADIAN DAWN DRIVE", telemetry.brain.dawnPhenomenon ? "Active Surge (Cortisol)" : "Quiescent / Basal"],
-      ];
-    }
-    if (view === "pancreas") {
-      return [
-        ["FASTING C-PEPTIDE", `${telemetry.pancreas.cPeptide} nmol/L`],
-        ["BETA-CELL LOAD", `${telemetry.pancreas.betaDemandIndex}% Capacity`],
-        ["ENDOCRINE STATUS", telemetry.pancreas.stressState],
-        ["HOVORKA INSULIN APPEARANCE", `${telemetry.pancreas.insulinAppearance} mU/min`],
-      ];
-    }
-    return [
-      ["HbA1c", `${currentPatient.hba1c_percent}%`],
-      ["FASTING C-PEPTIDE", `${telemetry.pancreas.cPeptide} nmol/L`],
-      ["HEPATIC EGP", `${telemetry.liver.egpRate} mg/kg/min (${telemetry.liver.state})`],
-      ["RENAL SGLT-2", telemetry.kidneys.sglt2Status],
-    ];
-  }, [view, currentPatient, telemetry]);
-
+      {
+        intervention_type: "carb_reduction",
+        parameters: { carb_reduction_g: carbs },
+      },
+      {
+        intervention_type: "food_sequencing",
+        parameters: {
+          delay_carbs_minutes: delay,
+          preload_type: "fiber_protein",
+        },
+      },
+      {
+        intervention_type: "compound_lifestyle",
+        parameters: { duration_minutes: walk, carb_reduction_g: carbs },
+      },
+      {
+        intervention_type: "confirm_medication",
+        parameters: { drug: "metformin", dose_mg: 500 },
+      },
+    ]);
+  }
   return (
-    <div className={`diagnostic-workstation ot-workstation ${isStreaming ? "dx-running" : "dx-paused"}`}>
-      <div className="dx-frame-line" />
-      <div className="ot-workstation-content" inert={modal ? true : undefined}>
-        {/* WORKSTATION HEADER */}
-        <header className="dx-header">
-          <div className="dx-brand">
-            <span className="dx-cross">
-              <Cross size={31} strokeWidth={0.8} />
-            </span>
-            <div>
-              <p>
-                MEDICAL INTELLIGENCE <span>/</span> DIGITAL TWIN CLINICAL WORKSTATION
-              </p>
-              <h1>SHANGHAI T2DM CLINICAL COHORT</h1>
-              <span>
-                100 REAL PATIENTS <i>/</i> ABBOTT FREESTYLE LIBRE CGM <i>/</i> DUAL-HEAD CALIBRATED ML
-              </span>
-            </div>
-          </div>
-
-          {/* 100-Patient Dropdown Switcher */}
-          <div className="dx-subject">
-            <label htmlFor="dx-subject">SELECT CLINICAL PATIENT ({patients.length})</label>
-            <div>
-              <select
-                id="dx-subject"
-                value={selectedPatientId}
-                onChange={(e) => setSelectedPatientId(e.target.value)}
-              >
-                {patients.map((p) => (
-                  <option key={p.person_id} value={p.person_id}>
-                    {p.person_id} — {p.display_name} ({p.risk_status?.tier || "CALM"} · HbA1c {p.hba1c_percent}%)
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={10} />
-            </div>
-            <span>
-              {currentPatient?.display_name.toUpperCase()} · {currentPatient?.age_years}Y · {currentPatient?.sex.toUpperCase()} · {currentPatient?.risk_status?.tier || "CALM"} RISK
-            </span>
-          </div>
-
-          <div className="dx-header-actions">
-            <div className="dx-mode-row">
-              <span>
-                <i /> DUAL-HEAD ML LIVE
-              </span>
-              <small>COHORT TELEMETRY CONNECTED</small>
-            </div>
-            <nav aria-label="Diagnostic views">
-              <button
-                className={!modal ? "active" : ""}
-                onClick={() => chooseView("body")}
-              >
-                Overview
-              </button>
-              <button onClick={() => setModal("genomics")}>Genomics</button>
-              <button onClick={() => setModal("report")}>Report</button>
-            </nav>
-          </div>
-        </header>
-
-        {/* HORIZONTAL LINE OF FEATURES (Top Diagnostic Strip) */}
-        <div className="dx-horizontal-feature-strip">
-          <div className="dx-feat-kpi">
-            <span className="dx-feat-kpi-label">COHORT TELEMETRY</span>
-            <div className="dx-feat-kpi-val">
-              <strong>100</strong> Patients · FreeStyle Libre CGM
-            </div>
-          </div>
-
-          <div className="dx-feat-kpi">
-            <span className="dx-feat-kpi-label">SELECTED SUBJECT</span>
-            <div className="dx-feat-kpi-val">
-              <strong>{currentPatient?.person_id}</strong> {currentPatient?.display_name} ({currentPatient?.age_years}y, {currentPatient?.sex.charAt(0).toUpperCase()})
-            </div>
-          </div>
-
-          <div className="dx-feat-kpi">
-            <span className="dx-feat-kpi-label">CLINICAL PROFILE</span>
-            <div className="dx-feat-kpi-val">
-              HbA1c <strong>{currentPatient?.hba1c_percent}%</strong> · BMI {currentPatient?.bmi} · {currentPatient?.years_with_diabetes}y T2DM
-            </div>
-          </div>
-
-          <div className="dx-feat-kpi">
-            <span className="dx-feat-kpi-label">INTERSTITIAL GLUCOSE</span>
-            <div className="dx-feat-kpi-val">
-              <strong style={{ color: Number(currentReading?.glucose_mg_dl || 120) >= 180 ? "#f87171" : Number(currentReading?.glucose_mg_dl || 120) >= 140 ? "#fbbf24" : "#34d399" }}>
-                {Math.round(currentReading?.glucose_mg_dl || 120)}
-              </strong>{" "}
-              mg/dL at {currentReading?.time || "12:00"}
-            </div>
-          </div>
-
-          <div className="dx-feat-kpi">
-            <span className="dx-feat-kpi-label">2H INCIDENT RISK</span>
-            <div className={`dx-feat-kpi-val ${(simulation?.baseline.risk_tier || "calm").toLowerCase()}`}>
-              {simulation?.baseline.risk_tier || "CALM"} ({Math.round((simulation?.baseline.calibrated_spike_probability || 0.12) * 100)}% Spike Prob)
-            </div>
-          </div>
-
-          <div className="dx-feat-kpi">
-            <span className="dx-feat-kpi-label">ORGAN & DRUG STATUS</span>
-            <div className="dx-feat-kpi-val">
-              C-Pep {currentPatient?.fasting_c_peptide_nmol_l} nmol/L · eGFR {currentPatient?.egfr} · {currentPatient?.on_metformin === "yes" ? "Metformin" : "Non-Metformin"}
-            </div>
-          </div>
+    <section className="paper-card">
+      <div className="card-heading">
+        <div>
+          <span className="eyebrow">Physiological sensitivity analysis</span>
+          <h2>What might change the trajectory?</h2>
         </div>
-
-        {/* WORKSTATION GRID */}
-        <main className="dx-grid">
-          {/* LEFT STACK: PATIENT REGISTRY (100 COHORT) + EHR CLINICAL DOSSIER */}
-          <PatientRegistryPanel
-            patients={patients}
-            selectedPatientId={selectedPatientId}
-            onSelectPatient={(pid) => setSelectedPatientId(pid)}
-          />
-
-          {/* CENTER STACK: ANATOMICAL & BIOPHYSICAL DIGITAL TWIN */}
-          <Panel
-            title={
-              view === "body"
-                ? "ANATOMICAL DIGITAL TWIN"
-                : `${organInfo[view].name.toUpperCase()} DIGITAL TWIN`
-            }
-            tag={view === "body" ? "MULTI-ORGAN" : "BIOPHYSICAL"}
-            className="dx-anatomy ot-twin-panel"
-          >
-            <div className="ot-twin-navigation">
-              <button onClick={() => cycle(-1)} aria-label="Previous twin">
-                <ArrowLeft size={17} />
-              </button>
-              <div aria-live="polite">
-                <span>
-                  {view === "body"
-                    ? "COMPLETE ANATOMY"
-                    : organInfo[view].system.toUpperCase()}
-                </span>
-                <strong>
-                  {view === "body"
-                    ? "Body twin"
-                    : `${organInfo[view].name} twin`}
-                </strong>
-              </div>
-              <button onClick={() => cycle(1)} aria-label="Next twin">
-                <ArrowRight size={17} />
-              </button>
-            </div>
-
-            <div
-              className={`ot-central-stage ${view === "body" ? "body-view" : "organ-view"} ${zoom ? "magnified" : ""}`}
-            >
-              <div className="ot-stage-orbit orbit-a" />
-              <div className="ot-stage-orbit orbit-b" />
-              <div className="ot-stage-ruler" aria-hidden="true">
-                {Array.from({ length: 15 }, (_, i) => (
-                  <i key={i} />
-                ))}
-              </div>
-
-              <div
-                className="ot-view-art"
-                style={{
-                  transform: `perspective(1000px) rotateY(${angle}deg)`,
-                }}
-                key={view}
-              >
-                {view === "body" ? (
-                  <BodyTwinVisual
-                    patient={currentPatient}
-                    reading={currentReading || undefined}
-                    telemetry={telemetry}
-                    labels={labels}
-                    onSelectOrgan={(organ) => chooseView(organ)}
-                  />
-                ) : (
-                  <div className={`ot-isolated-organ ${view}`}>
-                    <OrganVisual
-                      organ={view}
-                      patient={currentPatient}
-                      reading={currentReading || undefined}
-                      telemetry={telemetry}
-                    />
-                    {labels &&
-                      organInfo[view].structures.map((name, i) => (
-                        <button
-                          key={name}
-                          className={`ot-landmark ${structure === i ? "active" : ""}`}
-                          style={{
-                            left: `${organInfo[view].landmarks[i][0]}%`,
-                            top: `${organInfo[view].landmarks[i][1]}%`,
-                          }}
-                          onClick={() => setStructure(i)}
-                          aria-label={`Inspect ${name.toLowerCase()}`}
-                          aria-pressed={structure === i}
-                        >
-                          <i />
-                          <span>{name}</span>
-                        </button>
-                      ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="ot-stage-provenance">
-                <span className="ot-online-dot" />
-                {view === "body" ? "ANTERIOR WHOLE-BODY ATLAS" : `${organInfo[view].name.toUpperCase()} BIOPHYSICAL ATLAS`}
-                <span>
-                  PATIENT {selectedPatientId} · C-PEP {currentPatient?.fasting_c_peptide_nmol_l} nmol/L · eGFR {currentPatient?.egfr}
-                </span>
-              </div>
-            </div>
-
-            {view !== "body" && (
-              <div className="ot-organ-insight" aria-live="polite">
-                <span>
-                  {organInfo[view].structures[structure]?.toUpperCase()}
-                </span>
-                <p>{structureNotes[view][structure]}</p>
-              </div>
-            )}
-
-            {view !== "body" && (
-              <div className="ot-view-toolbar">
-                <label>
-                  ANGLE
-                  <input
-                    type="range"
-                    aria-label="Anatomy viewing angle"
-                    min="-30"
-                    max="30"
-                    value={angle}
-                    onChange={(e) => setAngle(Number(e.target.value))}
-                  />
-                </label>
-                <button
-                  aria-pressed={labels}
-                  onClick={() => setLabels(!labels)}
-                >
-                  <Layers3 size={12} /> Labels
-                </button>
-                <button
-                  aria-label="Magnify anatomy"
-                  aria-pressed={zoom}
-                  onClick={() => setZoom(!zoom)}
-                >
-                  <Maximize2 size={13} />
-                </button>
-                <button
-                  aria-label="Reset anatomy view"
-                  onClick={() => {
-                    setAngle(0);
-                    setZoom(false);
-                    setLabels(true);
-                    setStructure(0);
-                  }}
-                >
-                  <RotateCcw size={13} />
-                </button>
-              </div>
-            )}
-
-            <div
-              className="ot-twin-dots"
-              role="group"
-              aria-label="Choose anatomy twin"
-            >
-              {twinViews.map((t) => (
-                <button
-                  key={t}
-                  aria-pressed={view === t}
-                  onClick={() => chooseView(t)}
-                >
-                  {t === "body" ? "Body" : organInfo[t].name}
-                </button>
-              ))}
-            </div>
-          </Panel>
-
-          {/* RIGHT STACK: LIVE WEARABLES + GENOMICS/CONTEXT + GLUCOSE FORECAST TRAJECTORY */}
-          <div className="dx-right-stack">
-            {/* 1. Live Physiology with real wearable CGM data, timeline scrubber slider, play/pause controls */}
-            <LiveWearablesPanel
-              readings={readings}
-              currentIndex={timelineIndex}
-              onIndexChange={setTimelineIndex}
-              isRunning={isStreaming}
-              onToggleRunning={() => setIsStreaming(!isStreaming)}
-              playbackSpeed={streamSpeed}
-              onSpeedChange={setStreamSpeed}
-            />
-
-            {/* 2. Middle Row: Genomic Profile & Twin Context (Preserved per user instructions) */}
-            <div className="dx-right-middle">
-              <Panel
-                title="GENOMIC PROFILE"
-                tag="DNA"
-                className="dx-genomics"
-                action={() => setModal("genomics")}
-              >
-                <div className="dx-subheading">DOUBLE-HELIX EXPLORER</div>
-                <div className="dx-genomic-body">
-                  <button
-                    className="dx-visual-button"
-                    onClick={() => setModal("genomics")}
-                    aria-label="Explore genomic concept"
-                  >
-                    <DnaHelix active={tick % 30} />
-                  </button>
-                  <div className="dx-base-pairs">
-                    <strong>BASE PAIRS</strong>
-                    {[
-                      ["A – T", "ADENINE"],
-                      ["G – C", "GUANINE"],
-                      ["T – A", "THYMINE"],
-                      ["C – G", "CYTOSINE"],
-                    ].map(([a, b]) => (
-                      <div key={a}>
-                        <span>
-                          <i />
-                          {a}
-                        </span>
-                        <small>{b}</small>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="dx-sequence">
-                  <span>SAMPLE SEQUENCE</span>
-                  <div>
-                    {bases.slice(0, 26).map((b, i) => (
-                      <button
-                        key={i}
-                        className={i === tick % 26 ? "active" : ""}
-                        aria-label={`Base ${i + 1}: ${b}`}
-                        onClick={() => {
-                          setSelectedBase(i);
-                          setModal("genomics");
-                        }}
-                      >
-                        {b}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </Panel>
-
-              <Panel
-                title={
-                  view === "body"
-                    ? "TWIN CONTEXT"
-                    : `${organInfo[view].system.toUpperCase()} CONTEXT`
-                }
-                tag="PATIENT DATA"
-                className="dx-reconstruction ot-context-panel"
-              >
-                <div className="ot-context-status">
-                  <span className="ot-online-dot" />
-                  EHR TELEMETRY ACTIVE ({selectedPatientId})
-                </div>
-                <dl>
-                  {contextMetrics.map(([label, value]) => (
-                    <div key={label}>
-                      <dt>{label}</dt>
-                      <dd>{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <div className="ot-model-note">
-                  <span>METABOLIC DIGITAL TWIN</span>
-                  <p>Conditioned on patient C-peptide, eGFR, BMI & continuous CGM.</p>
-                </div>
-              </Panel>
-            </div>
-          </div>
-
-          {/* FULL-WIDTH HORIZONTAL FEATURE ROW: GLUCOSE TRAJECTORY & 2H INCIDENT FORECAST */}
-          <div className="dx-full-width-feature">
-            <GlucoseForecastPanel
-              simulation={simulation}
-              currentReading={currentReading}
-              historicalReadings={readings.slice(0, timelineIndex + 1)}
-            />
-          </div>
-        </main>
+        <span className="subtle-tag">Clinician review required</span>
       </div>
-
-      {/* MODAL DIALOGS */}
-      {modal && (
-        <div
-          className="dx-modal-backdrop"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setModal(null);
-          }}
-        >
-          <div
-            className="dx-modal dx-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="ot-dialog-title"
-            tabIndex={-1}
-            ref={modalRef}
+      <p className="muted">
+        Adjust a scenario, calculate it on the server, then select a branch to
+        compare with the shared baseline. These effects are model assumptions,
+        not proven treatment benefits.
+      </p>
+      <div className="scenario-controls">
+        <label>
+          Walking duration <strong>{walk} minutes</strong>
+          <input
+            aria-label="Walking duration"
+            type="range"
+            min="5"
+            max="60"
+            step="5"
+            value={walk}
+            onChange={(e) => setWalk(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Carbohydrate reduction <strong>{carbs} g</strong>
+          <input
+            aria-label="Carbohydrate reduction"
+            type="range"
+            min="0"
+            max="75"
+            step="5"
+            value={carbs}
+            onChange={(e) => setCarbs(Number(e.target.value))}
+          />
+        </label>
+        <label>
+          Carbohydrate delay <strong>{delay} minutes</strong>
+          <input
+            aria-label="Carbohydrate delay"
+            type="range"
+            min="0"
+            max="60"
+            step="5"
+            value={delay}
+            onChange={(e) => setDelay(Number(e.target.value))}
+          />
+        </label>
+      </div>
+      <div className="button-row">
+        <button className="button primary" disabled={busy} onClick={run}>
+          {busy ? "Calculating…" : "Calculate scenarios"}
+        </button>
+        {dirty && (
+          <span className="caption">
+            Parameters changed. Recalculate to update results.
+          </span>
+        )}
+      </div>
+      <div className="scenario-branches">
+        {simulation?.counterfactual_branches.map((b: SimulationBranch) => (
+          <button
+            key={b.intervention_type}
+            className={`scenario-branch ${selected === b.intervention_type ? "selected" : ""}`}
+            aria-pressed={selected === b.intervention_type}
+            onClick={() =>
+              onSelect(
+                selected === b.intervention_type ? "" : b.intervention_type,
+              )
+            }
           >
-            <header>
-              <div>
-                <span>DIAGNOSTIC WORKSPACE / {modal.toUpperCase()}</span>
-                <h2 id="ot-dialog-title">
-                  {modal === "genomics"
-                    ? "GENOMIC SEQUENCE EXPLORER"
-                    : "CLINICAL DOSSIER REPORT"}
-                </h2>
-              </div>
-              <button
-                aria-label="Close diagnostic details"
-                onClick={() => setModal(null)}
-              >
-                <X size={18} />
-              </button>
-            </header>
-            {modal === "genomics" ? (
-              <>
-                <p>
-                  Interactive double-helix visualization and nucleotide sequence inspection.
-                </p>
-                <div className="dx-genomic-modal-content">
-                  <DnaHelix active={tick % 30} />
-                  <div>
-                    <h3>SEQUENCE EXPLORER</h3>
-                    <div className="dx-sequence-grid">
-                      {bases.map((b, i) => (
-                        <button
-                          key={i}
-                          className={selectedBase === i ? "active" : ""}
-                          aria-pressed={selectedBase === i}
-                          aria-label={`Select base ${i + 1}: ${b}`}
-                          onClick={() => setSelectedBase(i)}
-                        >
-                          {b}
-                        </button>
-                      ))}
-                    </div>
-                    <p>
-                      BASE {selectedBase + 1} / {bases[selectedBase]}
-                      <br />
-                      COMPLEMENT /{" "}
-                      {
-                        (
-                          { A: "T", T: "A", G: "C", C: "G" } as Record<
-                            string,
-                            string
-                          >
-                        )[bases[selectedBase]]
-                      }
-                    </p>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <>
-                <p>
-                  Comprehensive clinical summary for {currentPatient?.display_name || selectedPatientId} derived from real EHR and wearable telemetry.
-                </p>
-                <dl className="dx-report-fields">
-                  {[
-                    ["PATIENT ID", currentPatient?.person_id || selectedPatientId],
-                    ["NAME", currentPatient?.display_name || ""],
-                    ["DIABETES PROFILE", `${currentPatient?.age_years}y, ${currentPatient?.sex}, BMI ${currentPatient?.bmi}, ${currentPatient?.years_with_diabetes}y T2DM`],
-                    ["HbA1c & LABS", `HbA1c ${currentPatient?.hba1c_percent}%, FPG ${currentPatient?.fasting_glucose_mg_dl} mg/dL, C-Peptide ${currentPatient?.fasting_c_peptide_nmol_l} nmol/L`],
-                    ["RENAL FUNCTION", `eGFR ${currentPatient?.egfr} mL/min, Creatinine ${currentPatient?.creatinine_mg_dl} mg/dL`],
-                    ["MEDICATIONS", currentPatient?.hypoglycemic_agents_raw || "None"],
-                    ["2H SPIKE PROBABILITY", `${Math.round((simulation?.baseline.calibrated_spike_probability || 0) * 100)}% (${simulation?.baseline.risk_tier || "CALM"} Risk)`],
-                    ["PROJECTED PEAK", `${simulation?.baseline.predicted_peak_glucose_mg_dl || 160} mg/dL`],
-                    ["OPTIMAL ACTION", simulation?.optimal_recommended_action || "Postprandial activity"],
-                  ].map(([label, value]) => (
-                    <div key={label}>
-                      <dt>{label}</dt>
-                      <dd>{value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                <button className="dx-export" onClick={exportReport}>
-                  <ArrowDownToLine size={14} />
-                  EXPORT PATIENT DOSSIER (JSON)
-                </button>
-              </>
-            )}
-            <div className="dx-modal-note">
-              SHANGHAI T2DM CLINICAL COHORT · 100 PATIENTS · CALIBRATED DUAL-HEAD ML ENGINE
-            </div>
-          </div>
+            <span>{b.intervention_label}</span>
+            <strong>
+              {b.simulated_peak_mg_dl.toFixed(1)} <small>mg/dL peak</small>
+            </strong>
+            <small>
+              {b.peak_reduction_mg_dl.toFixed(1)} mg/dL estimated reduction
+            </small>
+            <p>
+              {b.hypoglycemia_risk_warning
+                ? "Low-glucose trajectory warning"
+                : b.biophysical_mechanism}
+            </p>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+function GenomicsPage() {
+  const bases = "ATCGGATCGAGCTAGCATCGTAGCATGCGATC".split("");
+  const [base, setBase] = useState(0),
+    [animate, setAnimate] = useState(true),
+    [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!animate) return;
+    const timer = setInterval(() => setTick((t) => t + 1), 850);
+    return () => clearInterval(timer);
+  }, [animate]);
+  return (
+    <div className="genomics-grid">
+      <section className="paper-card">
+        <span className="eyebrow">Educational visualization</span>
+        <h2>A closer look at the double helix.</h2>
+        <p className="muted">
+          This fixed sample sequence explains nucleotide pairing. It is not a
+          patient genome and does not influence the glucose model.
+        </p>
+        <div className="genomics-visual">
+          <DnaHelix active={tick % 30} />
         </div>
-      )}
-
-      {/* NOTIFICATION TOAST */}
-      {toast && (
-        <div className="dx-toast" role="status">
-          <Check size={14} />
-          {toast}
-          <button aria-label="Dismiss message" onClick={() => setToast("")}>
-            <X size={13} />
+        <button
+          className="button secondary"
+          onClick={() => setAnimate(!animate)}
+        >
+          {animate ? "Pause helix" : "Animate helix"}
+        </button>
+      </section>
+      <section className="paper-card">
+        <span className="eyebrow">Sequence explorer</span>
+        <h2>Select a nucleotide</h2>
+        <div className="base-grid">
+          {bases.map((b, i) => (
+            <button
+              key={i}
+              aria-label={`Select base ${i + 1}: ${b}`}
+              aria-pressed={base === i}
+              className={base === i ? "active" : ""}
+              onClick={() => setBase(i)}
+            >
+              {b}
+            </button>
+          ))}
+        </div>
+        <div className="base-inspector">
+          <span>
+            Position {base + 1} of {bases.length}
+          </span>
+          <strong>
+            {bases[base]}
+            <span>↔</span>
+            {{ A: "T", T: "A", C: "G", G: "C" }[bases[base]]}
+          </strong>
+          <p>
+            {
+              {
+                A: "Adenine pairs with thymine.",
+                T: "Thymine pairs with adenine.",
+                C: "Cytosine pairs with guanine.",
+                G: "Guanine pairs with cytosine.",
+              }[bases[base]]
+            }
+          </p>
+        </div>
+        <div className="button-row">
+          <button
+            className="button secondary"
+            onClick={() =>
+              setBase((i) => (i - 1 + bases.length) % bases.length)
+            }
+          >
+            Previous base
+          </button>
+          <button
+            className="button secondary"
+            onClick={() => setBase((i) => (i + 1) % bases.length)}
+          >
+            Next base
           </button>
         </div>
-      )}
+      </section>
+    </div>
+  );
+}
+function EvidencePage() {
+  const [metrics, setMetrics] = useState<Record<string, any> | null>(null),
+    [error, setError] = useState("");
+  useEffect(() => {
+    const c = new AbortController();
+    requestJson<Record<string, any>>("/api/v1/twin/metrics", {
+      signal: c.signal,
+    })
+      .then(setMetrics)
+      .catch((e) => {
+        if (e.name !== "AbortError") setError(e.message);
+      });
+    return () => c.abort();
+  }, []);
+  const clf =
+    metrics?.test_evaluation_head_1_classifier
+      ?.proposed_calibrated_digital_twin;
+  const traj = metrics?.test_evaluation_head_2_trajectory;
+  return (
+    <div className="page-stack">
+      <section className="paper-card">
+        <span className="eyebrow">Data provenance</span>
+        <h2>Demonstration profiles, traceable source data.</h2>
+        <p>
+          The 100 profiles use anonymized Shanghai Type 2 diabetes clinical
+          measurements and recorded FreeStyle Libre traces, processed into a
+          research demonstration cohort. Display names are fictional aliases;
+          some fields are derived or imputed in preprocessing. This is not an
+          independently validated Indian patient population.
+        </p>
+        <div className="evidence-facts">
+          <div>
+            <strong>100</strong>
+            <span>profiles</span>
+          </div>
+          <div>
+            <strong>70 / 15 / 15</strong>
+            <span>train / tune / test patients</span>
+          </div>
+          <div>
+            <strong>24</strong>
+            <span>clinical + CGM model features</span>
+          </div>
+          <div>
+            <strong>120 min</strong>
+            <span>forecast horizon</span>
+          </div>
+        </div>
+        <p className="caption">
+          Current source manifest: 112,287 sensor readings and 89,379 training
+          examples. Source dataset DOI: 10.6084/m9.figshare.20444397. Counts
+          describe saved preprocessing artifacts.
+        </p>
+      </section>
+      <section className="paper-card">
+        <span className="eyebrow">Held-out evaluation</span>
+        <h2>Measured performance, with context.</h2>
+        {error && <p role="alert">Metrics unavailable: {error}</p>}
+        {!metrics && !error && <p>Loading saved evaluation metrics…</p>}
+        {clf && (
+          <>
+            <div className="evidence-facts">
+              <div>
+                <strong>{clf.roc_auc}</strong>
+                <span>ROC-AUC</span>
+              </div>
+              <div>
+                <strong>{(clf.sensitivity_recall * 100).toFixed(1)}%</strong>
+                <span>recall at threshold {clf.decision_threshold}</span>
+              </div>
+              <div>
+                <strong>{(clf.precision * 100).toFixed(1)}%</strong>
+                <span>precision</span>
+              </div>
+              <div>
+                <strong>{(clf.false_alarm_rate_fpr * 100).toFixed(1)}%</strong>
+                <span>false-positive rate</span>
+              </div>
+            </div>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>ROC-AUC</th>
+                  <th>PR-AUC</th>
+                  <th>Recall</th>
+                  <th>Brier score</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(metrics!.test_evaluation_head_1_classifier).map(
+                  ([name, m]: [string, any]) => (
+                    <tr key={name}>
+                      <td>{name.replaceAll("_", " ")}</td>
+                      <td>{m.roc_auc}</td>
+                      <td>{m.average_precision_pr_auc}</td>
+                      <td>{(m.sensitivity_recall * 100).toFixed(1)}%</td>
+                      <td>{m.brier_score}</td>
+                    </tr>
+                  ),
+                )}
+              </tbody>
+            </table>
+            <p className="caption">
+              Saved patient-held-out metrics, not a fresh evaluation of the
+              selected recording. Recall means some future spikes were missed.
+            </p>
+          </>
+        )}
+        {traj && (
+          <p>
+            Trajectory MAE:{" "}
+            <strong>{traj.mean_trajectory_mae_mg_dl} mg/dL</strong> across
+            horizons;{" "}
+            <strong>{traj.horizon_breakdown["+120m"].mae_mg_dl} mg/dL</strong>{" "}
+            at two hours. Aggregate Clarke zones A+B:{" "}
+            {traj.clarke_error_grid.clinically_acceptable_zones_a_and_b_percent}
+            %; this does not certify any individual forecast.
+          </p>
+        )}
+      </section>
+      <section className="paper-card">
+        <span className="eyebrow">Boundaries that matter</span>
+        <h3>Keep evidence separate from illustration.</h3>
+        <ul className="evidence-list">
+          <li>
+            The classifier and trajectory regressor were trained on current
+            glucose below 180 mg/dL. An already-high reading is explicitly
+            marked outside that evaluated domain.
+          </li>
+          <li>
+            TreeSHAP explains raw classifier log-odds before isotonic
+            probability calibration.
+          </li>
+          <li>
+            Forecast bands and intervention effects are illustrative sensitivity
+            estimates, not calibrated confidence intervals or validated causal
+            treatment effects.
+          </li>
+          <li>
+            Organ views preserve atlas artwork; physiology is estimated. No
+            patient-specific scan reconstruction or live device pairing is
+            claimed.
+          </li>
+          <li>
+            Clinical review uses a local development workflow. Hospital
+            integration and prospective validation require separate
+            implementation and evaluation.
+          </li>
+        </ul>
+      </section>
     </div>
   );
 }

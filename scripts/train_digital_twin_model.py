@@ -422,6 +422,15 @@ def main() -> None:
 
     (MODEL_DIR / "metrics.json").write_text(json.dumps(full_report, indent=2), encoding="utf-8")
 
+    # Export native, fingerprinted deployment artifacts from the just-trained
+    # in-memory models, with cohort-wide parity verification and no pickle reload.
+    try:
+        from .export_portable_twin_models import export_models
+    except ImportError:
+        from export_portable_twin_models import export_models
+    portable = export_models(MODEL_DIR, TABLE_PATH, calibrator=calibrator, trajectory=traj_model)
+    print("Portable model parity:", portable["parity_verification"])
+
     # 8. Generate Publication Benchmark Markdown Report
     benchmark_md = rf"""# Clinical Model Evaluation & Benchmark Report: Digital Twin Forecasting Engine
 

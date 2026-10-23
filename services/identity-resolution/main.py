@@ -295,3 +295,7 @@ def get_document_audits(document_id: str, db: Session = Depends(get_db)):
         .all()
     )
     return {"document_id": document_id, "audit_count": len(audits), "audits": [a.to_dict() for a in audits]}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)

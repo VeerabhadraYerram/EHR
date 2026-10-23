@@ -80,14 +80,14 @@ class MetabolicDigitalTwinSimulator:
         # Determine optimal clinical recommendation
         if best_branch and (best_branch.spike_averted or best_branch.risk_reduction_percentage_points > 10.0):
             rec = (
-                f"Optimal Recommended Action: {best_branch.intervention_label}. "
+                f"Illustrative scenario to discuss with a clinician: {best_branch.intervention_label}. "
                 f"Reduces projected peak by {best_branch.peak_reduction_mg_dl:.1f} mg/dL "
                 f"({best_branch.baseline_peak_mg_dl:.1f} -> {best_branch.simulated_peak_mg_dl:.1f} mg/dL), "
                 f"improves 2h Time-in-Range to {best_branch.simulated_tir_percent:.0f}%, "
                 f"and drops spike risk from {baseline.calibrated_spike_probability:.1%} to {best_branch.simulated_risk_probability:.1%}."
             )
         else:
-            rec = "Patient currently stable; continue standard passive ambulatory monitoring."
+            rec = "No modeled scenario met the illustrative comparison threshold. This does not establish clinical stability or prescribe treatment."
 
         return baseline, branches, rec
 
@@ -172,18 +172,19 @@ class MetabolicDigitalTwinSimulator:
                 f"and stimulates incretin (GLP-1) secretion without caloric restriction."
             )
             mechanism = (
-                "Gastric Emptying Delay: Prolongs absorption time constant tau_gut from 40m to 65m, "
-                "flattening postprandial peak by ~24 mg/dL and distributing absorption over 2.5 hours."
+                f"Gastric Emptying Delay: assumed {delay_mins:.0f}m sequencing delay changes absorption time "
+                f"constant from 40m to {40.0 + delay_mins * 5.0 / 3.0:.1f}m; "
+                f"illustrative attenuation magnitude {24.0 * delay_mins / 15.0:.1f} mg/dL before reserve modifier."
             )
 
             for idx, h in enumerate(horizons):
-                tau_delayed = 65.0
+                tau_delayed = 40.0 + delay_mins * 5.0 / 3.0
                 shape_delayed = (h / tau_delayed) * math.exp(1.0 - (h / tau_delayed))
                 # Flattens early surge
-                delta_blunt = 24.0 * shape_delayed * cpeptide_modifier
+                delta_blunt = 24.0 * (delay_mins / 15.0) * shape_delayed * cpeptide_modifier
                 sim_curve[idx] = max(70.0, sim_curve[idx] - delta_blunt)
 
-            risk_attenuation_factor = 0.50
+            risk_attenuation_factor = max(0.15, 1.0 - delay_mins / 30.0)
 
         elif itype == "compound_lifestyle":
             walk_dur = float(params.get("duration_minutes", 20))
@@ -212,7 +213,7 @@ class MetabolicDigitalTwinSimulator:
 
                 sim_curve[idx] = max(70.0, sim_curve[idx] - (red_carb + red_walk))
 
-            risk_attenuation_factor = 0.22
+            risk_attenuation_factor = max(0.10, (1.0 - min(0.85, 0.025 * walk_dur * bmi_modifier)) * (1.0 - min(0.80, 0.015 * carb_cut)))
 
         elif itype == "confirm_medication":
             drug = str(params.get("drug", "metformin")).lower()
@@ -258,8 +259,8 @@ class MetabolicDigitalTwinSimulator:
         peak_drop = max(0.0, base_peak - sim_peak)
 
         # Trapezoidal numerical integration for 2h continuous Area Under the Curve (AUC)
-        base_auc = compute_auc(base_curve, horizons)
-        sim_auc = compute_auc(sim_curve, horizons)
+        base_auc = compute_auc(np.insert(base_curve, 0, base_features.glucose_now), [0] + horizons)
+        sim_auc = compute_auc(np.insert(sim_curve, 0, base_features.glucose_now), [0] + horizons)
         auc_reduction_pct = max(0.0, (base_auc - sim_auc) / max(1.0, base_auc) * 100.0)
 
         # Time-in-Range (70 - 180 mg/dL)
@@ -268,19 +269,16 @@ class MetabolicDigitalTwinSimulator:
 
         # Hypoglycemia safety guardrails
         hypo_risk = bool(np.any(sim_curve < 70.0))
-        if np.any(sim_curve < 54.0):
-            clarke_zone = "Zone C/D/E (Unsafe)"
-        elif np.any(sim_curve < 70.0):
-            clarke_zone = "Zone B (Benign)"
-        else:
-            clarke_zone = "Zone A (Safe)"
+        # Clarke error grid requires paired forecast/reference observations.
+        # It cannot determine the safety of an unobserved counterfactual.
+        clarke_zone = None
 
         base_p = baseline.calibrated_spike_probability
-        sim_p = float(np.clip(base_p * risk_attenuation_factor, 0.02, 1.0))
+        sim_p = float(np.clip(base_p * risk_attenuation_factor, 0.0, 1.0))
         risk_drop_pct = (base_p - sim_p) * 100.0
         spike_averted = (base_peak >= HIGH_THRESHOLD) and (sim_peak < HIGH_THRESHOLD)
 
-        # Build trajectory points with confidence bounds
+        # Illustrative sensitivity envelope; not calibrated counterfactual uncertainty.
         sim_trajectory: List[TrajectoryPoint] = []
         for idx, h in enumerate(horizons):
             val = round(float(sim_curve[idx]), 1)
@@ -312,6 +310,6 @@ class MetabolicDigitalTwinSimulator:
             hypoglycemia_risk_warning=hypo_risk,
             clarke_safety_zone=clarke_zone,
             simulated_trajectory=sim_trajectory,
-            clinical_rationale=rationale,
+            clinical_rationale="Assumption-based educational scenario. " + rationale + " Effects and risk multipliers are not learned causal estimates; do not change treatment based on this simulation.",
             biophysical_mechanism=mechanism,
         )

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import logging
 import math
+import os
 import pickle
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -12,6 +15,7 @@ import shap
 from xgboost import XGBClassifier
 
 try:
+    from .portable import load_portable_models, SOURCE_FILES
     from .models import (
         ClinicalFeatures,
         PredictionResponse,
@@ -19,6 +23,7 @@ try:
         TrajectoryPoint,
     )
 except ImportError:
+    from portable import load_portable_models, SOURCE_FILES
     from models import (
         ClinicalFeatures,
         PredictionResponse,
@@ -26,8 +31,12 @@ except ImportError:
         TrajectoryPoint,
     )
 
-ROOT = Path(__file__).resolve().parents[2]
-MODEL_DIR = ROOT / "data" / "digital_twin" / "model"
+if os.getenv("DATA_DIR"):
+    MODEL_DIR = Path(os.environ["DATA_DIR"]) / "model"
+else:
+    _parents = Path(__file__).resolve().parents
+    ROOT = _parents[2] if len(_parents) > 2 else _parents[0]
+    MODEL_DIR = ROOT / "data" / "digital_twin" / "model"
 
 CLINICAL_FEATURE_DESCRIPTIONS = {
     "glucose_now": "Baseline glucose level at current reading",
@@ -61,18 +70,36 @@ class DigitalTwinEngine:
         print(f"Loading Digital Twin model weights from {MODEL_DIR}...")
         self.classifier = XGBClassifier()
         self.classifier.load_model(str(MODEL_DIR / "classifier.json"))
+        self.classifier.set_params(n_jobs=1)
 
-        with (MODEL_DIR / "calibrator.pkl").open("rb") as f:
-            self.calibrator = pickle.load(f)
+        try:
+            self.calibrator, self.trajectory_regressor, manifest = load_portable_models(MODEL_DIR)
+            self.serialization_format = "native_xgboost_json_and_numpy_isotonic"
+            self.portable_verification = manifest.get("parity_verification", {})
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            logging.getLogger(__name__).warning(
+                "Portable twin artifacts unavailable or invalid (%s). Loading trusted legacy pickle artifacts; "
+                "re-export with scripts/export_portable_twin_models.py to avoid version-dependent deserialization.", exc)
+            with (MODEL_DIR / "calibrator.pkl").open("rb") as f:
+                self.calibrator = pickle.load(f)
+            with (MODEL_DIR / "trajectory_regressor.pkl").open("rb") as f:
+                self.trajectory_regressor = pickle.load(f)
+            self.trajectory_regressor.n_jobs = 1
+            for estimator in self.trajectory_regressor.estimators_:
+                estimator.set_params(n_jobs=1)
+            self.serialization_format = "legacy_trusted_pickle_fallback"
+            self.portable_verification = {}
 
-        with (MODEL_DIR / "trajectory_regressor.pkl").open("rb") as f:
-            self.trajectory_regressor = pickle.load(f)
+        self.artifact_fingerprints = {name: hashlib.sha256((MODEL_DIR / name).read_bytes()).hexdigest() for name in SOURCE_FILES}
+        self.model_fingerprint = hashlib.sha256(json.dumps(self.artifact_fingerprints, sort_keys=True).encode()).hexdigest()
 
         self.feature_names: List[str] = json.loads(
             (MODEL_DIR / "feature_names.json").read_text(encoding="utf-8")
         )
 
         metrics = json.loads((MODEL_DIR / "metrics.json").read_text(encoding="utf-8"))
+        self.metrics = metrics
+        self.model_hash = hashlib.sha256((MODEL_DIR / "classifier.json").read_bytes()).hexdigest()
         self.optimal_threshold = float(metrics.get("optimal_decision_threshold", 0.220))
 
         # Initialize TreeSHAP explainer
@@ -82,7 +109,9 @@ class DigitalTwinEngine:
     def features_to_vector(self, features: ClinicalFeatures) -> np.ndarray:
         """Convert ClinicalFeatures schema to the exact ordered 24-element float vector."""
         f_dict = features.model_dump()
-        vec = [float(f_dict.get(col, 0.0)) for col in self.feature_names]
+        vec = [float(f_dict[col]) for col in self.feature_names]
+        if not np.isfinite(vec).all():
+            raise ValueError("Model features must all be finite; no silent imputation applied.")
         return np.array([vec], dtype=np.float32)
 
     def predict(
@@ -122,7 +151,7 @@ class DigitalTwinEngine:
                 peak_val = val
                 peak_time = h
 
-            # Empirical 90% confidence bounds (+/- 1.645 sigma)
+            # Illustrative sensitivity envelope only: no residual quantile calibration exists.
             sigma = 4.5 + (idx * 2.1)
             p10 = round(max(40.0, val - 1.645 * sigma), 1)
             p90 = round(val + 1.645 * sigma, 1)
@@ -189,4 +218,26 @@ class DigitalTwinEngine:
             predicted_peak_time_minutes=peak_time,
             continuous_trajectory=trajectory_points,
             top_shap_drivers=shap_drivers,
+            event_status="ongoing_hyperglycemia" if features.glucose_now >= 180 else "incident_forecast",
+            model_applicable=features.glucose_now < 180,
+            features=features.model_dump(),
+            explanation={
+                "method": "TreeSHAP", "scale": "uncalibrated_classifier_log_odds",
+                "base_value": float(np.asarray(self.explainer.expected_value).reshape(-1)[-1]),
+                "contribution_sum": float(np.sum(sv)),
+                "raw_margin": float(self.classifier.predict(x_vec, output_margin=True)[0]),
+                "raw_probability": raw_prob,
+                "additivity_residual": float(self.classifier.predict(x_vec, output_margin=True)[0]) - float(np.asarray(self.explainer.expected_value).reshape(-1)[-1]) - float(np.sum(sv)),
+                "all_contributions": {name: float(value) for name, value in zip(self.feature_names, sv)},
+                "note": "Contributions explain the raw classifier log odds, not the isotonic-calibrated probability or causal effects.",
+            },
+            model_provenance={"classifier_sha256": self.model_hash,
+                              "serialization_format": self.serialization_format,
+                              "model_fingerprint": self.model_fingerprint,
+                              "portable_parity_verification": self.portable_verification,
+                              "architecture": self.metrics.get("model_architecture"),
+                              "training_provenance": self.metrics.get("training_provenance"),
+                              "target": self.metrics.get("question"),
+                              "validation": "Patient-separated retrospective test cohort; no prospective validation."},
+            warnings=["Current glucose is already >=180 mg/dL. Incident classifier and trajectory were trained below 180 mg/dL; outputs are outside their validated baseline domain."] if features.glucose_now >= 180 else [],
         )

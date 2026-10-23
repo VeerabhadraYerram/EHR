@@ -1,351 +1,169 @@
-import type { Patient, Reading, PatientSimulation, TrajectoryPoint, ShapDriver, SimulationBranch } from "./types";
+import type {
+  Patient,
+  Reading,
+  PatientSimulation,
+  InterventionSpec,
+} from "./types";
 
-interface CohortJsonPatient {
-  person_id: string;
-  display_name: string;
-  is_demo: boolean;
-  age_years: number;
-  sex: string;
-  bmi: number;
-  years_with_diabetes: number;
-  hba1c_percent: number;
-  fasting_c_peptide: number;
-  creatinine_mg_dl: number;
-  egfr: number;
-  comorbidities: string;
-  medications: string[];
-  risk_status: {
-    tier: "HIGH" | "WATCH" | "CALM";
-    spike_imminent: boolean;
-    spike_probability: number;
-    projected_peak_mg_dl: number;
-    projected_peak_time_min: number;
-    reason_simple?: string;
-    reason_medical?: string;
-  };
-  available_dates: string[];
-  default_date: string;
-  days: Record<
-    string,
-    {
-      date: string;
-      readings: Array<{
-        reading_time: string;
-        time: string;
-        glucose_mg_dl: number;
-        meal_carbs_g: number | null;
-        meal_description: string;
-        is_spike: boolean;
-      }>;
-      stats: {
-        total_readings: number;
-        mean_glucose: number;
-        max_glucose: number;
-        min_glucose: number;
-        tir_percent: number;
-        spikes_count: number;
-        total_carbs_g: number;
-      };
-      prediction: {
-        decision_time: string;
-        decision_reading_index: number;
-        glucose_now_mg_dl: number;
-        calibrated_spike_probability: number;
-        risk_tier: "HIGH" | "WATCH" | "CALM";
-        optimal_decision_threshold: number;
-        spike_predicted: boolean;
-        predicted_peak_glucose_mg_dl: number;
-        predicted_peak_time_minutes: number;
-        top_shap_drivers: ShapDriver[];
-      };
-      trajectory?: TrajectoryPoint[];
-      future_trajectory?: TrajectoryPoint[];
-      counterfactuals: Array<{
-        intervention_type: string;
-        label: string;
-        icon: string;
-        mechanism: string;
-        simulated_peak_mg_dl: number;
-        peak_reduction_mg_dl: number;
-        spike_averted: boolean;
-        risk_reduction_pct: number;
-        simulated_trajectory?: TrajectoryPoint[];
-      }>;
-    }
-  >;
-}
-
-let cachedCohortPatients: Patient[] | null = null;
-let rawCohortJsonMap: Map<string, CohortJsonPatient> = new Map();
-
-export async function fetchPatientsList(): Promise<Patient[]> {
-  if (cachedCohortPatients && cachedCohortPatients.length > 0) {
-    return cachedCohortPatients;
+export class ApiError extends Error {
+  status: number;
+  constructor(message: string, status: number) {
+    super(message);
+    this.status = status;
   }
-
-  // 1. Try precompiled 100-patient cohort JSON from public directory
-  try {
-    const res = await fetch("/doctor-clinic-cohort.json");
-    if (res.ok) {
-      const data = await res.json();
-      if (data && Array.isArray(data.patients) && data.patients.length > 0) {
-        rawCohortJsonMap.clear();
-        data.patients.forEach((p: CohortJsonPatient) => {
-          rawCohortJsonMap.set(p.person_id, p);
-        });
-
-        cachedCohortPatients = data.patients.map((p: CohortJsonPatient) => {
-          const defaultDay = p.days && p.default_date ? p.days[p.default_date] : null;
-          const fpg = defaultDay ? Math.round(defaultDay.stats.min_glucose) : Math.round(p.hba1c_percent * 18);
-          const ppg = p.risk_status.projected_peak_mg_dl || (defaultDay ? defaultDay.stats.max_glucose : 180);
-
-          return {
-            person_id: p.person_id,
-            display_name: p.display_name,
-            is_demo: p.is_demo,
-            split: p.person_id.localeCompare("P072") <= 0 ? "learn" : p.person_id.localeCompare("P087") <= 0 ? "tune" : "test",
-            age_years: p.age_years,
-            sex: p.sex,
-            bmi: p.bmi,
-            years_with_diabetes: p.years_with_diabetes,
-            diagnosis_name: "Type 2 Diabetes Mellitus",
-            icd10_code: "E11.9",
-            snomed_code: "44054006",
-            hba1c_percent: p.hba1c_percent,
-            fasting_glucose_mg_dl: fpg,
-            postprandial_glucose_mg_dl: ppg,
-            fasting_c_peptide_nmol_l: p.fasting_c_peptide,
-            creatinine_mg_dl: p.creatinine_mg_dl,
-            egfr: p.egfr,
-            total_cholesterol_mg_dl: 175,
-            triglycerides_mg_dl: 140,
-            hdl_mg_dl: 46,
-            ldl_mg_dl: 102,
-            on_metformin: p.medications.some((m) => m.toLowerCase().includes("metformin")) ? "yes" : "no",
-            on_insulin: p.medications.some((m) => m.toLowerCase().includes("insulin")) ? "yes" : "no",
-            hypoglycemic_agents_raw: p.medications.join(", "),
-            comorbidities: p.comorbidities,
-            risk_status: {
-              tier: p.risk_status.tier,
-              spike_probability: p.risk_status.spike_probability,
-              projected_peak_mg_dl: p.risk_status.projected_peak_mg_dl,
-              reason_medical: p.risk_status.reason_medical,
-            },
-          };
-        });
-
-        return cachedCohortPatients || [];
+}
+export async function requestJson<T>(
+  url: string,
+  init?: RequestInit,
+): Promise<T> {
+  const response = await fetch(url, init);
+  if (!response.ok) {
+    let message = `Request failed (${response.status})`;
+    try {
+      const body = await response.json();
+      message =
+        typeof body.detail === "string"
+          ? body.detail
+          : JSON.stringify(body.detail || body);
+    } catch {
+      /* Proxy failures may not be JSON. */
+    }
+    throw new ApiError(message, response.status);
+  }
+  return response.json() as Promise<T>;
+}
+const numericFields = [
+  "age_years",
+  "bmi",
+  "years_with_diabetes",
+  "hba1c_percent",
+  "fasting_glucose_mg_dl",
+  "postprandial_glucose_mg_dl",
+  "fasting_c_peptide_nmol_l",
+  "creatinine_mg_dl",
+  "egfr",
+  "total_cholesterol_mg_dl",
+  "triglycerides_mg_dl",
+  "hdl_mg_dl",
+  "ldl_mg_dl",
+];
+// Preserve the workstation's existing fictional aliases; clinical facts remain API-owned.
+const displayAliases: Record<string, string> = {
+  P001: "Rohan Sharma",
+  P002: "Sunita Patel",
+  P003: "Vikram Desai",
+  P004: "Meera Nambiar",
+  P005: "Arun Kumar",
+  P006: "Kavita Rao",
+  P007: "Rajesh Gupta",
+  P008: "Deepa Joshi",
+  P009: "Sanjay Verma",
+  P010: "Pooja Hegde",
+  P011: "Manoj Pillai",
+  P012: "Geeta Swaminathan",
+  P013: "Amitabh Sen",
+  P014: "Ananya Roy",
+  P015: "Suresh Reddy",
+  P016: "Priyanka Nair",
+  P017: "Karthik Iyer",
+  P018: "Shalini Menon",
+  P019: "Naveen Bhat",
+  P020: "Asha Varma",
+};
+export async function fetchPatientsList(
+  signal?: AbortSignal,
+): Promise<Patient[]> {
+  const rows = await requestJson<Patient[]>("/api/v1/twin/patients", {
+    signal,
+  });
+  return rows
+    .map((row) => {
+      const patient = { ...row } as Patient & Record<string, unknown>;
+      patient.display_name = displayAliases[row.person_id] || row.display_name;
+      for (const field of numericFields) {
+        const value = patient[field];
+        if (value !== "" && value != null && Number.isFinite(Number(value)))
+          patient[field] = Number(value);
       }
-    }
-  } catch (err) {
-    console.warn("Could not load /doctor-clinic-cohort.json, falling back to API / generated:", err);
-  }
-
-  // 2. Fallback to API if JSON not present
-  try {
-    const res = await fetch("/api/v1/twin/patients");
-    if (res.ok) {
-      const data: any[] = await res.json();
-      cachedCohortPatients = data.map((p) => {
-        const hba1c = parseFloat(p.hba1c_percent) || 7.5;
-        const fpg = parseFloat(p.fasting_glucose_mg_dl) || 120;
-        const ppg = parseFloat(p.postprandial_glucose_mg_dl) || 180;
-        let tier: "HIGH" | "WATCH" | "CALM" = hba1c >= 9.0 ? "HIGH" : hba1c >= 7.5 ? "WATCH" : "CALM";
-        let prob = hba1c >= 9.0 ? 0.78 : hba1c >= 7.5 ? 0.38 : 0.08;
-        return {
-          ...p,
-          display_name: p.display_name || `Patient ${p.person_id}`,
-          age_years: parseFloat(p.age_years) || 55,
-          bmi: parseFloat(p.bmi) || 24.5,
-          years_with_diabetes: parseFloat(p.years_with_diabetes) || 5,
-          hba1c_percent: hba1c,
-          fasting_glucose_mg_dl: fpg,
-          postprandial_glucose_mg_dl: ppg,
-          fasting_c_peptide_nmol_l: parseFloat(p.fasting_c_peptide_nmol_l) || 0.65,
-          creatinine_mg_dl: parseFloat(p.creatinine_mg_dl) || 0.9,
-          egfr: parseFloat(p.egfr) || 85,
-          risk_status: {
-            tier,
-            spike_probability: prob,
-            projected_peak_mg_dl: ppg,
-            reason_medical: `EHR HbA1c ${hba1c}% with peak postprandial glucose reaching ${ppg} mg/dL.`,
-          },
-        };
-      });
-      return cachedCohortPatients || [];
-    }
-  } catch (err) {
-    console.error("API error:", err);
-  }
-
-  return [];
+      return patient;
+    })
+    .sort((a, b) => a.person_id.localeCompare(b.person_id));
 }
-
-export async function fetchPatientReadings(patientId: string): Promise<Reading[]> {
-  const cohortPatient = rawCohortJsonMap.get(patientId);
-  if (cohortPatient && cohortPatient.days && cohortPatient.default_date) {
-    const defaultDay = cohortPatient.days[cohortPatient.default_date];
-    if (defaultDay && defaultDay.readings && defaultDay.readings.length > 0) {
-      return defaultDay.readings.map((r) => ({
-        person_id: patientId,
-        reading_time: r.reading_time,
-        time: r.time,
-        glucose_mg_dl: r.glucose_mg_dl,
-        meal_carbs_g: r.meal_carbs_g,
-        meal_description: r.meal_description,
-        is_spike: r.is_spike,
-      }));
-    }
-  }
-
-  // Fallback to API
-  try {
-    const res = await fetch(`/api/v1/twin/patients/${patientId}/readings?limit=96`);
-    if (res.ok) {
-      const raw: any[] = await res.json();
-      return raw.map((r) => ({
-        person_id: r.person_id,
-        reading_time: r.reading_time,
-        time: r.reading_time ? r.reading_time.substring(11, 16) : "12:00",
-        glucose_mg_dl: parseFloat(r.glucose_mg_dl) || 120,
-        meal_carbs_g: r.meal_carbs_g ? parseFloat(r.meal_carbs_g) : null,
-        meal_description: r.meal_description || "",
-        is_spike: parseFloat(r.glucose_mg_dl) >= 180,
-      }));
-    }
-  } catch (e) {
-    console.warn("API reading fetch error:", e);
-  }
-
-  return [];
+export interface PatientDates {
+  dates: string[];
+  default_date: string;
 }
-
-export async function fetchPatientSimulation(patientId: string): Promise<PatientSimulation> {
-  const cohortPatient = rawCohortJsonMap.get(patientId);
-  if (cohortPatient && cohortPatient.days && cohortPatient.default_date) {
-    const defaultDay = cohortPatient.days[cohortPatient.default_date];
-    const traj: TrajectoryPoint[] = defaultDay?.future_trajectory || defaultDay?.trajectory || [];
-    
-    if (defaultDay && traj.length > 0) {
-      const risk = cohortPatient.risk_status;
-      const lastReading = defaultDay.readings[defaultDay.readings.length - 1] || { glucose_mg_dl: 140, reading_time: "12:00" };
-      const nowG = traj[0] ? traj[0].projected_glucose_mg_dl : lastReading.glucose_mg_dl;
-
-      const branches: SimulationBranch[] = (defaultDay.counterfactuals || []).map((c) => {
-        const simTraj: TrajectoryPoint[] = traj.map((pt) => ({
-          horizon_minutes: pt.horizon_minutes,
-          projected_glucose_mg_dl: Math.max(75, Math.round((pt.projected_glucose_mg_dl - c.peak_reduction_mg_dl * (pt.horizon_minutes / 120)) * 10) / 10),
-          lower_bound_p10_mg_dl: Math.max(68, Math.round((pt.lower_bound_p10_mg_dl - c.peak_reduction_mg_dl * (pt.horizon_minutes / 120)) * 10) / 10),
-          upper_bound_p90_mg_dl: Math.max(85, Math.round((pt.upper_bound_p90_mg_dl - c.peak_reduction_mg_dl * (pt.horizon_minutes / 120)) * 10) / 10),
-        }));
-
-        return {
-          intervention_type: c.intervention_type,
-          intervention_label: c.label,
-          baseline_peak_mg_dl: risk.projected_peak_mg_dl,
-          simulated_peak_mg_dl: c.simulated_peak_mg_dl,
-          peak_reduction_mg_dl: c.peak_reduction_mg_dl,
-          baseline_risk_probability: risk.spike_probability,
-          simulated_risk_probability: Math.max(0.02, parseFloat((risk.spike_probability * (1 - c.risk_reduction_pct / 100)).toFixed(3))),
-          risk_reduction_percentage_points: c.risk_reduction_pct,
-          auc_reduction_percent: Math.round(c.peak_reduction_mg_dl * 1.05),
-          simulated_trajectory: simTraj,
-          clinical_rationale: `Targeted ${c.label} intervention blunts excursion magnitude by ${c.peak_reduction_mg_dl} mg/dL.`,
-          biophysical_mechanism: c.mechanism,
-        };
-      });
-
-      const topShap: ShapDriver[] = [
-        {
-          feature: "glucose_now",
-          shap_value: 0.44,
-          direction: "increases_risk",
-          clinical_explanation: `Elevated current sensor reading at ${Math.round(nowG)} mg/dL drives acute excursion risk`,
-        },
-        {
-          feature: "minutes_since_meal",
-          shap_value: 0.32,
-          direction: "increases_risk",
-          clinical_explanation: "Postprandial gastrointestinal carbohydrate absorption window",
-        },
-        {
-          feature: "years_with_diabetes",
-          shap_value: 0.24,
-          direction: "increases_risk",
-          clinical_explanation: `${cohortPatient.years_with_diabetes} years chronicity reduces phase-1 insulin secretory reserve`,
-        },
-        {
-          feature: "cos_hour",
-          shap_value: -0.16,
-          direction: "decreases_risk",
-          clinical_explanation: "Diurnal insulin sensitivity modulation (circadian harmonic phase)",
-        },
-      ];
-
-      return {
-        person_id: patientId,
-        decision_time: lastReading.reading_time || "12:00",
-        baseline: {
-          person_id: patientId,
-          decision_time: lastReading.reading_time || "12:00",
-          glucose_now_mg_dl: nowG,
-          calibrated_spike_probability: risk.spike_probability,
-          risk_tier: risk.tier,
-          optimal_decision_threshold: 0.22,
-          spike_predicted: risk.spike_imminent,
-          predicted_peak_glucose_mg_dl: risk.projected_peak_mg_dl,
-          predicted_peak_time_minutes: risk.projected_peak_time_min || 60,
-          continuous_trajectory: traj,
-          top_shap_drivers: topShap,
-        },
-        counterfactual_branches: branches,
-        optimal_recommended_action: `Optimal Recommendation: ${branches[0]?.intervention_label || "20-Minute Brisk Walk"} blunts projected peak from ${risk.projected_peak_mg_dl} mg/dL to ${branches[0]?.simulated_peak_mg_dl || 150} mg/dL.`,
-      };
-    }
-  }
-
-  // Fallback to FastAPI endpoint
-  try {
-    const res = await fetch(`/api/v1/twin/simulate/${patientId}`, { method: "POST" });
-    if (res.ok) {
-      return await res.json();
-    }
-  } catch (e) {
-    console.warn("API simulation error:", e);
-  }
-
-  // Emergency synthetic baseline
-  const fallbackTraj: TrajectoryPoint[] = [15, 30, 45, 60, 75, 90, 105, 120].map((h) => ({
-    horizon_minutes: h,
-    projected_glucose_mg_dl: 140 + Math.sin((h / 120) * Math.PI) * 35,
-    lower_bound_p10_mg_dl: 125 + Math.sin((h / 120) * Math.PI) * 30,
-    upper_bound_p90_mg_dl: 155 + Math.sin((h / 120) * Math.PI) * 40,
-  }));
-
-  return {
-    person_id: patientId,
-    decision_time: "12:30",
-    baseline: {
-      person_id: patientId,
-      decision_time: "12:30",
-      glucose_now_mg_dl: 140,
-      calibrated_spike_probability: 0.45,
-      risk_tier: "WATCH",
-      optimal_decision_threshold: 0.22,
-      spike_predicted: true,
-      predicted_peak_glucose_mg_dl: 175,
-      predicted_peak_time_minutes: 60,
-      continuous_trajectory: fallbackTraj,
-      top_shap_drivers: [
-        {
-          feature: "glucose_now",
-          shap_value: 0.38,
-          direction: "increases_risk",
-          clinical_explanation: "Current baseline interstitial glucose at 140 mg/dL",
-        },
-      ],
+export async function fetchPatientDates(
+  patientId: string,
+  signal?: AbortSignal,
+): Promise<PatientDates> {
+  return requestJson<PatientDates>(
+    `/api/v1/twin/patients/${encodeURIComponent(patientId)}/dates`,
+    { signal },
+  );
+}
+export async function fetchPatientReadings(
+  patientId: string,
+  date?: string,
+  signal?: AbortSignal,
+): Promise<Reading[]> {
+  const query = new URLSearchParams({ limit: "0" });
+  if (date) query.set("date", date);
+  const rows = await requestJson<Array<Record<string, string | number | null>>>(
+    `/api/v1/twin/patients/${encodeURIComponent(patientId)}/readings?${query}`,
+    { signal },
+  );
+  return rows
+    .map((r) => ({
+      person_id: String(r.person_id),
+      reading_time: String(r.reading_time),
+      time: String(r.reading_time).slice(11, 16),
+      glucose_mg_dl: Number(r.glucose_mg_dl),
+      meal_description: String(r.meal_description || ""),
+      meal_carbs_g:
+        r.meal_carbs_g === "" || r.meal_carbs_g == null
+          ? null
+          : Number(r.meal_carbs_g),
+      insulin_units:
+        r.insulin_units === "" || r.insulin_units == null
+          ? null
+          : Number(r.insulin_units),
+      minutes_since_meal:
+        r.minutes_since_meal === "" || r.minutes_since_meal == null
+          ? undefined
+          : Number(r.minutes_since_meal),
+      last_meal_carbs_g:
+        r.last_meal_carbs_g === "" || r.last_meal_carbs_g == null
+          ? undefined
+          : Number(r.last_meal_carbs_g),
+      is_spike: Number(r.glucose_mg_dl) >= 180,
+    }))
+    .filter((r) => Number.isFinite(r.glucose_mg_dl));
+}
+export async function fetchPatientSimulation(
+  patientId: string,
+  decisionTime: string,
+  interventions?: InterventionSpec[],
+  signal?: AbortSignal,
+): Promise<PatientSimulation> {
+  const query = new URLSearchParams({ decision_time: decisionTime });
+  return requestJson<PatientSimulation>(
+    `/api/v1/twin/simulate/${encodeURIComponent(patientId)}?${query}`,
+    {
+      method: "POST",
+      signal,
+      headers: { "Content-Type": "application/json" },
+      body: interventions ? JSON.stringify(interventions) : undefined,
     },
-    counterfactual_branches: [],
-    optimal_recommended_action: "Postprandial activity recommended.",
-  };
+  );
+}
+export function downloadJson(filename: string, data: unknown) {
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+  );
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

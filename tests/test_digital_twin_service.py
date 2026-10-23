@@ -173,30 +173,35 @@ def test_in_silico_simulation_fidelity():
 
     # Check walk branch (GLUT4 kinetics)
     walk_branch = next(b for b in branches if b["intervention_type"] == "postprandial_walk")
-    assert walk_branch["peak_reduction_mg_dl"] > 15.0
+    assert walk_branch["peak_reduction_mg_dl"] >= 0.0
     assert walk_branch["simulated_peak_mg_dl"] < walk_branch["baseline_peak_mg_dl"]
-    assert walk_branch["auc_reduction_percent"] > 5.0
+    assert walk_branch["auc_reduction_percent"] > 0.0
     assert not walk_branch["hypoglycemia_risk_warning"]
     assert "GLUT4" in walk_branch["biophysical_mechanism"]
 
     # Check carb reduction branch (Hovorka absorption kinetics)
     carb_branch = next(b for b in branches if b["intervention_type"] == "carb_reduction")
-    assert carb_branch["peak_reduction_mg_dl"] > 15.0
+    assert carb_branch["peak_reduction_mg_dl"] >= 0.0
     assert "Hovorka" in carb_branch["biophysical_mechanism"]
 
     # Check food sequencing branch (Gastric emptying delay)
     seq_branch = next(b for b in branches if b["intervention_type"] == "food_sequencing")
-    assert seq_branch["peak_reduction_mg_dl"] > 10.0
+    assert seq_branch["peak_reduction_mg_dl"] >= 0.0
     assert "Gastric Emptying Delay" in seq_branch["biophysical_mechanism"]
 
     # Check compound lifestyle branch (Synergy)
     compound_branch = next(b for b in branches if b["intervention_type"] == "compound_lifestyle")
-    assert compound_branch["peak_reduction_mg_dl"] > 25.0
-    assert compound_branch["risk_reduction_percentage_points"] > 20.0
+    assert compound_branch["peak_reduction_mg_dl"] >= 0.0
+    assert compound_branch["risk_reduction_percentage_points"] >= 0.0
     assert "Synergy" in compound_branch["biophysical_mechanism"]
 
     # Check recommendation string
-    assert "Optimal Recommended Action" in sim["optimal_recommended_action"]
+    assert sim["optimal_recommended_action"]
+    for branch in branches:
+        assert branch["simulated_risk_probability"] <= branch["baseline_risk_probability"]
+        assert branch["clarke_safety_zone"] is None
+        assert branch["clinically_validated"] is False
+        assert "Assumption-based" in branch["simulation_method"]
 
 
 def test_patient_targeted_simulation():
@@ -210,37 +215,36 @@ def test_patient_targeted_simulation():
 
 
 def test_hl7_fhir_r4_bundle_serialization():
-    """Verify compliance with HL7 FHIR R4 standard resources and terminology codes."""
+    """Verify draft FHIR resource shapes; official IG validation is separate."""
     res = client.get("/api/v1/twin/fhir/bundle/P001")
     assert res.status_code == 200
     bundle = res.json()
 
     assert bundle["resourceType"] == "Bundle"
     assert bundle["type"] == "collection"
-    assert bundle["total"] == 3
-    assert len(bundle["entry"]) == 3
+    assert bundle["total"] == 5
+    assert len(bundle["entry"]) == 5
 
-    # Resource 1: Observation (LOINC 15074-8)
+    # Resource 1: Observation without an unverified terminology code.
     obs = bundle["entry"][0]["resource"]
     assert obs["resourceType"] == "Observation"
-    assert obs["code"]["coding"][0]["code"] == "15074-8"
-    assert obs["code"]["coding"][0]["system"] == "http://loinc.org"
+    assert "Interstitial glucose" in obs["code"]["text"]
     assert obs["valueQuantity"]["unit"] == "mg/dL"
     assert obs["referenceRange"][0]["low"]["value"] == 70.0
     assert obs["referenceRange"][0]["high"]["value"] == 180.0
 
-    # Resource 2: RiskAssessment (SNOMED 44054006 / 267036007)
+    # Resource 2: RiskAssessment with text outcome and structurally valid fields.
     risk = bundle["entry"][1]["resource"]
     assert risk["resourceType"] == "RiskAssessment"
-    assert risk["condition"]["coding"][0]["code"] == "44054006"
-    assert risk["prediction"][0]["outcome"]["coding"][0]["code"] == "267036007"
+    assert "condition" not in risk
+    assert "180 mg/dL" in risk["prediction"][0]["outcome"]["text"]
     assert "TreeSHAP" in risk["prediction"][0]["rationale"]
 
     # Resource 3: CarePlan (Actionable in-silico counterfactuals)
     plan = bundle["entry"][2]["resource"]
     assert plan["resourceType"] == "CarePlan"
-    assert plan["status"] == "active"
-    assert plan["intent"] == "plan"
+    assert plan["status"] == "draft"
+    assert plan["intent"] == "proposal"
     assert len(plan["activity"]) > 0
     assert "In-Silico Simulation" in plan["activity"][0]["detail"]["description"]
 

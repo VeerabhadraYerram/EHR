@@ -9,8 +9,11 @@ Exposes RESTful endpoints for:
 
 from __future__ import annotations
 
+import hashlib
 import csv
 import json
+import os
+from functools import lru_cache
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -20,8 +23,9 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 try:
+    from .cohort import build_features, patient_readings
     from .engine import DigitalTwinEngine
-    from .fhir_mappers import to_fhir_care_plan, to_fhir_observation, to_fhir_risk_assessment
+    from .fhir_mappers import to_fhir_care_plan, to_fhir_observation, to_fhir_risk_assessment, to_fhir_patient, to_fhir_provenance, validate_bundle
     from .models import (
         ClinicalFeatures,
         InterventionSpec,
@@ -31,8 +35,9 @@ try:
     )
     from .simulator import MetabolicDigitalTwinSimulator
 except ImportError:
+    from cohort import build_features, patient_readings
     from engine import DigitalTwinEngine
-    from fhir_mappers import to_fhir_care_plan, to_fhir_observation, to_fhir_risk_assessment
+    from fhir_mappers import to_fhir_care_plan, to_fhir_observation, to_fhir_risk_assessment, to_fhir_patient, to_fhir_provenance, validate_bundle
     from models import (
         ClinicalFeatures,
         InterventionSpec,
@@ -42,8 +47,12 @@ except ImportError:
     )
     from simulator import MetabolicDigitalTwinSimulator
 
-ROOT = Path(__file__).resolve().parents[2]
-DATA_DIR = ROOT / "data" / "digital_twin"
+if os.getenv("DATA_DIR"):
+    DATA_DIR = Path(os.environ["DATA_DIR"])
+else:
+    _parents = Path(__file__).resolve().parents
+    ROOT = _parents[2] if len(_parents) > 2 else _parents[0]
+    DATA_DIR = ROOT / "data" / "digital_twin"
 
 app = FastAPI(
     title="Metabolic Digital Twin Service",
@@ -77,6 +86,8 @@ def health_check() -> Dict[str, Any]:
             "trajectory_regressor": "MultiOutputRegressor (XGBRegressor 8-Horizons)",
             "explainability": "shap.TreeExplainer (TreeSHAP)",
         },
+        "serialization_format": engine.serialization_format,
+        "model_fingerprint": engine.model_fingerprint,
         "optimal_decision_threshold": engine.optimal_threshold,
         "cohort_patients_loaded": 100,
         "timestamp": datetime.now().isoformat(),
@@ -142,17 +153,19 @@ def get_patient(patient_id: str) -> Dict[str, Any]:
 
 @app.get("/api/v1/twin/patients/{patient_id}/readings")
 def get_patient_readings(
-    patient_id: str, limit: int = Query(96, description="Number of 15-min intervals (96 = 24h)")
+    patient_id: str, limit: int = Query(96, ge=0, le=100000, description="Number of 15-min intervals (0 = all)"),
+    date: Optional[str] = Query(None, pattern=r"^\d{4}-\d{2}-\d{2}$")
 ) -> List[Dict[str, Any]]:
     """Get time-series continuous sensor telemetry for a patient."""
     readings_file = DATA_DIR / "wearables" / "readings.csv"
     if not readings_file.exists():
         raise HTTPException(status_code=404, detail="Readings database missing.")
 
+    get_patient(patient_id)
     readings = []
     with readings_file.open(encoding="utf-8") as f:
         for row in csv.DictReader(f):
-            if row["person_id"] == patient_id:
+            if row["person_id"] == patient_id and (date is None or row["reading_time"].startswith(date)):
                 readings.append(row)
 
     return readings[-limit:] if limit else readings
@@ -175,35 +188,12 @@ def simulate_counterfactuals(request: SimulationRequest) -> SimulationResponse:
     pid = request.person_id or "P001"
     dt = datetime.now().isoformat()
 
-    # If features not supplied, build from patient's default clinical baseline (e.g. Rohan Sharma postprandial state)
     features = request.features
+    provenance = {}
     if features is None:
-        features = ClinicalFeatures(
-            age_years=55.0,
-            sex_male=1.0,
-            bmi=24.2,
-            years_with_diabetes=4.0,
-            hba1c_percent=8.2,
-            fasting_c_peptide=0.55,
-            creatinine_mg_dl=0.85,
-            egfr=95.0,
-            on_metformin=1.0,
-            on_insulin=0.0,
-            glucose_now=138.0,
-            glucose_mean_30min=132.0,
-            glucose_mean_2h=122.0,
-            glucose_min_2h=108.0,
-            glucose_max_2h=138.0,
-            glucose_std_2h=11.2,
-            glucose_velocity_per_hour=22.0,
-            glucose_acceleration=5.5,
-            minutes_since_meal=30.0,
-            last_meal_carbs_g=65.0,
-            carbs_intake_last_2h=65.0,
-            hour_of_day=12.75,
-            sin_hour=-0.195,
-            cos_hour=-0.981,
-        )
+        features, dt, provenance = _cohort_features(pid, request.decision_time)
+    else:
+        dt = request.decision_time or dt
 
     baseline, branches, recommendation = simulator.simulate_interventions(
         features=features,
@@ -212,6 +202,7 @@ def simulate_counterfactuals(request: SimulationRequest) -> SimulationResponse:
         person_id=pid,
     )
 
+    baseline.feature_provenance = provenance
     return SimulationResponse(
         person_id=pid,
         decision_time=dt,
@@ -230,122 +221,129 @@ def get_model_metrics() -> Dict[str, Any]:
     return json.loads(metrics_path.read_text(encoding="utf-8"))
 
 
+def _cohort_features(patient_id: str, decision_time: Optional[str]):
+    try:
+        return build_features(DATA_DIR, patient_id, decision_time)
+    except LookupError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.get("/api/v1/twin/patients/{patient_id}/predict", response_model=PredictionResponse)
+def predict_patient(patient_id: str, decision_time: Optional[str] = None):
+    features, dt, provenance = _cohort_features(patient_id, decision_time)
+    result = engine.predict(features, decision_time=dt, person_id=patient_id)
+    result.feature_provenance = provenance
+    return result
+
+
+@app.get("/api/v1/twin/patients/{patient_id}/dates")
+def get_patient_dates(patient_id: str):
+    get_patient(patient_id)
+    readings = patient_readings(DATA_DIR, patient_id)
+    counts = {}
+    for row in readings:
+        day = row['reading_time'][:10]
+        counts[day] = counts.get(day, 0) + 1
+    dates = sorted(counts)
+    complete = [d for d in dates if counts[d] >= 96]
+    return {"dates": dates, "default_date": (complete or dates or [None])[-1], "reading_counts": counts}
+
+
 @app.post("/api/v1/twin/simulate/{patient_id}", response_model=SimulationResponse)
 def simulate_patient_counterfactuals(
     patient_id: str,
     interventions: Optional[List[InterventionSpec]] = None,
+    decision_time: Optional[str] = None,
 ) -> SimulationResponse:
-    """Execute live in-silico simulation targeting a specific patient's profile from the cohort."""
-    # Fetch patient profile
-    patient_data = get_patient(patient_id)
-    
-    # Parse demographics and baseline labs
-    age = float(patient_data.get("age", 55.0))
-    gender = str(patient_data.get("gender", "male")).lower()
-    sex_male = 1.0 if gender in ["male", "m"] else 0.0
-    bmi = float(patient_data.get("bmi", 25.0))
-    years_dm = float(patient_data.get("years_with_diabetes", 5.0))
-    
-    # Parse labs
-    hba1c = 8.0
-    c_pep = 0.55
-    creat = 0.85
-    egfr_val = 90.0
-    for lab in patient_data.get("labs", []):
-        name = lab.get("lab_name", "").lower()
-        try:
-            val = float(lab.get("value", 0.0))
-            if "hba1c" in name:
-                hba1c = val
-            elif "c-peptide" in name or "c_peptide" in name:
-                c_pep = val
-            elif "creatinine" in name:
-                creat = val
-            elif "egfr" in name:
-                egfr_val = val
-        except (ValueError, TypeError):
-            continue
-
-    # Medications
-    meds = [m.get("drug_name", "").lower() for m in patient_data.get("medications", [])]
-    on_met = 1.0 if any("metformin" in m for m in meds) else 0.0
-    on_ins = 1.0 if any("insulin" in m for m in meds) else 0.0
-
-    # Get latest readings
-    readings = get_patient_readings(patient_id, limit=8)
-    if readings and len(readings) >= 1:
-        latest = readings[-1]
-        g_now = float(latest.get("glucose_mg_dl", 135.0))
-        past_vals = [float(r.get("glucose_mg_dl", g_now)) for r in readings]
-        g_mean_30 = float(np.mean(past_vals[-2:])) if len(past_vals) >= 2 else g_now
-        g_mean_2h = float(np.mean(past_vals))
-        g_min_2h = float(np.min(past_vals))
-        g_max_2h = float(np.max(past_vals))
-        g_std_2h = float(np.std(past_vals)) if len(past_vals) > 1 else 10.0
-        # velocity = (latest - oldest) / (hours elapsed)
-        g_vel = (g_now - past_vals[0]) / max(0.25, len(past_vals) * 0.25)
-    else:
-        g_now = 138.0
-        g_mean_30 = 132.0
-        g_mean_2h = 122.0
-        g_min_2h = 108.0
-        g_max_2h = 138.0
-        g_std_2h = 11.2
-        g_vel = 22.0
-
-    feat = ClinicalFeatures(
-        age_years=age,
-        sex_male=sex_male,
-        bmi=bmi,
-        years_with_diabetes=years_dm,
-        hba1c_percent=hba1c,
-        fasting_c_peptide=c_pep,
-        creatinine_mg_dl=creat,
-        egfr=egfr_val,
-        on_metformin=on_met,
-        on_insulin=on_ins,
-        glucose_now=g_now,
-        glucose_mean_30min=g_mean_30,
-        glucose_mean_2h=g_mean_2h,
-        glucose_min_2h=g_min_2h,
-        glucose_max_2h=g_max_2h,
-        glucose_std_2h=g_std_2h,
-        glucose_velocity_per_hour=g_vel,
-        glucose_acceleration=2.0,
-        minutes_since_meal=30.0,
-        last_meal_carbs_g=60.0,
-        carbs_intake_last_2h=60.0,
-        hour_of_day=12.5,
-        sin_hour=-0.13,
-        cos_hour=-0.99,
-    )
-
-    req = SimulationRequest(
-        person_id=patient_id,
-        features=feat,
-        interventions=interventions or SimulationRequest().interventions,
-    )
+    req = SimulationRequest(person_id=patient_id, decision_time=decision_time,
+        interventions=interventions if interventions is not None else SimulationRequest().interventions)
     return simulate_counterfactuals(req)
 
 
-@app.get("/api/v1/twin/fhir/bundle/{patient_id}")
-def get_fhir_bundle(patient_id: str = "P001") -> Dict[str, Any]:
-    """Generate HL7 FHIR R4 Transaction Bundle with Observation, RiskAssessment, and CarePlan."""
+def _build_fhir_bundle(patient_id: str, decision_time: Optional[str] = None, interventions: Optional[List[InterventionSpec]] = None) -> Dict[str, Any]:
+    """Export a draft FHIR collection with Patient, model outputs and Provenance."""
     # Build feature state targeting the patient
-    sim_res = simulate_patient_counterfactuals(patient_id)
+    sim_res = simulate_patient_counterfactuals(patient_id, interventions=interventions, decision_time=decision_time)
 
     obs = to_fhir_observation(sim_res.baseline)
     risk = to_fhir_risk_assessment(sim_res.baseline)
     plan = to_fhir_care_plan(sim_res)
 
-    return {
-        "resourceType": "Bundle",
-        "type": "collection",
-        "timestamp": datetime.now().isoformat(),
-        "total": 3,
-        "entry": [
-            {"resource": obs},
-            {"resource": risk},
-            {"resource": plan},
-        ],
+    patient = to_fhir_patient(get_patient(patient_id))
+    resources = [obs, risk, plan, patient]
+    resources.append(to_fhir_provenance(sim_res.baseline, resources))
+    bundle = {
+        "resourceType": "Bundle", "type": "collection",
+        "timestamp": datetime.now().astimezone().isoformat(), "total": len(resources),
+        "entry": [{"fullUrl": f"https://ehr.invalid/fhir/{r['resourceType']}/{r['id']}", "resource": r} for r in resources],
     }
+    return bundle
+
+
+@app.get("/api/v1/twin/fhir/bundle/{patient_id}")
+def get_fhir_bundle(patient_id: str = "P001", decision_time: Optional[str] = None):
+    return _build_fhir_bundle(patient_id, decision_time)
+
+
+@app.post("/api/v1/twin/fhir/bundle/{patient_id}")
+def post_fhir_bundle(patient_id: str, interventions: List[InterventionSpec], decision_time: Optional[str] = None):
+    """Export exactly the selected scenario set and recorded decision timestamp."""
+    return _build_fhir_bundle(patient_id, decision_time, interventions)
+
+
+@app.get("/api/v1/twin/fhir/validate/{patient_id}")
+def validate_patient_bundle(patient_id: str, decision_time: Optional[str] = None):
+    return validate_bundle(get_fhir_bundle(patient_id, decision_time))
+
+
+@lru_cache(maxsize=1)
+def _cohort_risk_summaries(source_fingerprint: str, model_fingerprint: str):
+    """Batch evaluate each patient's latest eligible recorded, below-threshold state."""
+    ids, vectors, times, errors = [], [], [], []
+    for patient in list_patients(split=None):
+        pid = patient['person_id']
+        selected = None
+        for reading in reversed(patient_readings(DATA_DIR, pid)):
+            if float(reading['glucose_mg_dl']) >= 180:
+                continue
+            try:
+                features, timestamp, _ = build_features(DATA_DIR, pid, reading['reading_time'])
+                selected = (features, timestamp)
+                break
+            except ValueError:
+                continue
+        if selected is None:
+            errors.append({'person_id': pid, 'status': 'insufficient_history', 'risk_tier': None,
+                           'calibrated_spike_probability': None, 'decision_time': None, 'model_applicable': False})
+            continue
+        ids.append(pid)
+        vectors.append(engine.features_to_vector(selected[0])[0])
+        times.append(selected[1])
+    results = []
+    if vectors:
+        matrix = np.asarray(vectors, dtype=np.float32)
+        raw = engine.classifier.predict_proba(matrix)[:, 1]
+        probabilities = np.clip(engine.calibrator.predict(raw), 0, 1)
+        curves = engine.trajectory_regressor.predict(matrix)
+        for index, pid in enumerate(ids):
+            probability = float(probabilities[index])
+            tier = 'HIGH' if probability >= .45 else 'WATCH' if probability >= engine.optimal_threshold else 'CALM'
+            results.append({'person_id': pid, 'decision_time': times[index], 'risk_tier': tier,
+                            'calibrated_spike_probability': round(probability, 3),
+                            'predicted_peak_glucose_mg_dl': round(float(np.max(curves[index])), 1),
+                            'model_applicable': True, 'status': 'evaluated'})
+    return {'evaluated_at': datetime.now().astimezone().isoformat(),
+            'timestamp_policy': 'Each patient latest eligible recorded moment: glucose below 180 mg/dL and two hours of consecutive prior sensor history. These are not simultaneous live states.',
+            'source_fingerprint': source_fingerprint, 'model_fingerprint': model_fingerprint,
+            'summaries': results + errors}
+
+
+@app.get('/api/v1/twin/cohort/risk-summaries')
+def get_cohort_risk_summaries():
+    source = hashlib.sha256()
+    for path in [DATA_DIR / 'clinic' / 'patients.csv', DATA_DIR / 'wearables' / 'readings.csv']:
+        source.update(path.read_bytes())
+    model = engine.model_fingerprint
+    return _cohort_risk_summaries(source.hexdigest(), model)

@@ -1,6 +1,6 @@
 # Organ twin artwork and frontend scope
 
-The workstation is a frontend-only demonstration. Fictional fixtures live in `frontend/doctor-review-ui/src/diagnostics/demoData.ts`. No patient, prediction, simulation or health API requests are made. The Vite backend proxy was removed; backend services and models are unchanged.
+The multipage workstation now loads cohort records and as-of-time predictions from the backend. The anatomy page preserves the existing PNG/SVG artwork and physiological animations; no twin assets were replaced. Clinical profiles, forecasts, what-if scenarios, reviews, genomics and reports have dedicated pages. Vite routes twin APIs to port 8004 and local review workflows to 8005.
 
 The central viewer cycles through Body, Pancreas, Kidneys, Heart and Brain. These are interactive atlas illustrations, not segmented patient volumes or calibrated physiological twins. The angle control changes a two-dimensional illustration's presentation; it does not reveal unseen anatomy. Generated artwork and approximate landmarks require medical review before educational or clinical deployment.
 

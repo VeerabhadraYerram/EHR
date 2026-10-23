@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import unittest
+import uuid
 import urllib.request
 import urllib.parse
 from datetime import datetime
@@ -13,17 +14,27 @@ sys.path.insert(0, os.path.join(BASE_DIR, "services", "ingestion"))
 sys.path.insert(0, os.path.join(BASE_DIR, "services", "identity-resolution"))
 sys.path.insert(0, os.path.join(BASE_DIR, "services", "clinical-processing", "fusion"))
 
-from models import init_db, PatientDB, SourceDocumentDB, SourceFragmentDB
-from adapters.historical_adapter import HistoricalAdapter
-from adapters.stt_adapter import STTAdapter
-from adapters.hl7_adapter import HL7APIAdapter
+from services.ingestion.models import init_db, PatientDB, SourceDocumentDB, SourceFragmentDB
+from _service_imports import ingestion_model_imports, load_fusion_engine
+
+with ingestion_model_imports():
+    from adapters.historical_adapter import HistoricalAdapter
+    from adapters.stt_adapter import STTAdapter
+    from adapters.hl7_adapter import HL7APIAdapter
 from identity_models import init_identity_db, IdentityMatchAuditDB
 from matcher import PatientIdentityMatcher
-from engine import ClinicalFusionEngine
+ClinicalFusionEngine = load_fusion_engine()
 
 class TestWeek2Pipeline(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # Historical ingestion is idempotent and must retain an existing LINKED
+        # decision. Give this run its own fixtures rather than expecting records
+        # from an earlier run to return to their original pending state.
+        suffix = uuid.uuid4().hex[:8]
+        cls.tier1_id = f"HIST-DOC-TIER1-001-{suffix}"
+        cls.tier2_id = f"HIST-DOC-TIER2-002-{suffix}"
+        cls.tier3_id = f"HIST-DOC-TIER3-003-{suffix}"
         cls.db_url = os.getenv("DATABASE_URL", "postgresql://ehr_user:ehr_password@localhost:5432/ehr_primary")
         cls.engine = create_engine(cls.db_url)
         init_db(cls.engine)
@@ -88,9 +99,10 @@ class TestWeek2Pipeline(unittest.TestCase):
             data = json.load(f)
 
         # 1. Ingest via HistoricalAdapter (held provisionally as PENDING_IDENTITY_RESOLUTION)
+        data["document_id"] = self.tier1_id
         doc, frags = HistoricalAdapter.process(data, self.db)
         self.db.commit()
-        self.assertEqual(doc.id, "HIST-DOC-TIER1-001")
+        self.assertEqual(doc.id, self.tier1_id)
         self.assertEqual(doc.status, "PENDING_IDENTITY_RESOLUTION")
         self.assertIsNone(doc.patient_id)
 
@@ -119,9 +131,10 @@ class TestWeek2Pipeline(unittest.TestCase):
         with open(sample_path) as f:
             data = json.load(f)
 
+        data["document_id"] = self.tier2_id
         doc, frags = HistoricalAdapter.process(data, self.db)
         self.db.commit()
-        self.assertEqual(doc.id, "HIST-DOC-TIER2-002")
+        self.assertEqual(doc.id, self.tier2_id)
 
         eval_resp = self._http_post("http://localhost:8002/api/v1/identity/evaluate", {
             "document_id": doc.id,
@@ -140,7 +153,7 @@ class TestWeek2Pipeline(unittest.TestCase):
         # Verify presence in doctor review queue
         queue_resp = self._http_get("http://localhost:8002/api/v1/identity/review-queue")
         queue_doc_ids = [item["document_id"] for item in queue_resp["items"]]
-        self.assertIn("HIST-DOC-TIER2-002", queue_doc_ids)
+        self.assertIn(self.tier2_id, queue_doc_ids)
 
     def test_03_doctor_confirmation_workflow(self):
         """
@@ -148,7 +161,7 @@ class TestWeek2Pipeline(unittest.TestCase):
         Doctor reviews pending match, confirms linkage, and document transitions to LINKED.
         """
         confirm_resp = self._http_post("http://localhost:8002/api/v1/identity/confirm", {
-            "document_id": "HIST-DOC-TIER2-002",
+            "document_id": self.tier2_id,
             "patient_id": "PT-HOSP-MRN-55210",
             "doctor_id": "DR-ROHIT-MEHTA",
             "action": "CONFIRM",
@@ -160,7 +173,7 @@ class TestWeek2Pipeline(unittest.TestCase):
         self.assertEqual(confirm_resp["patient_id"], "PT-HOSP-MRN-55210")
 
         # Verify document is updated in DB
-        doc = self.db.query(SourceDocumentDB).filter_by(id="HIST-DOC-TIER2-002").first()
+        doc = self.db.query(SourceDocumentDB).filter_by(id=self.tier2_id).first()
         self.assertIsNotNone(doc)
         self.assertEqual(doc.status, "LINKED")
         self.assertEqual(doc.patient_id, "PT-HOSP-MRN-55210")
@@ -168,7 +181,7 @@ class TestWeek2Pipeline(unittest.TestCase):
         # Verify item is removed from pending review queue
         queue_resp = self._http_get("http://localhost:8002/api/v1/identity/review-queue")
         queue_doc_ids = [item["document_id"] for item in queue_resp["items"]]
-        self.assertNotIn("HIST-DOC-TIER2-002", queue_doc_ids)
+        self.assertNotIn(self.tier2_id, queue_doc_ids)
 
     def test_04_tier3_hard_conflict_veto_and_quarantine(self):
         """
@@ -179,9 +192,10 @@ class TestWeek2Pipeline(unittest.TestCase):
         with open(sample_path) as f:
             data = json.load(f)
 
+        data["document_id"] = self.tier3_id
         doc, frags = HistoricalAdapter.process(data, self.db)
         self.db.commit()
-        self.assertEqual(doc.id, "HIST-DOC-TIER3-003")
+        self.assertEqual(doc.id, self.tier3_id)
 
         eval_resp = self._http_post("http://localhost:8002/api/v1/identity/evaluate", {
             "document_id": doc.id,
@@ -263,11 +277,11 @@ class TestWeek2Pipeline(unittest.TestCase):
         doc_ids_in_timeline = [item["document_id"] for item in timeline_resp["timeline"]]
 
         # Quarantined document (HIST-DOC-TIER3-003) must NEVER be in timeline
-        self.assertNotIn("HIST-DOC-TIER3-003", doc_ids_in_timeline)
+        self.assertNotIn(self.tier3_id, doc_ids_in_timeline)
 
         # Linked documents (STT and resolved Tier 1/2) must be present
-        self.assertIn("HIST-DOC-TIER1-001", doc_ids_in_timeline)
-        self.assertIn("HIST-DOC-TIER2-002", doc_ids_in_timeline)
+        self.assertIn(self.tier1_id, doc_ids_in_timeline)
+        self.assertIn(self.tier2_id, doc_ids_in_timeline)
 
         # Check chronological ordering
         timestamps = [item["timestamp"] for item in timeline_resp["timeline"]]

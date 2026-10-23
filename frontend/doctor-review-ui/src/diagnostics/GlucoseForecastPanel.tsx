@@ -24,11 +24,11 @@ export default function GlucoseForecastPanel({
   const baselineTrajectory = baseline?.continuous_trajectory || [];
   const activeTrajectory = activeBranch ? activeBranch.simulated_trajectory : baselineTrajectory;
 
-  // Chart dimensions & scaling
-  const chartWidth = 560;
-  const chartHeight = 180;
-  const paddingLeft = 45;
-  const paddingRight = 30;
+  // Chart dimensions & scaling (Wide Full-Width Panoramic SVG)
+  const chartWidth = 1060;
+  const chartHeight = 200;
+  const paddingLeft = 55;
+  const paddingRight = 45;
   const paddingTop = 22;
   const paddingBottom = 26;
 
@@ -359,91 +359,94 @@ export default function GlucoseForecastPanel({
           </svg>
         </div>
 
-        {/* Counterfactual "What-If" In-Silico Action Bar */}
-        <div className="dx-counterfactual-bar">
-          <div className="dx-cf-header">
-            <Sparkles size={12} className="dx-cf-icon" />
-            <span>IN-SILICO "WHAT-IF" COUNTERFACTUAL INTERVENTIONS:</span>
+        {/* Bottom Split: Counterfactuals & TreeSHAP side-by-side */}
+        <div className="dx-forecast-bottom-split">
+          {/* Counterfactual "What-If" In-Silico Action Bar */}
+          <div className="dx-counterfactual-bar">
+            <div className="dx-cf-header">
+              <Sparkles size={12} className="dx-cf-icon" />
+              <span>IN-SILICO "WHAT-IF" COUNTERFACTUAL INTERVENTIONS:</span>
+            </div>
+
+            <div className="dx-cf-buttons-grid">
+              <button
+                className={`dx-cf-btn ${selectedIntervention === "baseline" ? "active" : ""}`}
+                onClick={() => setSelectedIntervention("baseline")}
+              >
+                <TrendingUp size={11} />
+                <span>BASELINE TRAJECTORY</span>
+              </button>
+
+              <button
+                className={`dx-cf-btn ${selectedIntervention === "postprandial_walk" ? "active" : ""}`}
+                onClick={() => setSelectedIntervention("postprandial_walk")}
+              >
+                <Footprints size={11} />
+                <span>20-MIN BRISK WALK (-22.5 mg/dL)</span>
+              </button>
+
+              <button
+                className={`dx-cf-btn ${selectedIntervention === "carb_reduction" ? "active" : ""}`}
+                onClick={() => setSelectedIntervention("carb_reduction")}
+              >
+                <Scissors size={11} />
+                <span>REDUCE CARBS 35g (-31.0 mg/dL)</span>
+              </button>
+
+              <button
+                className={`dx-cf-btn ${selectedIntervention === "food_sequencing" ? "active" : ""}`}
+                onClick={() => setSelectedIntervention("food_sequencing")}
+              >
+                <Salad size={11} />
+                <span>FOOD SEQUENCING (-19.5 mg/dL)</span>
+              </button>
+
+              <button
+                className={`dx-cf-btn ${selectedIntervention === "confirm_medication" ? "active" : ""}`}
+                onClick={() => setSelectedIntervention("confirm_medication")}
+              >
+                <Pill size={11} />
+                <span>METFORMIN 500mg (-16.8 mg/dL)</span>
+              </button>
+            </div>
+
+            {activeBranch && (
+              <div className="dx-cf-detail-card">
+                <CheckCircle2 size={13} className="dx-cf-check" />
+                <div>
+                  <strong>{activeBranch.intervention_label}:</strong> {activeBranch.clinical_rationale}
+                  <br />
+                  <small>{activeBranch.biophysical_mechanism}</small>
+                </div>
+              </div>
+            )}
           </div>
 
-          <div className="dx-cf-buttons-grid">
-            <button
-              className={`dx-cf-btn ${selectedIntervention === "baseline" ? "active" : ""}`}
-              onClick={() => setSelectedIntervention("baseline")}
-            >
-              <TrendingUp size={11} />
-              <span>BASELINE TRAJECTORY</span>
-            </button>
-
-            <button
-              className={`dx-cf-btn ${selectedIntervention === "postprandial_walk" ? "active" : ""}`}
-              onClick={() => setSelectedIntervention("postprandial_walk")}
-            >
-              <Footprints size={11} />
-              <span>20-MIN BRISK WALK (-22.5 mg/dL)</span>
-            </button>
-
-            <button
-              className={`dx-cf-btn ${selectedIntervention === "carb_reduction" ? "active" : ""}`}
-              onClick={() => setSelectedIntervention("carb_reduction")}
-            >
-              <Scissors size={11} />
-              <span>REDUCE CARBS 35g (-31.0 mg/dL)</span>
-            </button>
-
-            <button
-              className={`dx-cf-btn ${selectedIntervention === "food_sequencing" ? "active" : ""}`}
-              onClick={() => setSelectedIntervention("food_sequencing")}
-            >
-              <Salad size={11} />
-              <span>FOOD SEQUENCING (-19.5 mg/dL)</span>
-            </button>
-
-            <button
-              className={`dx-cf-btn ${selectedIntervention === "confirm_medication" ? "active" : ""}`}
-              onClick={() => setSelectedIntervention("confirm_medication")}
-            >
-              <Pill size={11} />
-              <span>METFORMIN 500mg (-16.8 mg/dL)</span>
-            </button>
-          </div>
-
-          {activeBranch && (
-            <div className="dx-cf-detail-card">
-              <CheckCircle2 size={13} className="dx-cf-check" />
-              <div>
-                <strong>{activeBranch.intervention_label}:</strong> {activeBranch.clinical_rationale}
-                <br />
-                <small>{activeBranch.biophysical_mechanism}</small>
+          {/* TreeSHAP Top Risk Drivers Attribution Strip */}
+          {baseline?.top_shap_drivers && baseline.top_shap_drivers.length > 0 && (
+            <div className="dx-shap-drivers-section">
+              <div className="dx-shap-title">
+                <span>TREESHAP PHYSIOLOGICAL EXPLAINABILITY ATTRIBUTION:</span>
+              </div>
+              <div className="dx-shap-grid">
+                {baseline.top_shap_drivers.slice(0, 4).map((d) => {
+                  const isRisk = d.direction === "increases_risk" || d.shap_value > 0;
+                  return (
+                    <div key={d.feature} className={`dx-shap-card ${isRisk ? "risk" : "protective"}`}>
+                      <div className="dx-shap-top">
+                        <span className="dx-shap-name">{d.feature}</span>
+                        <strong className={isRisk ? "risk" : "protective"}>
+                          {d.shap_value > 0 ? `+${d.shap_value.toFixed(2)}` : d.shap_value.toFixed(2)} SHAP
+                        </strong>
+                      </div>
+                      <p className="dx-shap-expl">{d.clinical_explanation}</p>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
         </div>
-
-        {/* TreeSHAP Top Risk Drivers Attribution Strip */}
-        {baseline?.top_shap_drivers && baseline.top_shap_drivers.length > 0 && (
-          <div className="dx-shap-drivers-section">
-            <div className="dx-shap-title">
-              <span>TREESHAP PHYSIOLOGICAL EXPLAINABILITY ATTRIBUTION:</span>
-            </div>
-            <div className="dx-shap-grid">
-              {baseline.top_shap_drivers.slice(0, 4).map((d) => {
-                const isRisk = d.direction === "increases_risk" || d.shap_value > 0;
-                return (
-                  <div key={d.feature} className={`dx-shap-card ${isRisk ? "risk" : "protective"}`}>
-                    <div className="dx-shap-top">
-                      <span className="dx-shap-name">{d.feature}</span>
-                      <strong className={isRisk ? "risk" : "protective"}>
-                        {d.shap_value > 0 ? `+${d.shap_value.toFixed(2)}` : d.shap_value.toFixed(2)} SHAP
-                      </strong>
-                    </div>
-                    <p className="dx-shap-expl">{d.clinical_explanation}</p>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
       <i className="dx-panel-decoration" />
     </section>

@@ -322,7 +322,55 @@ export default function DiagnosticWorkstation() {
           </div>
         </header>
 
-        {/* THREE-COLUMN WORKSTATION GRID */}
+        {/* HORIZONTAL LINE OF FEATURES (Top Diagnostic Strip) */}
+        <div className="dx-horizontal-feature-strip">
+          <div className="dx-feat-kpi">
+            <span className="dx-feat-kpi-label">COHORT TELEMETRY</span>
+            <div className="dx-feat-kpi-val">
+              <strong>100</strong> Patients · FreeStyle Libre CGM
+            </div>
+          </div>
+
+          <div className="dx-feat-kpi">
+            <span className="dx-feat-kpi-label">SELECTED SUBJECT</span>
+            <div className="dx-feat-kpi-val">
+              <strong>{currentPatient?.person_id}</strong> {currentPatient?.display_name} ({currentPatient?.age_years}y, {currentPatient?.sex.charAt(0).toUpperCase()})
+            </div>
+          </div>
+
+          <div className="dx-feat-kpi">
+            <span className="dx-feat-kpi-label">CLINICAL PROFILE</span>
+            <div className="dx-feat-kpi-val">
+              HbA1c <strong>{currentPatient?.hba1c_percent}%</strong> · BMI {currentPatient?.bmi} · {currentPatient?.years_with_diabetes}y T2DM
+            </div>
+          </div>
+
+          <div className="dx-feat-kpi">
+            <span className="dx-feat-kpi-label">INTERSTITIAL GLUCOSE</span>
+            <div className="dx-feat-kpi-val">
+              <strong style={{ color: Number(currentReading?.glucose_mg_dl || 120) >= 180 ? "#f87171" : Number(currentReading?.glucose_mg_dl || 120) >= 140 ? "#fbbf24" : "#34d399" }}>
+                {Math.round(currentReading?.glucose_mg_dl || 120)}
+              </strong>{" "}
+              mg/dL at {currentReading?.time || "12:00"}
+            </div>
+          </div>
+
+          <div className="dx-feat-kpi">
+            <span className="dx-feat-kpi-label">2H INCIDENT RISK</span>
+            <div className={`dx-feat-kpi-val ${(simulation?.baseline.risk_tier || "calm").toLowerCase()}`}>
+              {simulation?.baseline.risk_tier || "CALM"} ({Math.round((simulation?.baseline.calibrated_spike_probability || 0.12) * 100)}% Spike Prob)
+            </div>
+          </div>
+
+          <div className="dx-feat-kpi">
+            <span className="dx-feat-kpi-label">ORGAN & DRUG STATUS</span>
+            <div className="dx-feat-kpi-val">
+              C-Pep {currentPatient?.fasting_c_peptide_nmol_l} nmol/L · eGFR {currentPatient?.egfr} · {currentPatient?.on_metformin === "yes" ? "Metformin" : "Non-Metformin"}
+            </div>
+          </div>
+        </div>
+
+        {/* WORKSTATION GRID */}
         <main className="dx-grid">
           {/* LEFT STACK: PATIENT REGISTRY (100 COHORT) + EHR CLINICAL DOSSIER */}
           <PatientRegistryPanel
@@ -604,8 +652,10 @@ export default function DiagnosticWorkstation() {
                 </div>
               </Panel>
             </div>
+          </div>
 
-            {/* 3. Glucose Forecast Panel replacing MRI Acquisition (per user instructions) */}
+          {/* FULL-WIDTH HORIZONTAL FEATURE ROW: GLUCOSE TRAJECTORY & 2H INCIDENT FORECAST */}
+          <div className="dx-full-width-feature">
             <GlucoseForecastPanel
               simulation={simulation}
               currentReading={currentReading}

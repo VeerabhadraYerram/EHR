@@ -14,7 +14,9 @@ body:has(.diagnostic-workstation) {
   font-size: 12px;
   line-height: 1.5;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100vh;
 }
 .diagnostic-workstation *,
 .diagnostic-workstation *::before,
@@ -243,12 +245,12 @@ body:has(.diagnostic-workstation) {
 }
 .dx-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.03fr) minmax(0, 1.64fr) minmax(0, 1.5fr);
-  gap: 14px;
-  height: calc(100svh - 158px);
-  min-height: 680px;
+  grid-template-columns: minmax(320px, 1fr) minmax(380px, 1.35fr) minmax(360px, 1.25fr);
+  gap: 16px;
+  height: auto;
+  min-height: auto;
   position: relative;
-  padding: 15px 0;
+  padding: 12px 0 35px;
 }
 .dx-left-stack {
   display: grid;

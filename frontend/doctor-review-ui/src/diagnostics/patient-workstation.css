@@ -3,27 +3,154 @@
    Matches existing dark sci-fi clinical aesthetic (#071722, #00e5ff, #183440)
    ========================================================================== */
 
-/* Left Stack: Registry + EHR Profile */
-.dx-left-registry-stack {
+/* Enable Smooth Scrolling on the Workstation */
+.diagnostic-workstation {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  height: 100vh !important;
+  padding-bottom: 50px !important;
+  scroll-behavior: smooth;
+}
+
+.diagnostic-workstation::-webkit-scrollbar {
+  width: 6px;
+}
+.diagnostic-workstation::-webkit-scrollbar-track {
+  background: #050e18;
+}
+.diagnostic-workstation::-webkit-scrollbar-thumb {
+  background: #1c4150;
+  border-radius: 3px;
+}
+
+/* ==========================================================================
+   HORIZONTAL LINE OF FEATURES (Top Strip)
+   ========================================================================== */
+.dx-horizontal-feature-strip {
   display: grid;
-  grid-template-rows: 1.15fr 0.95fr;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+  margin: 10px 0 6px;
+  padding: 8px 14px;
+  background: #071924cc;
+  border: 1px solid #173847;
+  clip-path: polygon(
+    6px 0,
+    calc(100% - 6px) 0,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    0 calc(100% - 6px),
+    0 6px
+  );
+}
+
+.dx-feat-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dx-feat-kpi-label {
+  font-family: var(--dx-mono, monospace);
+  font-size: 7.5px;
+  color: #6991a0;
+  letter-spacing: 0.6px;
+}
+
+.dx-feat-kpi-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: #e0f2f1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dx-feat-kpi-val strong {
+  color: #00e5ff;
+}
+
+.dx-feat-kpi-val.alert {
+  color: #f87171;
+}
+
+.dx-feat-kpi-val.watch {
+  color: #fbbf24;
+}
+
+.dx-feat-kpi-val.calm {
+  color: #34d399;
+}
+
+/* ==========================================================================
+   UPPER THREE COLUMNS (Balanced Height, Zero Empty Space)
+   ========================================================================== */
+.dx-left-registry-stack {
+  display: flex;
+  flex-direction: column;
   gap: 13px;
+  height: 640px;
   min-height: 0;
-  height: 100%;
+}
+
+.ot-workstation .dx-anatomy.ot-twin-panel {
+  height: 640px;
+  min-height: 0;
+}
+
+.ot-workstation .dx-right-stack {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 13px !important;
+  height: 640px !important;
+  min-height: 0 !important;
+  grid-template-rows: none !important;
+}
+
+.dx-wearables-panel {
+  flex: 1.15;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dx-right-middle {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 12px !important;
+  flex: 0.85;
+  min-height: 0;
+}
+
+/* ==========================================================================
+   FULL-WIDTH HORIZONTAL FEATURE ROW (GLUCOSE FORECAST & TRAJECTORY)
+   Spans 100% of the screen width: grid-column: 1 / -1
+   ========================================================================== */
+.dx-full-width-feature {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.dx-full-width-feature .dx-forecast-panel {
+  width: 100%;
 }
 
 /* Registry Panel */
 .dx-registry-panel {
+  flex: 1.15;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 
 .dx-registry-controls {
-  padding: 10px 14px 6px;
+  padding: 8px 12px 6px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   border-bottom: 1px solid #142a34;
 }
 
@@ -33,7 +160,7 @@
   gap: 7px;
   background: #081622;
   border: 1px solid #1c3d4a;
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-radius: 2px;
 }
 
@@ -48,7 +175,7 @@
   outline: none;
   color: #dcf0ee;
   font-family: var(--dx-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-  font-size: 11px;
+  font-size: 10.5px;
   width: 100%;
 }
 
@@ -60,24 +187,24 @@
   background: none;
   border: none;
   color: #5aa0b0;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   padding: 0 3px;
 }
 
 .dx-tier-filter-row {
   display: flex;
-  gap: 5px;
+  gap: 4px;
 }
 
 .dx-tier-btn {
   flex: 1;
-  padding: 4px 6px;
+  padding: 3px 5px;
   background: #091a26;
   border: 1px solid #1c3947;
   color: #799ea9;
   font-family: var(--dx-mono, monospace);
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 600;
   letter-spacing: 0.5px;
   cursor: pointer;
@@ -119,11 +246,10 @@
 .dx-patient-scroll-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 10px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  max-height: 380px;
+  gap: 4px;
 }
 
 .dx-patient-scroll-list::-webkit-scrollbar {
@@ -143,7 +269,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 7px 10px;
+  padding: 6px 8px;
   background: #091a2699;
   border: 1px solid #15323f;
   cursor: pointer;
@@ -171,12 +297,12 @@
 .dx-patient-card-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .dx-patient-avatar {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border-radius: 2px;
   background: #0d2735;
   border: 1px solid #1e4555;
@@ -196,42 +322,41 @@
 .dx-patient-id-name {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 5px;
 }
 
 .dx-patient-id-name strong {
   font-family: var(--dx-mono, monospace);
-  font-size: 11px;
+  font-size: 10.5px;
   color: #7ce5e1;
 }
 
 .dx-patient-id-name span {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
   color: #d1e7eb;
 }
 
 .dx-patient-meta {
-  font-size: 9px;
+  font-size: 8.5px;
   color: #638895;
-  margin-top: 1px;
 }
 
 .dx-patient-card-right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 3px;
+  gap: 2px;
 }
 
 .dx-risk-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 1px 5px;
+  padding: 1px 4px;
   border-radius: 2px;
   font-family: var(--dx-mono, monospace);
-  font-size: 7.5px;
+  font-size: 7px;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -255,7 +380,7 @@
 }
 
 .dx-patient-hba1c {
-  font-size: 9px;
+  font-size: 8.5px;
   color: #6d93a1;
 }
 
@@ -265,42 +390,44 @@
 
 .dx-patient-arrow {
   color: #00e5ff;
-  margin-left: 5px;
+  margin-left: 4px;
 }
 
 .dx-empty-list {
-  padding: 24px;
+  padding: 20px;
   text-align: center;
-  font-size: 11px;
+  font-size: 10.5px;
   color: #557886;
 }
 
 /* Profile Panel */
 .dx-profile-panel {
+  flex: 0.85;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .dx-profile-body {
-  padding: 10px 14px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .dx-profile-hero {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 8px;
+  padding: 6px 8px;
   background: #091d29;
   border: 1px solid #1c4150;
 }
 
 .dx-profile-avatar {
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 2px;
   background: #113647;
   border: 1px solid #28647a;
@@ -312,16 +439,16 @@
 }
 
 .dx-profile-hero-text h3 {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #dcf0ee;
   margin: 0;
 }
 
 .dx-profile-hero-text p {
-  font-size: 9.5px;
+  font-size: 9px;
   color: #799ea9;
-  margin: 2px 0 0;
+  margin: 1px 0 0;
 }
 
 .dx-profile-hero-text span {
@@ -331,9 +458,9 @@
 
 .dx-profile-tier-badge {
   margin-left: auto;
-  padding: 3px 8px;
+  padding: 2px 7px;
   font-family: var(--dx-mono, monospace);
-  font-size: 8px;
+  font-size: 7.5px;
   font-weight: 700;
   letter-spacing: 0.8px;
   border-radius: 2px;
@@ -360,11 +487,11 @@
 .dx-coding-strip {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   font-family: var(--dx-mono, monospace);
-  font-size: 8px;
+  font-size: 7.5px;
   color: #658c9a;
-  padding: 4px 8px;
+  padding: 3px 6px;
   background: #07151f;
   border: 1px solid #132a35;
 }
@@ -381,36 +508,36 @@
 .dx-labs-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
+  gap: 5px;
 }
 
 .dx-lab-cell {
   background: #081a26;
   border: 1px solid #163644;
-  padding: 6px 8px;
+  padding: 5px 7px;
   display: flex;
   flex-direction: column;
 }
 
 .dx-lab-label {
   font-family: var(--dx-mono, monospace);
-  font-size: 7.5px;
+  font-size: 7px;
   color: #69909e;
   letter-spacing: 0.5px;
 }
 
 .dx-lab-value {
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #d8edf0;
-  margin: 2px 0;
+  margin: 1px 0;
   display: flex;
   align-items: baseline;
   gap: 2px;
 }
 
 .dx-lab-value small {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 400;
   color: #69909e;
 }
@@ -424,7 +551,7 @@
 }
 
 .dx-lab-target {
-  font-size: 8px;
+  font-size: 7.5px;
   color: #557987;
 }
 
@@ -432,11 +559,11 @@
 .dx-section-title {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-family: var(--dx-mono, monospace);
-  font-size: 8px;
+  font-size: 7.5px;
   color: #6f95a3;
-  margin-bottom: 5px;
+  margin-bottom: 4px;
   letter-spacing: 0.6px;
 }
 
@@ -448,11 +575,11 @@
 }
 
 .dx-med-pill {
-  padding: 3px 7px;
+  padding: 2px 6px;
   background: #0b2533;
   border: 1px solid #204f62;
   color: #a4d2dd;
-  font-size: 9px;
+  font-size: 8.5px;
   border-radius: 2px;
 }
 
@@ -463,33 +590,28 @@
 }
 
 .dx-comorbid-tag {
-  padding: 2px 6px;
+  padding: 2px 5px;
   background: #0b1a24;
   border: 1px solid #1a3948;
   color: #80a4b0;
-  font-size: 8.5px;
+  font-size: 8px;
   border-radius: 2px;
 }
 
 /* ==========================================================================
-   LIVE WEARABLES PANEL STYLES
+   LIVE WEARABLES PANEL
    ========================================================================== */
-.dx-wearables-panel {
-  display: flex;
-  flex-direction: column;
-}
-
 .dx-vitals-wearables-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  padding: 10px 14px 6px;
+  gap: 7px;
+  padding: 8px 12px 6px;
 }
 
 .dx-vital-tile {
   background: #081a26;
   border: 1px solid #163644;
-  padding: 7px 10px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
 }
@@ -506,16 +628,16 @@
 
 .dx-vital-label {
   font-family: var(--dx-mono, monospace);
-  font-size: 7.5px;
+  font-size: 7px;
   color: #68909e;
   letter-spacing: 0.5px;
 }
 
 .dx-vital-status-pill {
   font-family: var(--dx-mono, monospace);
-  font-size: 7px;
+  font-size: 6.5px;
   font-weight: 700;
-  padding: 1px 4px;
+  padding: 1px 3px;
   border: 1px solid;
   border-radius: 2px;
 }
@@ -525,17 +647,17 @@
 }
 
 .dx-vital-hero-val {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #e0f2f1;
-  margin: 3px 0;
+  margin: 2px 0;
   display: flex;
   align-items: baseline;
   gap: 3px;
 }
 
 .dx-vital-hero-val small {
-  font-size: 9.5px;
+  font-size: 9px;
   font-weight: 400;
   color: #68909e;
 }
@@ -549,7 +671,7 @@
 }
 
 .dx-vital-sub {
-  font-size: 8.5px;
+  font-size: 8px;
   color: #557987;
 }
 
@@ -562,7 +684,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 14px;
+  padding: 5px 12px;
   background: #061520;
   border-top: 1px solid #122833;
   border-bottom: 1px solid #122833;
@@ -571,19 +693,19 @@
 .dx-playback-buttons {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .dx-play-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   background: #0e303e;
   border: 1px solid #00e5ff;
   color: #00e5ff;
   font-family: var(--dx-mono, monospace);
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -603,13 +725,13 @@
 .dx-reset-btn {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 4px 7px;
+  gap: 2px;
+  padding: 3px 6px;
   background: #0a1f2c;
   border: 1px solid #1d4556;
   color: #8bb0bc;
   font-family: var(--dx-mono, monospace);
-  font-size: 8.5px;
+  font-size: 8px;
   cursor: pointer;
 }
 
@@ -622,12 +744,12 @@
 .dx-meal-event-badge {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
+  gap: 4px;
+  padding: 2px 7px;
   background: #2b1f09;
   border: 1px solid #f59e0b88;
   color: #fde68a;
-  font-size: 9px;
+  font-size: 8.5px;
   border-radius: 2px;
 }
 
@@ -638,46 +760,41 @@
 .dx-sensor-quality-tag {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   font-family: var(--dx-mono, monospace);
-  font-size: 8px;
+  font-size: 7.5px;
   color: #55808f;
 }
 
 .dx-pulse-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #34d399;
   box-shadow: 0 0 7px #34d399aa;
   animation: dx-pulse 1.8s infinite;
 }
 
-@keyframes dx-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
-}
-
 /* Timeline Scrubber */
 .dx-timeline-scrubber-container {
-  padding: 8px 14px 4px;
+  padding: 6px 12px 3px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .dx-timeline-labels-row {
   display: flex;
   justify-content: space-between;
   font-family: var(--dx-mono, monospace);
-  font-size: 8px;
+  font-size: 7.5px;
   color: #587e8d;
 }
 
 .dx-timeline-slider {
   width: 100%;
   appearance: none;
-  height: 5px;
+  height: 4px;
   background: #102d3c;
   border-radius: 2px;
   outline: none;
@@ -686,8 +803,8 @@
 
 .dx-timeline-slider::-webkit-slider-thumb {
   appearance: none;
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   border-radius: 2px;
   background: #00e5ff;
   border: 2px solid #ffffff;
@@ -699,9 +816,8 @@
   display: flex;
   justify-content: space-between;
   font-family: var(--dx-mono, monospace);
-  font-size: 8px;
+  font-size: 7.5px;
   color: #638d9d;
-  margin-top: 2px;
 }
 
 .dx-scrubber-caption strong {
@@ -710,7 +826,7 @@
 
 .dx-wearable-wave-display {
   position: relative;
-  height: 75px;
+  height: 65px;
   background: #040c14;
   border-top: 1px solid #132833;
   border-bottom: 1px solid #132833;
@@ -723,11 +839,13 @@
 }
 
 /* ==========================================================================
-   GLUCOSE FORECAST & TRAJECTORY PANEL STYLES
+   GLUCOSE FORECAST & TRAJECTORY (FULL-WIDTH HORIZONTAL PANEL)
    ========================================================================== */
 .dx-forecast-panel {
   display: flex;
   flex-direction: column;
+  background: linear-gradient(145deg, #091f2c99, #051622b5 70%);
+  border: 1px solid #183e4d;
 }
 
 .dx-forecast-header-pills {
@@ -768,22 +886,22 @@
 }
 
 .dx-forecast-body {
-  padding: 8px 14px 12px;
+  padding: 10px 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .dx-forecast-metrics-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
 }
 
 .dx-f-metric {
   background: #081a26;
   border: 1px solid #163644;
-  padding: 6px 9px;
+  padding: 7px 11px;
   display: flex;
   flex-direction: column;
 }
@@ -803,7 +921,7 @@
 }
 
 .dx-f-val-row strong {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: #dcf0ee;
 }
@@ -860,29 +978,36 @@
   font-weight: 600;
 }
 
-/* Forecast Chart Wrap */
+/* Full-width Forecast Chart Wrap */
 .dx-chart-wrap {
   background: #040c14;
   border: 1px solid #142e3b;
   position: relative;
   border-radius: 2px;
   overflow: hidden;
+  width: 100%;
 }
 
 .dx-forecast-svg {
   width: 100%;
-  height: 180px;
+  height: 200px;
   display: block;
 }
 
-/* Counterfactual In-Silico Bar */
+/* Bottom Split: Counterfactuals on Left + TreeSHAP on Right */
+.dx-forecast-bottom-split {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 12px;
+}
+
 .dx-counterfactual-bar {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   background: #071924;
   border: 1px solid #163644;
-  padding: 8px 10px;
+  padding: 9px 12px;
 }
 
 .dx-cf-header {
@@ -909,7 +1034,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 5px 9px;
+  padding: 5px 8px;
   background: #0b222f;
   border: 1px solid #1f4a5c;
   color: #92bac7;
@@ -960,19 +1085,22 @@
 .dx-shap-drivers-section {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
+  background: #071924;
+  border: 1px solid #163644;
+  padding: 9px 12px;
 }
 
 .dx-shap-title {
   font-family: var(--dx-mono, monospace);
-  font-size: 7.5px;
+  font-size: 8px;
   color: #668c9c;
   letter-spacing: 0.6px;
 }
 
 .dx-shap-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
 }
 

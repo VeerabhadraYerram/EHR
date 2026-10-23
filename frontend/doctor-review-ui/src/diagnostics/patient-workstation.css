@@ -1799,6 +1799,36 @@
   user-select: none !important;
 }
 
+.ot-organ-stage-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  max-width: 76% !important;
+  max-height: 76% !important;
+  width: auto !important;
+  height: auto !important;
+  margin: auto !important;
+}
+
+.ot-organ-stage-wrapper > img.ot-organ-img-centered {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+.ot-organ-overlay-svg {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  overflow: visible !important;
+}
+
 /* ==========================================================================
    PHYSIOLOGICAL FUNCTION ANIMATIONS (Heart Beat, Renal Filtration, Islet Secretion, Neural Wave)
    ========================================================================== */
@@ -1899,6 +1929,102 @@
   }
   100% {
     transform: scale(1, 1);
+  }
+}
+
+/* ==========================================================================
+   MICRO-PHYSIOLOGY OVERLAYS (Neurons Firing, Normal Urine Flow, Islet Secretion)
+   ========================================================================== */
+
+/* Brain: Action Potential Pulses Traveling Across Axons */
+.ot-axon-signal-pulse {
+  animation: axonPulseFlow 2.4s infinite linear;
+}
+
+@keyframes axonPulseFlow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -69;
+  }
+}
+
+.ot-synapse-node {
+  animation: synapseFlash 1.8s infinite ease-in-out;
+  transform-origin: center;
+}
+
+@keyframes synapseFlash {
+  0%, 100% {
+    opacity: 0.45;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.25);
+  }
+}
+
+/* Kidneys: Normal Urine Trickling Down Ureters */
+.ot-nephron-sparkle {
+  animation: nephronPulse 2.2s infinite ease-in-out;
+  transform-origin: center;
+}
+
+@keyframes nephronPulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.35);
+  }
+}
+
+.ot-urine-stream-flow {
+  animation: urineStreamFlow 1.6s infinite linear;
+}
+
+@keyframes urineStreamFlow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -21;
+  }
+}
+
+/* Pancreas: Islet Secretory Concentric Rings & Flux */
+.ot-islet-pulse-ring {
+  animation: isletPulseRing 2.6s infinite ease-out;
+  transform-origin: center;
+}
+
+@keyframes isletPulseRing {
+  0% {
+    r: 3;
+    opacity: 0.95;
+    stroke-width: 1.6;
+  }
+  100% {
+    r: 16;
+    opacity: 0;
+    stroke-width: 0.3;
+  }
+}
+
+.ot-insulin-flux-stream {
+  animation: insulinFluxFlow 2.2s infinite linear;
+}
+
+@keyframes insulinFluxFlow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -22;
   }
 }
 
@@ -2005,5 +2131,80 @@
   align-items: center !important;
   justify-content: space-between !important;
   border-bottom: 1px solid #163644 !important;
+}
+
+/* ==========================================================================
+   FULL-WIDTH DUAL-HEAD TREESHAP FEATURE ATTRIBUTION
+   ========================================================================== */
+.dx-shap-card-wrap.full-width {
+  width: 100% !important;
+  background: #071924 !important;
+  border: 1px solid #163644 !important;
+  padding: 12px 16px !important;
+  box-sizing: border-box !important;
+}
+
+.dx-shap-header-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 8px !important;
+  border-bottom: 1px solid #143240 !important;
+}
+
+.dx-shap-badge-strip {
+  display: flex !important;
+  gap: 8px !important;
+  flex-wrap: wrap !important;
+}
+
+.dx-shap-badge {
+  font-family: var(--dx-mono, monospace) !important;
+  font-size: 8px !important;
+  color: #668c9c !important;
+  padding: 2px 7px !important;
+  background: #0a212d !important;
+  border: 1px solid #193f52 !important;
+  border-radius: 2px !important;
+}
+
+.dx-shap-badge.active {
+  color: #00e5ff !important;
+  border-color: #00e5ff55 !important;
+}
+
+.dx-shap-grid.full-width {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+
+@media (max-width: 1200px) {
+  .dx-shap-grid.full-width {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+.dx-shap-bar-track {
+  width: 100% !important;
+  height: 4px !important;
+  background: #0d222e !important;
+  border-radius: 2px !important;
+  overflow: hidden !important;
+  margin: 5px 0 6px !important;
+}
+
+.dx-shap-bar-fill.risk {
+  background: linear-gradient(90deg, #f87171, #ef4444) !important;
+  height: 100% !important;
+  border-radius: 2px !important;
+}
+
+.dx-shap-bar-fill.protective {
+  background: linear-gradient(90deg, #34d399, #10b981) !important;
+  height: 100% !important;
+  border-radius: 2px !important;
 }
 

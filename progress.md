@@ -1,5 +1,74 @@
 # Progress Log
 
+### [2026-10-23] User-Authorized Main Branch UI Release
+**Author:** Codex
+
+**Work Completed:**
+- Prepared the current frontend UI for the user's requested commit and push to `main`: supporting diagnostic panels, enlarged body view, image-registered organ markers, bottom organ navigation, cyan/teal organ atlas views, genomics and local scan previews.
+- Included frontend-only fixtures, disconnected Vite proxy configuration and artwork provenance documentation. No backend implementation or model changes included.
+- Production build, lint and Git whitespace checks passed. The latest UI browser checks covered panel controls, responsive layout, marker registration, organ navigation, accessibility and zero backend requests.
+- Confirmed local `main` and `origin/main` were synchronized before release.
+
+
+### [2026-10-23] Restore Supporting Information in Organ Card Slots
+**Author:** Codex
+
+**Work Completed:**
+- Replaced the standalone brain, kidney, heart and pancreas twin cards with the original neural reconstruction, thoracic radiograph, live physiology/ECG and magnetic resonance acquisition panels.
+- Restored the demo signal pause/resume, MRI sequence selection and simulated acquisition controls. Retained genomics, related scans and context information.
+- Preserved the central body artwork, enlarged body view, corrected image-registered hotspots and five-item bottom organ navigation without changing their layout.
+- Production build and lint passed. Browser checks verified panel restoration, signal/acquisition controls, organ navigation and marker alignment at desktop/mobile widths; no API requests, browser errors or detected WCAG 2 A/AA violations.
+- Frontend only. No backend changes, commit or GitHub push.
+
+
+### [2026-10-23] Body Marker Alignment and Larger Body View
+**Author:** Codex
+
+**Work Completed:**
+- Registered body markers to the anatomy image's intrinsic 1024 × 1536 aspect ratio, centering each marker dot at its image-relative position instead of positioning labels against the outer panel. Repositioned brain, heart, pancreatic-region and renal-region markers.
+- Removed the body-only instruction and angle/control strip, giving the body illustration the reclaimed vertical space. Preserved the five-item Body / Pancreas / Kidneys / Heart / Brain bottom navigation and controls in individual organ views.
+- Preserved the existing body artwork and dashboard layout. No 3D experiment or backend connection added.
+- Build and lint passed. Verified marker registration across four viewport widths, bottom navigation, organ clicks and the existing frontend regression suite; no API calls, browser errors or detected WCAG 2 A/AA violations.
+- No commit or push performed.
+
+
+### [2026-10-23] Restore Previous UI After 3D Experiment
+**Author:** Codex
+
+**Work Completed:**
+- At the user's explicit request, restored the complete frontend UI from before the procedural 3D experiment, including the original body artwork, organ atlas views, supporting panels and genomic profile.
+- Removed the Three.js viewer, procedural geometry and associated 3D styles. Restored package manifests to their pre-experiment state.
+- Kept the backend disconnected and retained the existing frontend-only demo data and local scan preview behavior.
+- Production build and lint passed. The previous UI browser regression checks passed, including zero API requests and no browser errors or detected WCAG 2 A/AA violations.
+- No commit or push performed.
+
+
+### [2026-10-23] Frontend-Only Body / Organ Twin Carousel
+**Author:** Codex
+
+**Work Completed:**
+- Reworked the existing diagnostic workstation around one central viewer: Body → Pancreas → Kidneys → Heart → Brain, with wrapping arrows, direct organ tabs, clickable body markers and organ cards.
+- Added detailed generated pancreas, renal and cardiac illustrations matching the brain's cyan/teal palette, with selectable anatomical landmarks, magnification, viewing-angle and label controls. These remain atlas illustrations, not calibrated physiological models or patient-specific 3D volumes.
+- Preserved the genomic profile in its original middle-right position and removed panel serial numbers. Removed unrelated standalone lung, skeleton and scanner panels.
+- Related scans follow the selected organ. Retained labelled brain MRI illustrations; added browser-local PNG/JPEG/WebP preview, replacement and removal for each organ without upload or interpretation.
+- Removed the prior pancreas API hook and Vite API proxy. Fictional local fixtures drive the demonstration. No backend code or model changed, and browser checks observed zero API/health/backend requests.
+- Verified production build and lint; browser checks passed for all five views, organ selection, landmarks, labels, per-organ local scans, genomics, export, demo switching, five responsive widths and WCAG 2 A/AA checks. No browser errors detected.
+- Artwork paths, generation prompts and implementation limitations are recorded in `project_docs/Organ_Twin_Artwork.md`.
+- All changes remain local and uncommitted; no GitHub push performed. This supersedes the API-connected pancreas UI described in the earlier entry.
+
+
+### [2026-10-23] Pancreas / Diabetes Workstation Context
+**Author:** Codex
+
+**Work Completed:**
+- Added a selectable, schematic pancreas overlay and pancreatic profile to the diagnostic workstation, with a dedicated detail view and a simple insulin/glucose explanation sourced to NIDDK.
+- Connected this view to the existing read-only Digital Twin patient and glucose-reading endpoints. The subject selector now explicitly identifies cohort patients P001/P002; HbA1c, fasting C-peptide and timestamped glucose observations come from their historical records.
+- Added a glucose timeline and accessible observation table, loading/error/retry handling, patient-switch isolation, and pancreas context provenance in the exported concept report.
+- Anatomy and other workstation signals remain illustrative. No pancreatic secretion, beta-cell reserve or treatment-response model was implemented or claimed; existing model validation limitations remain unresolved.
+- Verified production build and lint; browser checks passed for API records, patient switching, failure/retry, organ-layer visibility and four viewport widths. No browser errors or Axe WCAG 2 A/AA violations were detected in the pancreas detail view.
+- Changes are local and uncommitted. No GitHub push performed. Core EHR architecture document and backend models were not modified.
+
+
 This document tracks the progress of the EHR Clinical Intelligence & Interoperability Platform implementation. 
 Append your updates to the top of the log when you complete a significant chunk of work.
 

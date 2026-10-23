@@ -2,17 +2,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   ArrowDownToLine,
+  ArrowLeft,
   ArrowRight,
   BookOpen,
   Check,
-  ChevronRight,
   ClipboardCheck,
   Dna,
   FileText,
   FlaskConical,
   HeartPulse,
   LayoutDashboard,
-  Menu,
   RefreshCw,
   Users,
   X,
@@ -142,8 +141,7 @@ const DEFAULT_INTERVENTIONS: InterventionSpec[] = [
 ];
 
 export default function DiagnosticWorkstation() {
-  const [page, setPage] = useState<Page>(currentPage),
-    [mobileMenu, setMobileMenu] = useState(false);
+  const [page, setPage] = useState<Page>(currentPage);
   const [patients, setPatients] = useState<Patient[]>([]),
     [selectedId, setSelectedId] = useState("");
   const [dates, setDates] = useState<string[]>([]),
@@ -164,6 +162,11 @@ export default function DiagnosticWorkstation() {
     ),
     [branchId, setBranchId] = useState("");
   const [toast, setToast] = useState("");
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(""), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
   const requestedDate = useRef(new URLSearchParams(window.location.search).get("date"));
   const requestedTime = useRef(new URLSearchParams(window.location.search).get("time"));
   const [exporting, setExporting] = useState(false);
@@ -410,7 +413,6 @@ export default function DiagnosticWorkstation() {
   function navigate(next: Page) {
     window.history.pushState(null, "", `/${next}${window.location.search}`);
     setPage(next);
-    setMobileMenu(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
   function selectPatient(id: string) {
@@ -453,17 +455,45 @@ export default function DiagnosticWorkstation() {
     ? `${shared.person_id}:${shared.decision_time}`
     : "";
   const snapshot = {
-    title: "Digital Twin Patient Dossier",
-    cohort:
-      "Research-derived demonstration profiles; source measurements and derived estimates retain provenance.",
-    patient,
-    recording_date: date,
-    as_of: reading?.reading_time,
-    reading,
-    ml_inference: shared?.baseline,
-    counterfactual_simulations: shared?.counterfactual_branches,
-    optimal_recommendation: shared?.optimal_recommended_action,
-    exported_at: new Date().toISOString(),
+    report_type: "Digital Twin Clinical Dossier",
+    generated_at: new Date().toISOString(),
+    patient: patient
+      ? {
+          id: patient.person_id,
+          name: patient.display_name,
+          age_years: patient.age_years,
+          sex: patient.sex,
+          bmi: patient.bmi,
+          hba1c_percent: patient.hba1c_percent,
+          years_with_diabetes: patient.years_with_diabetes,
+          dataset_partition: patient.split,
+        }
+      : null,
+    recording: {
+      date: date,
+      as_of_time: reading?.reading_time || null,
+      glucose_mg_dl: reading ? Math.round(reading.glucose_mg_dl) : null,
+    },
+    forecast: shared
+      ? {
+          risk_tier: shared.baseline.risk_tier,
+          spike_probability_pct: Math.round(
+            shared.baseline.calibrated_spike_probability * 100,
+          ),
+          predicted_peak_mg_dl: shared.baseline.predicted_peak_glucose_mg_dl,
+          model_applicable: shared.baseline.model_applicable,
+          decision_time: shared.baseline.decision_time,
+        }
+      : null,
+    recommended_action: shared?.optimal_recommended_action || null,
+    what_if_scenarios: shared?.counterfactual_branches.map((b) => ({
+      intervention: b.intervention_type,
+      label: b.intervention_label,
+      simulated_peak_mg_dl: b.simulated_peak_mg_dl,
+      peak_reduction_mg_dl: b.peak_reduction_mg_dl,
+      hypoglycemia_risk: b.hypoglycemia_risk_warning ?? false,
+    })) || [],
+    note: "Research-derived demonstration cohort. Not for clinical use.",
   };
   async function exportFhir() {
     if (!reading) return;
@@ -509,103 +539,20 @@ export default function DiagnosticWorkstation() {
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
-      <aside className={`app-sidebar ${mobileMenu ? "open" : ""}`}>
-        <a
-          className="app-brand"
-          href="/overview"
-          onClick={(e) => {
-            e.preventDefault();
-            navigate("overview");
-          }}
-        >
-          <span className="brand-mark">
-            <HeartPulse size={22} />
-          </span>
-          <div>
-            <strong>
-              ehr<span> / twin</span>
-            </strong>
-            <small>Clinical intelligence</small>
-          </div>
-        </a>
-        <div className="sidebar-section-label">Workspace</div>
-        <nav aria-label="Main navigation">
-          {pages.map((p) => (
-            <a
-              key={p.id}
-              href={`/${p.id}${window.location.search}`}
-              aria-current={page === p.id ? "page" : undefined}
-              onClick={(e) => {
-                e.preventDefault();
-                navigate(p.id);
-              }}
-            >
-              <p.icon size={18} />
-              <span>{p.label}</span>
-              {page === p.id && <ChevronRight size={14} />}
-            </a>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="research-dot" />
-          <strong>Research workspace</strong>
-          <p>
-            100 demonstration profiles
-            <br />
-            Recorded CGM · trained ML
-          </p>
-          <small>Local development environment</small>
-        </div>
-      </aside>
-      {mobileMenu && (
-        <button
-          className="sidebar-scrim"
-          aria-label="Close navigation"
-          onClick={() => setMobileMenu(false)}
-        />
-      )}
       <div className="app-main">
-        <header className="app-topbar">
-          <div className="topbar-crumb">
-            <button
-              className="icon-button mobile-menu"
-              aria-label="Toggle navigation"
-              onClick={() => setMobileMenu(!mobileMenu)}
-            >
-              <Menu size={20} />
-            </button>
-            <span>Workspace</span>
-            <ChevronRight size={13} />
-            <strong>{pageInfo.label}</strong>
-          </div>
-          <div className="topbar-right">
-            <span className={`connection-status ${error ? "offline" : ""}`}>
-              <i />
-              {error
-                ? "Data unavailable"
-                : loading
-                  ? "Loading recording"
-                  : predicting
-                    ? "Updating forecast"
-                    : shared
-                      ? "Model connected"
-                      : "Recorded data"}
-            </span>
-            <button
-              className="icon-button"
-              aria-label="Refresh patient data"
-              onClick={refreshData}
-            >
-              <RefreshCw size={16} />
-            </button>
-            <span className="user-avatar" title="Local research session">
-              DR
-            </span>
-          </div>
-        </header>
         <main id="main-content" className="page-content">
           <div className="page-heading">
             <div>
+              {page !== "overview" && (
+                <button
+                  type="button"
+                  className="back-to-overview-btn"
+                  onClick={() => navigate("overview")}
+                  title="Return to the main patient overview launchpad"
+                >
+                  <ArrowLeft size={14} /> Back to Patient Overview
+                </button>
+              )}
               <span className="eyebrow">
                 Patient workspace / {pageInfo.label}
               </span>
@@ -614,15 +561,40 @@ export default function DiagnosticWorkstation() {
               </h1>
               <p>{pageInfo.description}</p>
             </div>
-            {page === "overview" && (
+            <div className="heading-actions-bar">
+              <span className={`connection-status ${error ? "offline" : ""}`}>
+                <i />
+                {error
+                  ? "Data unavailable"
+                  : loading
+                    ? "Loading recording"
+                    : predicting
+                      ? "Updating forecast"
+                      : shared
+                        ? "Model connected"
+                        : "Recorded data"}
+              </span>
               <button
-                className="button secondary"
-                onClick={() => navigate("reports")}
+                className="icon-button"
+                aria-label="Refresh patient data"
+                onClick={refreshData}
+                title="Refresh patient data"
               >
-                <ArrowDownToLine size={15} />
-                Patient report
+                <RefreshCw size={15} />
               </button>
-            )}
+              <span className="user-avatar" title="Local research session">
+                DR
+              </span>
+              {page === "overview" && (
+                <button
+                  className="button secondary"
+                  onClick={() => navigate("reports")}
+                >
+                  <ArrowDownToLine size={15} />
+                  Patient report
+                </button>
+              )}
+            </div>
           </div>
           <section
             className="patient-context-bar"
@@ -654,7 +626,12 @@ export default function DiagnosticWorkstation() {
                 </select>
               </div>
             </div>
-            <div className="context-fact">
+            <div
+              className="context-fact"
+              onClick={() => navigate("patients")}
+              style={{ cursor: "pointer" }}
+              title="Click to view full patient registry and profile"
+            >
               <span>Profile</span>
               <strong>
                 {patient ? `${patient.age_years} years · ${patient.sex}` : "—"}
@@ -686,7 +663,12 @@ export default function DiagnosticWorkstation() {
                 ))}
               </select>
             </div>
-            <div className="context-risk">
+            <div
+              className="context-risk"
+              onClick={() => navigate("scenarios")}
+              style={{ cursor: "pointer" }}
+              title="Click to simulate what-if counterfactual scenarios for this forecast"
+            >
               <span>Shared forecast · {reading?.time || "—"}</span>
               <strong data-testid="shared-risk">
                 {predicting ? "Updating…" : riskText(shared)}
@@ -743,18 +725,31 @@ export default function DiagnosticWorkstation() {
                         {patient.person_id} · {patient.years_with_diabetes}{" "}
                         years with diabetes · BMI {patient.bmi}
                       </p>
-                      <div className="hero-reading">
+                      <div
+                        className="hero-reading"
+                        onClick={() => navigate("forecast")}
+                        title="Click to view continuous sensor timeline & CGM dynamics"
+                      >
                         <strong>
                           {reading ? Math.round(reading.glucose_mg_dl) : "—"}
                         </strong>
                         <div>
-                          mg/dL<span>Recorded at {reading?.time || "—"}</span>
+                          mg/dL
+                          <span>
+                            Recorded at {reading?.time || "—"} ·{" "}
+                            <span className="interactive-hint">View timeline ↗</span>
+                          </span>
                         </div>
                       </div>
-                      <div className="hero-risk">
+                      <div
+                        className="hero-risk"
+                        onClick={() => navigate("scenarios")}
+                        title="Click to explore and simulate counterfactual what-if scenarios"
+                      >
                         <span>Two-hour incident forecast</span>
                         <strong data-testid="overview-risk">
                           {predicting ? "Updating…" : riskText(shared)}
+                          <span className="interactive-pill-tag">Simulate ⚡</span>
                         </strong>
                       </div>
                       <p className="caption">
@@ -768,7 +763,7 @@ export default function DiagnosticWorkstation() {
                         View clinical profile <ArrowRight size={15} />
                       </button>
                     </section>
-                    <GlucoseForecastPanel {...forecastProps} compact />
+                    <GlucoseForecastPanel {...forecastProps} compact onNavigate={navigate} />
                   </div>
                   <div className="overview-bottom">
                     <section className="paper-card">
@@ -796,7 +791,7 @@ export default function DiagnosticWorkstation() {
                           className="button primary"
                           onClick={() => navigate("scenarios")}
                         >
-                          Explore scenarios <ArrowRight size={14} />
+                          Explore what-if scenarios <ArrowRight size={14} />
                         </button>
                         {shared && (
                           <button
@@ -822,36 +817,6 @@ export default function DiagnosticWorkstation() {
                             )}
                           </button>
                         )}
-                      </div>
-                    </section>
-                    <section className="paper-card">
-                      <span className="eyebrow">A connected patient story</span>
-                      <h3>From clinical context to a clearer forecast.</h3>
-                      <div className="quick-links">
-                        <button onClick={() => navigate("anatomy")}>
-                          <HeartPulse size={19} />
-                          <span>
-                            Explore anatomy
-                            <small>Body & four organ views</small>
-                          </span>
-                          <ArrowRight size={16} />
-                        </button>
-                        <button onClick={() => navigate("review")}>
-                          <ClipboardCheck size={19} />
-                          <span>
-                            Clinical review
-                            <small>Verify, reconcile & document</small>
-                          </span>
-                          <ArrowRight size={16} />
-                        </button>
-                        <button onClick={() => navigate("evidence")}>
-                          <BookOpen size={19} />
-                          <span>
-                            Understand the evidence
-                            <small>Data provenance & performance</small>
-                          </span>
-                          <ArrowRight size={16} />
-                        </button>
                       </div>
                     </section>
                   </div>
@@ -884,6 +849,7 @@ export default function DiagnosticWorkstation() {
                     patients={displayPatients}
                     selectedPatientId={selectedId}
                     onSelectPatient={selectPatient}
+                    onNavigate={navigate}
                   />
                 </>
               )}
@@ -902,6 +868,7 @@ export default function DiagnosticWorkstation() {
                     onRun={setInterventions}
                     onSelect={setBranchId}
                     selected={branchId}
+                    onToast={setToast}
                   />
                   <GlucoseForecastPanel {...forecastProps} branch={branch} />
                 </div>
@@ -924,8 +891,8 @@ export default function DiagnosticWorkstation() {
                     <span className="eyebrow">Patient dossier</span>
                     <h2>A report with one source of truth.</h2>
                     <p className="muted">
-                      Includes clinical facts, the exact as-of reading, model
-                      inputs, original TreeSHAP and what-if assumptions.
+                      Clinical facts, the exact as-of reading, model forecast,
+                      TreeSHAP feature importance and what-if scenario summary.
                     </p>
                     <dl className="facts-list">
                       <div>
@@ -935,9 +902,33 @@ export default function DiagnosticWorkstation() {
                         </dd>
                       </div>
                       <div>
+                        <dt>Age / Sex</dt>
+                        <dd>
+                          {patient.age_years} years · {patient.sex}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>HbA1c</dt>
+                        <dd>{fmt(patient.hba1c_percent)} %</dd>
+                      </div>
+                      <div>
+                        <dt>BMI</dt>
+                        <dd>{fmt(patient.bmi)}</dd>
+                      </div>
+                      <div>
+                        <dt>Years with diabetes</dt>
+                        <dd>{fmt(patient.years_with_diabetes)}</dd>
+                      </div>
+                      <div>
                         <dt>Recording</dt>
                         <dd>
                           {date} at {reading?.time || "—"}
+                        </dd>
+                      </div>
+                      <div>
+                        <dt>Current glucose</dt>
+                        <dd>
+                          {reading ? `${Math.round(reading.glucose_mg_dl)} mg/dL` : "—"}
                         </dd>
                       </div>
                       <div>
@@ -956,7 +947,39 @@ export default function DiagnosticWorkstation() {
                         <dt>Dataset partition</dt>
                         <dd>{patient.split}</dd>
                       </div>
+                      {shared?.optimal_recommended_action && (
+                        <div>
+                          <dt>Recommended action</dt>
+                          <dd>{shared.optimal_recommended_action}</dd>
+                        </div>
+                      )}
                     </dl>
+                    {shared?.counterfactual_branches &&
+                      shared.counterfactual_branches.length > 0 && (
+                        <>
+                          <div className="section-divider" />
+                          <span className="eyebrow">What-if scenarios</span>
+                          <dl className="facts-list">
+                            {shared.counterfactual_branches.map((b) => (
+                              <div key={b.intervention_type}>
+                                <dt>{b.intervention_label}</dt>
+                                <dd>
+                                  {b.simulated_peak_mg_dl.toFixed(1)} mg/dL peak
+                                  &nbsp;·&nbsp;
+                                  <span style={{ color: "#5f7a4a" }}>
+                                    −{b.peak_reduction_mg_dl.toFixed(1)} mg/dL
+                                  </span>
+                                  {b.hypoglycemia_risk_warning && (
+                                    <span style={{ color: "#9a4e3e", marginLeft: 8 }}>
+                                      ⚠ low-glucose risk
+                                    </span>
+                                  )}
+                                </dd>
+                              </div>
+                            ))}
+                          </dl>
+                        </>
+                      )}
                     <div className="button-row">
                       <button
                         className="button primary"
@@ -1005,7 +1028,6 @@ export default function DiagnosticWorkstation() {
             </>
           )}
           <footer className="app-footer">
-            <span>ehr / twin</span>
             <p>
               Research-derived demonstration cohort · recorded sensor replay ·
               organ estimates are illustrative
@@ -1014,7 +1036,7 @@ export default function DiagnosticWorkstation() {
               className="text-button"
               onClick={() => navigate("evidence")}
             >
-              Data & model details <ArrowRight size={12} />
+              Model Evidence & Benchmarks <ArrowRight size={12} />
             </button>
           </footer>
         </main>
@@ -1043,6 +1065,7 @@ function ScenarioControls({
   onRun,
   onSelect,
   selected,
+  onToast,
 }: {
   appliedSpecs: InterventionSpec[];
   simulation: PatientSimulation | null;
@@ -1050,6 +1073,7 @@ function ScenarioControls({
   onRun: (specs: InterventionSpec[]) => void;
   onSelect: (id: string) => void;
   selected: string;
+  onToast?: (msg: string) => void;
 }) {
   const initial = {
     walk: Number(
@@ -1069,29 +1093,32 @@ function ScenarioControls({
     [carbs, setCarbs] = useState(initial.carbs),
     [delay, setDelay] = useState(initial.delay);
   const [applied, setApplied] = useState(initial);
+  const [autoSimulate, setAutoSimulate] = useState(true);
+
   const dirty =
     walk !== applied.walk || carbs !== applied.carbs || delay !== applied.delay;
-  function run() {
-    setApplied({ walk, carbs, delay });
+
+  function runSimulation(w = walk, c = carbs, d = delay) {
+    setApplied({ walk: w, carbs: c, delay: d });
     onRun([
       {
         intervention_type: "postprandial_walk",
-        parameters: { duration_minutes: walk, intensity: "brisk" },
+        parameters: { duration_minutes: w, intensity: "brisk" },
       },
       {
         intervention_type: "carb_reduction",
-        parameters: { carb_reduction_g: carbs },
+        parameters: { carb_reduction_g: c },
       },
       {
         intervention_type: "food_sequencing",
         parameters: {
-          delay_carbs_minutes: delay,
+          delay_carbs_minutes: d,
           preload_type: "fiber_protein",
         },
       },
       {
         intervention_type: "compound_lifestyle",
-        parameters: { duration_minutes: walk, carb_reduction_g: carbs },
+        parameters: { duration_minutes: w, carb_reduction_g: c },
       },
       {
         intervention_type: "confirm_medication",
@@ -1099,94 +1126,297 @@ function ScenarioControls({
       },
     ]);
   }
+
+  // Live auto-recalculate when sliders change (debounced 350ms)
+  useEffect(() => {
+    if (!autoSimulate || !dirty) return;
+    const timer = setTimeout(() => {
+      runSimulation(walk, carbs, delay);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [walk, carbs, delay, autoSimulate, dirty]);
+
+  const presets = [
+    { label: "🚶 Postprandial Walk (30m)", w: 30, c: 0, d: 0 },
+    { label: "🥗 Low-Carb Swap (-35g)", w: 0, c: 35, d: 0 },
+    { label: "⏱️ Food Sequencing (20m)", w: 0, c: 0, d: 20 },
+    { label: "⚡ Combined Lifestyle", w: 30, c: 25, d: 15 },
+    { label: "🔄 Reset Defaults", w: 20, c: 25, d: 15 },
+  ];
+
+  function applyPreset(p: { label: string; w: number; c: number; d: number }) {
+    setWalk(p.w);
+    setCarbs(p.c);
+    setDelay(p.d);
+    runSimulation(p.w, p.c, p.d);
+    if (onToast) onToast(`Applied preset: ${p.label}`);
+  }
+
+  const selectedBranch = simulation?.counterfactual_branches.find(
+    (b) => b.intervention_type === selected,
+  );
+
   return (
-    <section className="paper-card">
+    <section className="paper-card scenario-workstation-card">
       <div className="card-heading">
         <div>
-          <span className="eyebrow">Physiological sensitivity analysis</span>
-          <h2>What might change the trajectory?</h2>
+          <span className="eyebrow">Interactive What-If Simulation Engine</span>
+          <h2>Physiological Sensitivity & Counterfactuals</h2>
         </div>
-        <span className="subtle-tag">Clinician review required</span>
+        <div className="heading-actions">
+          <label className="toggle-chip" title="Recalculate counterfactuals in real-time as you drag sliders">
+            <input
+              type="checkbox"
+              checked={autoSimulate}
+              onChange={(e) => setAutoSimulate(e.target.checked)}
+            />
+            <span>⚡ Live Auto-Simulate</span>
+          </label>
+          <span className="subtle-tag">Clinician decision support</span>
+        </div>
       </div>
+
       <p className="muted">
-        Adjust a scenario, calculate it on the server, then select a branch to
-        compare with the shared baseline. These effects are model assumptions,
-        not proven treatment benefits.
+        Adjust lifestyle parameters below or click a clinical preset to simulate patient-specific glucose trajectories in real-time.
       </p>
-      <div className="scenario-controls">
-        <label>
-          Walking duration <strong>{walk} minutes</strong>
-          <input
-            aria-label="Walking duration"
-            type="range"
-            min="5"
-            max="60"
-            step="5"
-            value={walk}
-            onChange={(e) => setWalk(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Carbohydrate reduction <strong>{carbs} g</strong>
-          <input
-            aria-label="Carbohydrate reduction"
-            type="range"
-            min="0"
-            max="75"
-            step="5"
-            value={carbs}
-            onChange={(e) => setCarbs(Number(e.target.value))}
-          />
-        </label>
-        <label>
-          Carbohydrate delay <strong>{delay} minutes</strong>
-          <input
-            aria-label="Carbohydrate delay"
-            type="range"
-            min="0"
-            max="60"
-            step="5"
-            value={delay}
-            onChange={(e) => setDelay(Number(e.target.value))}
-          />
-        </label>
+
+      {/* Quick Clinical Presets */}
+      <div className="scenario-presets-bar">
+        <span className="presets-label">Clinical presets:</span>
+        <div className="presets-row">
+          {presets.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              className="preset-chip"
+              onClick={() => applyPreset(p)}
+              disabled={busy}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="button-row">
-        <button className="button primary" disabled={busy} onClick={run}>
-          {busy ? "Calculating…" : "Calculate scenarios"}
-        </button>
-        {dirty && (
+
+      {/* Tactile Sliders Grid */}
+      <div className="scenario-controls interactive-grid">
+        <div className="control-slider-cell">
+          <div className="slider-header">
+            <span>Walking duration</span>
+            <strong>{walk} min</strong>
+          </div>
+          <div className="slider-with-steppers">
+            <button
+              type="button"
+              className="stepper-btn"
+              onClick={() => setWalk((v) => Math.max(5, v - 5))}
+              disabled={walk <= 5}
+              aria-label="Decrease walking duration by 5 minutes"
+            >
+              −
+            </button>
+            <input
+              aria-label="Walking duration"
+              type="range"
+              min="5"
+              max="60"
+              step="5"
+              value={walk}
+              onChange={(e) => setWalk(Number(e.target.value))}
+            />
+            <button
+              type="button"
+              className="stepper-btn"
+              onClick={() => setWalk((v) => Math.min(60, v + 5))}
+              disabled={walk >= 60}
+              aria-label="Increase walking duration by 5 minutes"
+            >
+              +
+            </button>
+          </div>
+          <span className="slider-intensity-badge">
+            {walk <= 15 ? "Light Walking (Mild glucose uptake)" : walk <= 35 ? "Brisk Postprandial (Optimal uptake)" : "Intensive Exercise (High muscle clearance)"}
+          </span>
+        </div>
+
+        <div className="control-slider-cell">
+          <div className="slider-header">
+            <span>Carbohydrate reduction</span>
+            <strong>{carbs} g</strong>
+          </div>
+          <div className="slider-with-steppers">
+            <button
+              type="button"
+              className="stepper-btn"
+              onClick={() => setCarbs((v) => Math.max(0, v - 5))}
+              disabled={carbs <= 0}
+              aria-label="Decrease carb reduction by 5 grams"
+            >
+              −
+            </button>
+            <input
+              aria-label="Carbohydrate reduction"
+              type="range"
+              min="0"
+              max="75"
+              step="5"
+              value={carbs}
+              onChange={(e) => setCarbs(Number(e.target.value))}
+            />
+            <button
+              type="button"
+              className="stepper-btn"
+              onClick={() => setCarbs((v) => Math.min(75, v + 5))}
+              disabled={carbs >= 75}
+              aria-label="Increase carb reduction by 5 grams"
+            >
+              +
+            </button>
+          </div>
+          <span className="slider-intensity-badge">
+            {carbs === 0 ? "No modification" : carbs <= 20 ? "Modest portion reduction" : carbs <= 45 ? "Targeted low-GI substitution" : "Aggressive carb restriction"}
+          </span>
+        </div>
+
+        <div className="control-slider-cell">
+          <div className="slider-header">
+            <span>Carbohydrate delay</span>
+            <strong>{delay} min</strong>
+          </div>
+          <div className="slider-with-steppers">
+            <button
+              type="button"
+              className="stepper-btn"
+              onClick={() => setDelay((v) => Math.max(0, v - 5))}
+              disabled={delay <= 0}
+              aria-label="Decrease carb delay by 5 minutes"
+            >
+              −
+            </button>
+            <input
+              aria-label="Carbohydrate delay"
+              type="range"
+              min="0"
+              max="60"
+              step="5"
+              value={delay}
+              onChange={(e) => setDelay(Number(e.target.value))}
+            />
+            <button
+              type="button"
+              className="stepper-btn"
+              onClick={() => setDelay((v) => Math.min(60, v + 5))}
+              disabled={delay >= 60}
+              aria-label="Increase carb delay by 5 minutes"
+            >
+              +
+            </button>
+          </div>
+          <span className="slider-intensity-badge">
+            {delay === 0 ? "Concurrent meal intake" : delay <= 20 ? "Standard protein/fiber preload" : "Extended digestion staggering"}
+          </span>
+        </div>
+      </div>
+
+      <div className="button-row scenario-action-bar">
+        {!autoSimulate && (
+          <button className="button primary" disabled={busy} onClick={() => runSimulation()}>
+            {busy ? "Calculating…" : "Calculate scenarios"}
+          </button>
+        )}
+        {busy && <span className="simulating-indicator"><i className="pulse-dot" /> Simulating physiological trajectory…</span>}
+        {dirty && !autoSimulate && (
           <span className="caption">
-            Parameters changed. Recalculate to update results.
+            Parameters modified. Recalculate to update results.
           </span>
         )}
       </div>
+
+      {/* Selected Branch Active Comparison Drawer */}
+      {selectedBranch && (
+        <div className="scenario-comparison-drawer" role="region" aria-label="Branch comparison summary">
+          <div className="drawer-header">
+            <div>
+              <span className="eyebrow">Active Simulation Comparison</span>
+              <h3>{selectedBranch.intervention_label}</h3>
+            </div>
+            <div className="drawer-actions">
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `Clinical What-If: ${selectedBranch.intervention_label} | Peak: ${selectedBranch.simulated_peak_mg_dl.toFixed(1)} mg/dL (Estimated reduction: -${selectedBranch.peak_reduction_mg_dl.toFixed(1)} mg/dL) | Mechanism: ${selectedBranch.biophysical_mechanism}`
+                  );
+                  if (onToast) onToast("Scenario recommendation copied to clipboard.");
+                }}
+              >
+                📋 Copy recommendation
+              </button>
+              <button
+                type="button"
+                className="button secondary"
+                onClick={() => onSelect("")}
+              >
+                Clear comparison
+              </button>
+            </div>
+          </div>
+          <div className="comparison-metric-cards">
+            <div className="metric-pill">
+              <span>Baseline projected peak</span>
+              <strong>{simulation?.baseline.predicted_peak_glucose_mg_dl.toFixed(1)} mg/dL</strong>
+            </div>
+            <div className="metric-pill-divider">→</div>
+            <div className="metric-pill highlight">
+              <span>Simulated branch peak</span>
+              <strong>{selectedBranch.simulated_peak_mg_dl.toFixed(1)} mg/dL</strong>
+            </div>
+            <div className="metric-pill delta">
+              <span>Estimated reduction</span>
+              <strong className="text-emerald">▼ -{selectedBranch.peak_reduction_mg_dl.toFixed(1)} mg/dL</strong>
+            </div>
+          </div>
+          <p className="mechanism-text">
+            <strong>Mechanism:</strong> {selectedBranch.biophysical_mechanism}
+          </p>
+        </div>
+      )}
+
+      {/* Interactive Branch Selection Cards */}
+      <div className="scenario-branches-header">
+        <span className="eyebrow">Simulated Physiological Branches ({simulation?.counterfactual_branches.length || 0})</span>
+        <small>Click any branch to project its curve on the forecast graph below</small>
+      </div>
+
       <div className="scenario-branches">
-        {simulation?.counterfactual_branches.map((b: SimulationBranch) => (
-          <button
-            key={b.intervention_type}
-            className={`scenario-branch ${selected === b.intervention_type ? "selected" : ""}`}
-            aria-pressed={selected === b.intervention_type}
-            onClick={() =>
-              onSelect(
-                selected === b.intervention_type ? "" : b.intervention_type,
-              )
-            }
-          >
-            <span>{b.intervention_label}</span>
-            <strong>
-              {b.simulated_peak_mg_dl.toFixed(1)} <small>mg/dL peak</small>
-            </strong>
-            <small>
-              {b.peak_reduction_mg_dl.toFixed(1)} mg/dL estimated reduction
-            </small>
-            <p>
-              {b.hypoglycemia_risk_warning
-                ? "Low-glucose trajectory warning"
-                : b.biophysical_mechanism}
-            </p>
-          </button>
-        ))}
+        {simulation?.counterfactual_branches.map((b: SimulationBranch) => {
+          const isSelected = selected === b.intervention_type;
+          return (
+            <button
+              key={b.intervention_type}
+              className={`scenario-branch ${isSelected ? "selected" : ""}`}
+              aria-pressed={isSelected}
+              onClick={() => onSelect(isSelected ? "" : b.intervention_type)}
+            >
+              <div className="branch-top-row">
+                <span className="branch-title">{b.intervention_label}</span>
+                {isSelected && <span className="active-tag">Active on chart</span>}
+              </div>
+              <strong className="branch-peak">
+                {b.simulated_peak_mg_dl.toFixed(1)} <small>mg/dL peak</small>
+              </strong>
+              <span className="branch-reduction-pill">
+                ▼ -{b.peak_reduction_mg_dl.toFixed(1)} mg/dL reduction
+              </span>
+              <p className="branch-desc">
+                {b.hypoglycemia_risk_warning
+                  ? "⚠️ Low-glucose trajectory warning"
+                  : b.biophysical_mechanism}
+              </p>
+            </button>
+          );
+        })}
       </div>
     </section>
   );

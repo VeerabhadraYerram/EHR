@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Activity, HeartPulse, ClipboardCheck, Dna, Users, ArrowRight } from "lucide-react";
 import type { PatientSimulation, Reading, SimulationBranch } from "./types";
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
   branch?: SimulationBranch | null;
   compact?: boolean;
   loading?: boolean;
+  onNavigate?: (page: any) => void;
 }
 export default function GlucoseForecastPanel({
   simulation,
@@ -17,10 +19,27 @@ export default function GlucoseForecastPanel({
   branch,
   compact = false,
   loading = false,
+  onNavigate,
 }: Props) {
   const [hover, setHover] = useState<number | null>(null);
   const [showObserved, setShowObserved] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [showHistory, setShowHistory] = useState(true);
+  const [showForecast, setShowForecast] = useState(true);
+  const [showBand, setShowBand] = useState(true);
+  const [showBranch, setShowBranch] = useState(true);
+  const [activeCursor, setActiveCursor] = useState<{
+    svgX: number;
+    svgY: number;
+    time: string;
+    glucose: number;
+    isForecast: boolean;
+    idx?: number;
+    p10?: number;
+    p90?: number;
+    branchGlucose?: number;
+    delta?: number;
+  } | null>(null);
   if (!simulation)
     return (
       <section className="paper-card empty-state" aria-live="polite">
@@ -113,6 +132,51 @@ export default function GlucoseForecastPanel({
           }))
       : baseline.top_shap_drivers;
   const maximum = Math.max(...drivers.map((d) => Math.abs(d.shap_value)), 0.01);
+  const handleChartMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clientX = e.clientX - rect.left;
+    const svgX = (clientX / rect.width) * width;
+
+    if (svgX < left - 15 || svgX > width - right + 15) {
+      setActiveCursor(null);
+      return;
+    }
+
+    const frac = Math.max(0, Math.min(1, (svgX - left) / (width - left - right)));
+    const nearestIdx = Math.round(frac * (n - 1));
+
+    if (nearestIdx < history.length) {
+      const hPoint = history[nearestIdx];
+      setActiveCursor({
+        svgX: x(nearestIdx),
+        svgY: y(hPoint.glucose_mg_dl),
+        time: hPoint.time || hPoint.reading_time || "",
+        glucose: hPoint.glucose_mg_dl,
+        isForecast: false,
+        idx: nearestIdx,
+      });
+    } else {
+      const fIdx = nearestIdx - history.length;
+      if (fIdx < trajectory.length) {
+        const fPoint = trajectory[fIdx];
+        const branchP = branch?.simulated_trajectory[fIdx];
+        const delta = branchP ? branchP.projected_glucose_mg_dl - fPoint.projected_glucose_mg_dl : undefined;
+        setActiveCursor({
+          svgX: x(nearestIdx),
+          svgY: y(fPoint.projected_glucose_mg_dl),
+          time: `+${fPoint.horizon_minutes}m`,
+          glucose: fPoint.projected_glucose_mg_dl,
+          isForecast: true,
+          idx: nearestIdx,
+          p10: fPoint.lower_bound_p10_mg_dl,
+          p90: fPoint.upper_bound_p90_mg_dl,
+          branchGlucose: branchP?.projected_glucose_mg_dl,
+          delta,
+        });
+      }
+    }
+  };
+
   return (
     <section
       className="paper-card forecast-card"
@@ -181,7 +245,9 @@ export default function GlucoseForecastPanel({
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label="Recorded glucose history and trained model forecast"
-          className="glucose-chart"
+          className="glucose-chart interactive-chart"
+          onMouseMove={handleChartMouseMove}
+          onMouseLeave={() => setActiveCursor(null)}
         >
           {[70, 100, 140, 180, 220, 260, 300, 340, 380]
             .filter((v) => v <= high)
@@ -201,7 +267,7 @@ export default function GlucoseForecastPanel({
                 </text>
               </g>
             ))}
-          <polygon points={envelope} className="uncertainty-band" />
+          {showBand && <polygon points={envelope} className="uncertainty-band" />}
           <line
             x1={x(now)}
             x2={x(now)}
@@ -212,9 +278,9 @@ export default function GlucoseForecastPanel({
           <text x={x(now)} y={top - 17} textAnchor="middle">
             AS OF {baseline.decision_time.slice(11, 16)}
           </text>
-          <polyline points={historicalLine} className="history-line" />
-          <polyline points={forecastLine} className="forecast-line" />
-          {branch && (
+          {showHistory && <polyline points={historicalLine} className="history-line" />}
+          {showForecast && <polyline points={forecastLine} className="forecast-line" />}
+          {branch && showBranch && (
             <polyline
               points={[
                 `${x(now)},${y(baseline.glucose_now_mg_dl)}`,
@@ -231,7 +297,7 @@ export default function GlucoseForecastPanel({
               {recordedFuture.map((reading) => <circle key={reading.reading_time} cx={x(now + reading.horizon / 15)} cy={y(reading.glucose_mg_dl)} r="3" fill="#555d55"><title>{reading.time}: {reading.glucose_mg_dl} mg/dL</title></circle>)}
             </g>
           )}
-          {trajectory.map((p, i) => (
+          {showForecast && trajectory.map((p, i) => (
             <g key={p.horizon_minutes}>
               <text x={x(now + i + 1)} y={height - 13} textAnchor="middle">
                 +{p.horizon_minutes}m
@@ -239,7 +305,7 @@ export default function GlucoseForecastPanel({
               <circle
                 cx={x(now + i + 1)}
                 cy={y(p.projected_glucose_mg_dl)}
-                r={hover === i ? 6 : 3.5}
+                r={hover === i || (activeCursor?.idx === now + i + 1) ? 6 : 3.5}
                 className="forecast-point"
                 tabIndex={0}
                 aria-label={`${p.horizon_minutes} minutes: ${p.projected_glucose_mg_dl} mg/dL`}
@@ -250,59 +316,174 @@ export default function GlucoseForecastPanel({
               />
             </g>
           ))}
-          {hover !== null && trajectory[hover] && (
-            <g>
-              <rect
-                x={Math.min(width - 177, Math.max(3, x(now + hover + 1) - 80))}
-                y={4}
-                width="170"
-                height="23"
-                rx="6"
-                fill="#292e27"
+
+          {/* Interactive Scrubbing Crosshair & Floating Tooltip */}
+          {activeCursor && (
+            <g className="chart-interactive-guide">
+              <line
+                x1={activeCursor.svgX}
+                x2={activeCursor.svgX}
+                y1={top - 8}
+                y2={height - bottom}
+                className="active-crosshair-line"
+                stroke="#0d7653"
+                strokeWidth="1.5"
+                strokeDasharray="3 3"
               />
-              <text
-                x={Math.min(width - 92, Math.max(88, x(now + hover + 1) + 5))}
-                y={20}
-                textAnchor="middle"
-                fill="white"
-              >
-                +{trajectory[hover].horizon_minutes}m ·{" "}
-                {trajectory[hover].projected_glucose_mg_dl} mg/dL
-              </text>
+              <circle
+                cx={activeCursor.svgX}
+                cy={activeCursor.svgY}
+                r="6.5"
+                fill="#10b981"
+                stroke="#ffffff"
+                strokeWidth="2.5"
+              />
+              {activeCursor.branchGlucose !== undefined && (
+                <circle
+                  cx={activeCursor.svgX}
+                  cy={y(activeCursor.branchGlucose)}
+                  r="5.5"
+                  fill="#0d9488"
+                  stroke="#ffffff"
+                  strokeWidth="2"
+                />
+              )}
+              {/* Dynamic Floating Tooltip */}
+              <g transform={`translate(${Math.min(width - 250, Math.max(left + 10, activeCursor.svgX - 120))}, 4)`}>
+                <rect
+                  width="240"
+                  height="26"
+                  rx="6"
+                  fill="#08251e"
+                  stroke="#124738"
+                  strokeWidth="1"
+                />
+                <text
+                  x="120"
+                  y="17"
+                  textAnchor="middle"
+                  fill="#ecfdf5"
+                  fontSize="11"
+                  fontWeight="500"
+                >
+                  {activeCursor.isForecast ? `Forecast ${activeCursor.time}: ` : `Recorded ${activeCursor.time}: `}
+                  <tspan fill="#34d399" fontWeight="700">
+                    {Math.round(activeCursor.glucose)} mg/dL
+                  </tspan>
+                  {activeCursor.delta !== undefined && (
+                    <tspan fill="#6ee7b7">
+                      {" "}(What-If: {Math.round(activeCursor.branchGlucose!)} mg/dL)
+                    </tspan>
+                  )}
+                </text>
+              </g>
             </g>
           )}
         </svg>
       </div>
-      <div className="chart-legend">
-        <span>
+
+      {/* Interactive Legend with Layer Toggle Filters */}
+      <div className="chart-legend interactive-legend">
+        <button
+          type="button"
+          className={`legend-toggle-pill ${showHistory ? "active" : "muted"}`}
+          onClick={() => setShowHistory(!showHistory)}
+          title="Click to toggle historical CGM readings"
+        >
           <i className="legend-history" />
-          Recorded history
-        </span>
-        <span>
+          <span>Recorded history</span>
+        </button>
+        <button
+          type="button"
+          className={`legend-toggle-pill ${showForecast ? "active" : "muted"}`}
+          onClick={() => setShowForecast(!showForecast)}
+          title="Click to toggle model forecasted trajectory"
+        >
           <i className="legend-forecast" />
-          Model forecast
-        </span>
+          <span>Model forecast</span>
+        </button>
         {branch && (
-          <span>
+          <button
+            type="button"
+            className={`legend-toggle-pill ${showBranch ? "active" : "muted"}`}
+            onClick={() => setShowBranch(!showBranch)}
+            title="Click to toggle what-if scenario trajectory"
+          >
             <i className="legend-scenario" />
-            What-if estimate
-          </span>
+            <span>What-if estimate</span>
+          </button>
         )}
-        <span>
+        <button
+          type="button"
+          className={`legend-toggle-pill ${showBand ? "active" : "muted"}`}
+          onClick={() => setShowBand(!showBand)}
+          title="Click to toggle 90% confidence range"
+        >
           <i className="legend-band" />
-          Illustrative range
-        </span>
+          <span>90% Confidence range</span>
+        </button>
         {!compact && (
-          <label>
+          <label className="observed-toggle">
             <input
               type="checkbox"
               checked={showObserved}
               onChange={(e) => setShowObserved(e.target.checked)}
             />
-            Reveal recorded future
+            <span>Reveal recorded future</span>
           </label>
         )}
       </div>
+
+      {compact && onNavigate && (
+        <div className="graph-sub-navigation" role="group" aria-label="Clinical workspace navigation">
+          <button
+            type="button"
+            className="graph-nav-pill-btn primary"
+            onClick={() => onNavigate("forecast")}
+            title="Open 120-minute continuous glucose forecast & CGM timeline"
+          >
+            <Activity size={14} />
+            <span>Forecast</span>
+            <ArrowRight size={13} />
+          </button>
+          <button
+            type="button"
+            className="graph-nav-pill-btn"
+            onClick={() => onNavigate("anatomy")}
+            title="Explore 3D anatomical digital twins"
+          >
+            <HeartPulse size={14} />
+            <span>Anatomical twins</span>
+          </button>
+          <button
+            type="button"
+            className="graph-nav-pill-btn"
+            onClick={() => onNavigate("review")}
+            title="Clinical review & fact reconciliation"
+          >
+            <ClipboardCheck size={14} />
+            <span>Clinical review</span>
+          </button>
+          <button
+            type="button"
+            className="graph-nav-pill-btn"
+            onClick={() => onNavigate("genomics")}
+            title="Inspect DNA sequence & genetic risk alleles"
+          >
+            <Dna size={14} />
+            <span>Genomics explorer</span>
+          </button>
+          <button
+            type="button"
+            className="graph-nav-pill-btn"
+            onClick={() => onNavigate("patients")}
+            title="View cohort patient profiles"
+          >
+            <Users size={14} />
+            <span>Patient profiles</span>
+          </button>
+        </div>
+      )}
       {showObserved && (
         <p className="caption">
           Retrospective comparison only. Future readings are displayed after

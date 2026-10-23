@@ -16,17 +16,20 @@ interface PatientRegistryPanelProps {
   patients: Patient[];
   selectedPatientId: string;
   onSelectPatient: (patientId: string) => void;
+  onNavigate?: (page: any) => void;
 }
 
 export default function PatientRegistryPanel({
   patients,
   selectedPatientId,
   onSelectPatient,
+  onNavigate,
 }: PatientRegistryPanelProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<
     "ALL" | "HIGH" | "WATCH" | "CALM" | "UNKNOWN"
   >("ALL");
+  const [sortBy, setSortBy] = useState<"tier" | "hba1c" | "age" | "id">("tier");
 
   const selectedPatient = useMemo(() => {
     return (
@@ -45,7 +48,7 @@ export default function PatientRegistryPanel({
   }, [patients]);
 
   const filteredPatients = useMemo(() => {
-    return patients.filter((p) => {
+    const list = patients.filter((p) => {
       const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
         !q ||
@@ -61,7 +64,16 @@ export default function PatientRegistryPanel({
           : p.risk_status?.tier === tierFilter);
       return matchesSearch && matchesTier;
     });
-  }, [patients, searchQuery, tierFilter]);
+
+    return list.sort((a, b) => {
+      if (sortBy === "hba1c") return Number(b.hba1c_percent || 0) - Number(a.hba1c_percent || 0);
+      if (sortBy === "age") return Number(b.age_years || 0) - Number(a.age_years || 0);
+      if (sortBy === "id") return a.person_id.localeCompare(b.person_id);
+      // default: tier
+      const rank = (t?: string) => (t === "HIGH" ? 3 : t === "WATCH" ? 2 : t === "CALM" ? 1 : 0);
+      return rank(b.risk_status?.tier) - rank(a.risk_status?.tier);
+    });
+  }, [patients, searchQuery, tierFilter, sortBy]);
 
   return (
     <div className="dx-left-registry-stack">
@@ -128,6 +140,39 @@ export default function PatientRegistryPanel({
               onClick={() => setTierFilter("UNKNOWN")}
             >
               UNSCORED ({counts.unknown})
+            </button>
+          </div>
+
+          {/* Quick Sort Selector */}
+          <div className="dx-sort-bar">
+            <span>Sort:</span>
+            <button
+              type="button"
+              className={`sort-pill ${sortBy === "tier" ? "active" : ""}`}
+              onClick={() => setSortBy("tier")}
+            >
+              Risk Tier
+            </button>
+            <button
+              type="button"
+              className={`sort-pill ${sortBy === "hba1c" ? "active" : ""}`}
+              onClick={() => setSortBy("hba1c")}
+            >
+              HbA1c
+            </button>
+            <button
+              type="button"
+              className={`sort-pill ${sortBy === "age" ? "active" : ""}`}
+              onClick={() => setSortBy("age")}
+            >
+              Age
+            </button>
+            <button
+              type="button"
+              className={`sort-pill ${sortBy === "id" ? "active" : ""}`}
+              onClick={() => setSortBy("id")}
+            >
+              Patient ID
             </button>
           </div>
         </div>
@@ -234,6 +279,36 @@ export default function PatientRegistryPanel({
                   : "UNSCORED"}
               </div>
             </div>
+
+            {/* Quick Actions Shortcuts */}
+            {onNavigate && (
+              <div className="dx-patient-quick-actions">
+                <button
+                  type="button"
+                  className="button primary"
+                  onClick={() => onNavigate("forecast")}
+                >
+                  <Activity size={13} />
+                  <span>Forecast & Timeline</span>
+                </button>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() => onNavigate("scenarios")}
+                >
+                  <HeartPulse size={13} />
+                  <span>What-If Scenarios</span>
+                </button>
+                <button
+                  type="button"
+                  className="button secondary"
+                  onClick={() => onNavigate("reports")}
+                >
+                  <FileText size={13} />
+                  <span>Clinical Dossier</span>
+                </button>
+              </div>
+            )}
 
             {/* Diagnostic Codes */}
             <div className="dx-coding-strip">

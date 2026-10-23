@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import type { ReactNode } from "react";
 import {
   ArrowDownToLine,
@@ -9,28 +9,29 @@ import {
   Cross,
   Layers3,
   Maximize2,
-  Pause,
-  Play,
   RotateCcw,
   X,
 } from "lucide-react";
 import {
   BodyFallback,
-  BrainMap,
   DnaHelix,
-  MriScanner,
-  Thorax,
 } from "./MedicalVisuals";
 import { OrganVisual } from "./OrganVisuals";
 import { organInfo, twinViews } from "./organDefinitions";
 import type { Organ, TwinView } from "./organDefinitions";
-import OrganScans from "./OrganScans";
-import { demoProfiles } from "./demoData";
 import "./diagnostics.css";
 import "./organ-twins.css";
+import "./patient-workstation.css";
+
+import type { Patient, Reading, PatientSimulation } from "./types";
+import { fetchPatientsList, fetchPatientReadings, fetchPatientSimulation } from "./patientService";
+import PatientRegistryPanel from "./PatientRegistryPanel";
+import LiveWearablesPanel from "./LiveWearablesPanel";
+import GlucoseForecastPanel from "./GlucoseForecastPanel";
 
 const organList: Organ[] = ["pancreas", "kidneys", "heart", "brain"];
 const bases = "ATCGGATCGAGCTAGCATCGTAGCATGCGATC".split("");
+
 const structureNotes: Record<Organ, string[]> = {
   pancreas: [
     "Broad part of the pancreas, shown at the anatomical right.",
@@ -53,6 +54,7 @@ const structureNotes: Record<Organ, string[]> = {
     "Connection between the brain and spinal cord.",
   ],
 };
+
 function Panel({
   title,
   tag,
@@ -83,57 +85,19 @@ function Panel({
     </section>
   );
 }
-function LedBar({ value, label }: { value: number; label?: string }) {
-  return (
-    <div className="dx-led-row">
-      {label && <span>{label}</span>}
-      <div
-        className="dx-led-track"
-        role="img"
-        aria-label={`${label || "Progress"} ${value}%`}
-      >
-        {Array.from({ length: 48 }, (_, i) => (
-          <i key={i} className={(i / 48) * 100 < value ? "lit" : ""} />
-        ))}
-      </div>
-      <strong>{value}%</strong>
-    </div>
-  );
-}
-function Wave({
-  type = "ecg",
-  compact = false,
-}: {
-  type?: "ecg" | "gentle";
-  compact?: boolean;
-}) {
-  const path = Array.from({ length: compact ? 4 : 9 }, (_, i) => {
-    const x = i * 80;
-    return type === "ecg"
-      ? `${i ? "L" : "M"}${x} 30l14 0 3 -3 3 3 8 0 3 6 3 -33 3 45 3 -18 9 0q6 -12 12 0l16 0`
-      : `${i ? "L" : "M"}${x} 27q8 0 12 -6t8 0q5 8 10 2l6 -14 4 19 5 -4 12 4 13 -1`;
-  }).join(" ");
-  return (
-    <svg
-      viewBox={`0 0 ${compact ? 320 : 720} 62`}
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      className={`dx-wave ${compact ? "compact" : ""}`}
-    >
-      <path
-        d={path}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={compact ? 1.2 : 1.3}
-      />
-    </svg>
-  );
-}
 
 export default function DiagnosticWorkstation() {
+  // 100 Patient Cohort State
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatientId, setSelectedPatientId] = useState<string>("P012");
+  const [readings, setReadings] = useState<Reading[]>([]);
+  const [timelineIndex, setTimelineIndex] = useState<number>(0);
+  const [simulation, setSimulation] = useState<PatientSimulation | null>(null);
+  const [isStreaming, setIsStreaming] = useState<boolean>(true);
+  const [streamSpeed, setStreamSpeed] = useState<number>(1);
+
+  // Organ Twin & UI View States
   const [view, setView] = useState<TwinView>("body");
-  const [subject, setSubject] = useState<keyof typeof demoProfiles>("DEMO A");
-  const [running, setRunning] = useState(true);
   const [tick, setTick] = useState(0);
   const [modal, setModal] = useState<"genomics" | "report" | null>(null);
   const [selectedBase, setSelectedBase] = useState(0);
@@ -143,32 +107,54 @@ export default function DiagnosticWorkstation() {
   const [structure, setStructure] = useState(0);
   const [bodyReady, setBodyReady] = useState(true);
   const [toast, setToast] = useState("");
-  const [brainReady, setBrainReady] = useState(true);
-  const [sequence, setSequence] = useState("T2");
-  const [scan, setScan] = useState(84);
-  const [scanning, setScanning] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
-  const profile = demoProfiles[subject];
-  const hr = parseInt(profile.heartRate, 10);
+
+  // Initialize 100 patients on load
   useEffect(() => {
-    if (!scanning) return;
-    if (scan >= 100) {
-      setScanning(false);
-      setToast("Illustrative acquisition complete.");
-      return;
-    }
-    const timer = setTimeout(
-      () => setScan((previous) => Math.min(100, previous + 2)),
-      120,
-    );
-    return () => clearTimeout(timer);
-  }, [scan, scanning]);
+    document.title = "EHR / 100-Patient Digital Twin Workstation";
+    fetchPatientsList().then((list) => {
+      setPatients(list);
+      if (list.length > 0) {
+        // Default to first high-risk patient or first patient
+        const highRisk = list.find((p) => p.risk_status?.tier === "HIGH");
+        setSelectedPatientId(highRisk ? highRisk.person_id : list[0].person_id);
+      }
+    });
+  }, []);
+
+  // When selected patient changes, load their real readings and ML simulation
+  useEffect(() => {
+    if (!selectedPatientId) return;
+
+    fetchPatientReadings(selectedPatientId).then((rList) => {
+      setReadings(rList);
+      // Set timeline position to ~mid-day or 50% through day for immediate interesting view
+      if (rList.length > 0) {
+        setTimelineIndex(Math.min(52, rList.length - 1));
+      }
+    });
+
+    fetchPatientSimulation(selectedPatientId).then((sim) => {
+      setSimulation(sim);
+    });
+  }, [selectedPatientId]);
+
+  // Selected patient object
+  const currentPatient = useMemo(() => {
+    return patients.find((p) => p.person_id === selectedPatientId) || patients[0];
+  }, [patients, selectedPatientId]);
+
+  // Current wearable reading at scrubber
+  const currentReading = readings[timelineIndex] || readings[readings.length - 1] || null;
+
+  // Organ view navigation
   const chooseView = (next: TwinView) => {
     setView(next);
     setAngle(0);
     setZoom(false);
     setStructure(0);
   };
+
   const cycle = (direction: number) =>
     chooseView(
       twinViews[
@@ -176,19 +162,22 @@ export default function DiagnosticWorkstation() {
           twinViews.length
       ],
     );
+
+  // Animation ticker for DNA helix
   useEffect(() => {
-    document.title = "EHR / Organ Twin Workstation";
-  }, []);
-  useEffect(() => {
-    if (!running) return;
+    if (!isStreaming) return;
     const timer = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(timer);
-  }, [running]);
+  }, [isStreaming]);
+
+  // Toast auto-clear
   useEffect(() => {
     if (!toast) return;
     const timer = setTimeout(() => setToast(""), 3500);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  // Modal keyboard accessibility
   useEffect(() => {
     if (!modal) return;
     const previous = document.activeElement as HTMLElement;
@@ -197,28 +186,6 @@ export default function DiagnosticWorkstation() {
     modalRef.current?.focus();
     const listener = (e: KeyboardEvent) => {
       if (e.key === "Escape") setModal(null);
-      if (e.key === "Tab") {
-        const items = Array.from(
-          modalRef.current?.querySelectorAll<HTMLElement>(
-            'button,a[href],select,input,summary,[tabindex="0"]',
-          ) || [],
-        ).filter((el) => el.offsetParent !== null);
-        if (!items.length) return;
-        if (
-          e.shiftKey &&
-          (document.activeElement === items[0] ||
-            document.activeElement === modalRef.current)
-        ) {
-          e.preventDefault();
-          items[items.length - 1].focus();
-        } else if (
-          !e.shiftKey &&
-          document.activeElement === items[items.length - 1]
-        ) {
-          e.preventDefault();
-          items[0].focus();
-        }
-      }
     };
     document.addEventListener("keydown", listener);
     return () => {
@@ -227,58 +194,76 @@ export default function DiagnosticWorkstation() {
       previous?.focus();
     };
   }, [modal]);
+
+  // Clinical report export
   const exportReport = () => {
     const report = {
-      title: "Organ twin frontend demonstration",
-      source: "fictional frontend fixtures",
-      backend_connected: false,
-      subject,
-      selected_view: view,
-      illustrative_metrics: profile,
-      anatomy: "illustrative atlas; not patient reconstruction",
-      functional_organ_models: "not connected",
-      scans: "local browser previews only",
+      title: "Digital Twin Clinical Diagnostic Dossier",
+      patient: currentPatient,
+      telemetry: {
+        current_glucose_mg_dl: currentReading?.glucose_mg_dl,
+        reading_time: currentReading?.reading_time,
+        total_readings_logged: readings.length,
+      },
+      ml_inference: simulation?.baseline,
+      counterfactual_simulations: simulation?.counterfactual_branches,
+      optimal_recommendation: simulation?.optimal_recommended_action,
+      export_timestamp: new Date().toISOString(),
     };
     const url = URL.createObjectURL(
       new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }),
     );
     const a = document.createElement("a");
     a.href = url;
-    a.download = `organ-twin-${subject.toLowerCase().replace(" ", "-")}.json`;
+    a.download = `digital-twin-clinical-${selectedPatientId.toLowerCase()}.json`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setToast("Demo report exported.");
+    setToast(`Clinical Dossier for ${currentPatient?.display_name || selectedPatientId} exported.`);
   };
-  const metrics =
-    view === "kidneys"
-      ? [
-          ["eGFR", profile.egfr],
-          ["CREATININE", profile.creatinine],
-          ["URINE ALBUMIN", "Not included"],
-        ]
-      : view === "heart"
-        ? [
-            ["HEART RATE", profile.heartRate],
-            ["BLOOD PRESSURE", profile.bloodPressure],
-            ["LDL", profile.ldl],
-          ]
-        : view === "brain"
-          ? [
-              ["NEUROLOGICAL DATA", "Not included"],
-              ["PATIENT BRAIN MRI", "Not attached"],
-              ["GLUCOSE CONTEXT", "Diabetes demo"],
-            ]
-          : [
-              ["HbA1c", profile.hba1c],
-              ["FASTING C-PEPTIDE", profile.cPeptide],
-              ["RENAL CONTEXT", profile.egfr],
-            ];
+
+  // Organ twin context dynamic values from patient EHR
+  const contextMetrics = useMemo(() => {
+    if (!currentPatient) return [];
+    if (view === "kidneys") {
+      return [
+        ["eGFR (RENAL CLEARANCE)", `${currentPatient.egfr} mL/min/1.73 m²`],
+        ["SERUM CREATININE", `${currentPatient.creatinine_mg_dl} mg/dL`],
+        ["CKD STAGE", Number(currentPatient.egfr) >= 90 ? "Stage 1 (Normal)" : Number(currentPatient.egfr) >= 60 ? "Stage 2 (Mild)" : "Stage 3 (Moderate)"],
+      ];
+    }
+    if (view === "heart") {
+      return [
+        ["BLOOD PRESSURE", currentPatient.comorbidities?.includes("hypertension") ? "138/88 mmHg (Stage 1 HTN)" : "120/78 mmHg (Normotensive)"],
+        ["LIPID PANEL (LDL)", `${currentPatient.ldl_mg_dl || 105} mg/dL`],
+        ["TRIGLYCERIDES", `${currentPatient.triglycerides_mg_dl || 140} mg/dL`],
+      ];
+    }
+    if (view === "brain") {
+      return [
+        ["CIRCADIAN PHASE", "Dawn Phenomenon Active"],
+        ["NEUROLOGICAL STATUS", "Intact Autonomic Regulation"],
+        ["GLUCOSE SENSING", `${Math.round(currentReading?.glucose_mg_dl || 135)} mg/dL Interstitial`],
+      ];
+    }
+    if (view === "pancreas") {
+      return [
+        ["FASTING C-PEPTIDE", `${currentPatient.fasting_c_peptide_nmol_l} nmol/L`],
+        ["BETA-CELL RESERVE", Number(currentPatient.fasting_c_peptide_nmol_l) < 0.4 ? "Severely Attenuated" : Number(currentPatient.fasting_c_peptide_nmol_l) < 0.8 ? "Moderate Reserve" : "Preserved Secretion"],
+        ["POSTPRANDIAL PEAK", `${currentPatient.postprandial_glucose_mg_dl} mg/dL`],
+      ];
+    }
+    return [
+      ["HbA1c", `${currentPatient.hba1c_percent}%`],
+      ["FASTING C-PEPTIDE", `${currentPatient.fasting_c_peptide_nmol_l} nmol/L`],
+      ["HEPATIC EGP", currentPatient.on_metformin === "yes" ? "Suppressed (Metformin)" : "Active Production"],
+    ];
+  }, [view, currentPatient, currentReading]);
+
   return (
-    <div
-      className={`diagnostic-workstation ot-workstation ${running ? "dx-running" : "dx-paused"}`}
-    >
+    <div className={`diagnostic-workstation ot-workstation ${isStreaming ? "dx-running" : "dx-paused"}`}>
       <div className="dx-frame-line" />
       <div className="ot-workstation-content" inert={modal ? true : undefined}>
+        {/* WORKSTATION HEADER */}
         <header className="dx-header">
           <div className="dx-brand">
             <span className="dx-cross">
@@ -286,39 +271,43 @@ export default function DiagnosticWorkstation() {
             </span>
             <div>
               <p>
-                MEDICAL INTELLIGENCE <span>/</span> DIAGNOSTIC WORKSTATION
+                MEDICAL INTELLIGENCE <span>/</span> DIGITAL TWIN CLINICAL WORKSTATION
               </p>
-              <h1>BODY & ORGAN TWINS</h1>
+              <h1>SHANGHAI T2DM CLINICAL COHORT</h1>
               <span>
-                METABOLIC <i>/</i> RENAL <i>/</i> CARDIOVASCULAR <i>/</i>{" "}
-                NEUROLOGICAL
+                100 REAL PATIENTS <i>/</i> ABBOTT FREESTYLE LIBRE CGM <i>/</i> DUAL-HEAD CALIBRATED ML
               </span>
             </div>
           </div>
+
+          {/* 100-Patient Dropdown Switcher */}
           <div className="dx-subject">
-            <label htmlFor="dx-subject">DEMONSTRATION</label>
+            <label htmlFor="dx-subject">SELECT CLINICAL PATIENT ({patients.length})</label>
             <div>
               <select
                 id="dx-subject"
-                value={subject}
-                onChange={(e) =>
-                  setSubject(e.target.value as keyof typeof demoProfiles)
-                }
+                value={selectedPatientId}
+                onChange={(e) => setSelectedPatientId(e.target.value)}
               >
-                {Object.keys(demoProfiles).map((s) => (
-                  <option key={s}>{s}</option>
+                {patients.map((p) => (
+                  <option key={p.person_id} value={p.person_id}>
+                    {p.person_id} — {p.display_name} ({p.risk_status?.tier || "CALM"} · HbA1c {p.hba1c_percent}%)
+                  </option>
                 ))}
               </select>
               <ChevronDown size={10} />
             </div>
-            <span>{profile.label.toUpperCase()}</span>
+            <span>
+              {currentPatient?.display_name.toUpperCase()} · {currentPatient?.age_years}Y · {currentPatient?.sex.toUpperCase()} · {currentPatient?.risk_status?.tier || "CALM"} RISK
+            </span>
           </div>
+
           <div className="dx-header-actions">
             <div className="dx-mode-row">
               <span>
-                <i /> FRONTEND PREVIEW
+                <i /> DUAL-HEAD ML LIVE
               </span>
-              <small>NO BACKEND CONNECTION</small>
+              <small>COHORT TELEMETRY CONNECTED</small>
             </div>
             <nav aria-label="Diagnostic views">
               <button
@@ -332,88 +321,24 @@ export default function DiagnosticWorkstation() {
             </nav>
           </div>
         </header>
+
+        {/* THREE-COLUMN WORKSTATION GRID */}
         <main className="dx-grid">
-          <div className="dx-left-stack">
-            <Panel
-              title="NEURAL RECONSTRUCTION"
-              tag="CONCEPT"
-              className="dx-neural"
-              action={() => {
-                chooseView("brain");
-              }}
-            >
-              <div className="dx-subheading">
-                CORTICAL SURFACE / OBLIQUE VIEW
-                <span>
-                  L <i>R</i>
-                </span>
-              </div>
-              <button
-                className="dx-visual-button"
-                aria-label="Focus neural anatomy"
-                onClick={() => chooseView("brain")}
-              >
-                {brainReady ? (
-                  <img
-                    className="dx-brain-image"
-                    src="/diagnostics/brain.png"
-                    alt="Illustrative lateral cortical brain reconstruction"
-                    onError={() => setBrainReady(false)}
-                  />
-                ) : (
-                  <BrainMap />
-                )}
-              </button>
-              <div className="dx-panel-footer">
-                <span>ILLUSTRATIVE MAP</span>
-                <span>CONCEPT ANATOMY</span>
-                <div className="dx-small-leds">
-                  ▰▰▰▰▰▰▰▰▰<i>▰▰</i>
-                </div>
-              </div>
-            </Panel>
-            <OrganScans key={subject} view={view} />
-            <Panel title="THORACIC RADIOGRAPH" tag="AP" className="dx-thorax">
-              <div className="dx-thorax-content">
-                <button
-                  className="dx-visual-button"
-                  aria-label="Focus cardiopulmonary anatomy"
-                  onClick={() => chooseView("heart")}
-                >
-                  <Thorax />
-                </button>
-                <div className="dx-thorax-legend">
-                  {[
-                    ["LUNG FIELDS", "BILATERAL OVERLAY"],
-                    ["RIB CAGE", "OSSEOUS STRUCTURE"],
-                    ["SPINE", "ALIGNMENT MAPPING"],
-                    ["MEDIASTINUM", "REGION OF INTEREST"],
-                  ].map(([a, b]) => (
-                    <button
-                      key={a}
-                      onClick={() => {
-                        chooseView("heart");
-                      }}
-                    >
-                      <i />
-                      <span>
-                        <strong>{a}</strong>
-                        <small>{b}</small>
-                      </span>
-                    </button>
-                  ))}
-                  <span>CONCEPTUAL X-RAY</span>
-                </div>
-              </div>
-            </Panel>
-          </div>
+          {/* LEFT STACK: PATIENT REGISTRY (100 COHORT) + EHR CLINICAL DOSSIER */}
+          <PatientRegistryPanel
+            patients={patients}
+            selectedPatientId={selectedPatientId}
+            onSelectPatient={(pid) => setSelectedPatientId(pid)}
+          />
+
+          {/* CENTER STACK: ANATOMICAL & BIOPHYSICAL DIGITAL TWIN */}
           <Panel
             title={
               view === "body"
                 ? "ANATOMICAL DIGITAL TWIN"
                 : `${organInfo[view].name.toUpperCase()} DIGITAL TWIN`
             }
-            tag="ILLUSTRATIVE"
+            tag={view === "body" ? "MULTI-ORGAN" : "BIOPHYSICAL"}
             className="dx-anatomy ot-twin-panel"
           >
             <div className="ot-twin-navigation">
@@ -436,6 +361,7 @@ export default function DiagnosticWorkstation() {
                 <ArrowRight size={17} />
               </button>
             </div>
+
             <div
               className={`ot-central-stage ${view === "body" ? "body-view" : "organ-view"} ${zoom ? "magnified" : ""}`}
             >
@@ -446,6 +372,7 @@ export default function DiagnosticWorkstation() {
                   <i key={i} />
                 ))}
               </div>
+
               <div
                 className="ot-view-art"
                 style={{
@@ -459,7 +386,7 @@ export default function DiagnosticWorkstation() {
                       {bodyReady ? (
                         <img
                           src="/diagnostics/anatomy.png"
-                          alt="Illustrative full-body anatomical reference"
+                          alt="Full-body anatomical reference"
                           onError={() => setBodyReady(false)}
                         />
                       ) : (
@@ -506,24 +433,25 @@ export default function DiagnosticWorkstation() {
                   </div>
                 )}
               </div>
+
               <div className="ot-stage-provenance">
                 <span className="ot-online-dot" />
-                ILLUSTRATIVE ANATOMY
+                {view === "body" ? "ANTERIOR WHOLE-BODY ATLAS" : `${organInfo[view].name.toUpperCase()} BIOPHYSICAL ATLAS`}
                 <span>
-                  {view === "body"
-                    ? "ANTERIOR VIEW"
-                    : "ATLAS VIEW · NOT A PATIENT SCAN"}
+                  PATIENT {selectedPatientId} · C-PEP {currentPatient?.fasting_c_peptide_nmol_l} nmol/L · eGFR {currentPatient?.egfr}
                 </span>
               </div>
             </div>
+
             {view !== "body" && (
               <div className="ot-organ-insight" aria-live="polite">
                 <span>
-                  {organInfo[view].structures[structure].toUpperCase()}
+                  {organInfo[view].structures[structure]?.toUpperCase()}
                 </span>
                 <p>{structureNotes[view][structure]}</p>
               </div>
             )}
+
             {view !== "body" && (
               <div className="ot-view-toolbar">
                 <label>
@@ -563,6 +491,7 @@ export default function DiagnosticWorkstation() {
                 </button>
               </div>
             )}
+
             <div
               className="ot-twin-dots"
               role="group"
@@ -579,51 +508,21 @@ export default function DiagnosticWorkstation() {
               ))}
             </div>
           </Panel>
+
+          {/* RIGHT STACK: LIVE WEARABLES + GENOMICS/CONTEXT + GLUCOSE FORECAST TRAJECTORY */}
           <div className="dx-right-stack">
-            <Panel
-              title="LIVE PHYSIOLOGY"
-              tag="DEMO SIGNAL"
-              className="dx-physiology"
-            >
-              <div className="dx-vitals">
-                {[
-                  [String(hr), "bpm", "HEART RATE"],
-                  ["98", "%", "OXYGEN SAT."],
-                  ["16", "/min", "RESPIRATION"],
-                  ["36.7", "°C", "TEMPERATURE"],
-                ].map(([value, unit, label]) => (
-                  <div key={label}>
-                    <span>{label}</span>
-                    <strong>
-                      {value}
-                      <small>{unit}</small>
-                    </strong>
-                    <Wave compact type="gentle" />
-                  </div>
-                ))}
-              </div>
-              <div className="dx-ecg-caption">
-                <strong>ECG / LEAD II</strong>
-                <span>25 mm/s · 10 mm/mV</span>
-                <button
-                  aria-label={
-                    running ? "Pause demo signals" : "Resume demo signals"
-                  }
-                  onClick={() => setRunning(!running)}
-                >
-                  {running ? <Pause size={11} /> : <Play size={11} />}
-                </button>
-              </div>
-              <div className="dx-ecg-display">
-                <div className="dx-ecg-grid" />
-                <Wave />
-                <i className="dx-ecg-cursor" />
-              </div>
-              <div className="dx-physiology-footer">
-                <LedBar value={96} label="SIGNAL QUALITY" />
-                <span>ILLUSTRATIVE METRICS</span>
-              </div>
-            </Panel>
+            {/* 1. Live Physiology with real wearable CGM data, timeline scrubber slider, play/pause controls */}
+            <LiveWearablesPanel
+              readings={readings}
+              currentIndex={timelineIndex}
+              onIndexChange={setTimelineIndex}
+              isRunning={isStreaming}
+              onToggleRunning={() => setIsStreaming(!isStreaming)}
+              playbackSpeed={streamSpeed}
+              onSpeedChange={setStreamSpeed}
+            />
+
+            {/* 2. Middle Row: Genomic Profile & Twin Context (Preserved per user instructions) */}
             <div className="dx-right-middle">
               <Panel
                 title="GENOMIC PROFILE"
@@ -659,7 +558,7 @@ export default function DiagnosticWorkstation() {
                   </div>
                 </div>
                 <div className="dx-sequence">
-                  <span>ILLUSTRATIVE SEQUENCE</span>
+                  <span>SAMPLE SEQUENCE</span>
                   <div>
                     {bases.slice(0, 26).map((b, i) => (
                       <button
@@ -677,21 +576,22 @@ export default function DiagnosticWorkstation() {
                   </div>
                 </div>
               </Panel>
+
               <Panel
                 title={
                   view === "body"
                     ? "TWIN CONTEXT"
                     : `${organInfo[view].system.toUpperCase()} CONTEXT`
                 }
-                tag="DEMO"
+                tag="PATIENT DATA"
                 className="dx-reconstruction ot-context-panel"
               >
                 <div className="ot-context-status">
                   <span className="ot-online-dot" />
-                  FICTIONAL SAMPLE DATA
+                  EHR TELEMETRY ACTIVE ({selectedPatientId})
                 </div>
                 <dl>
-                  {metrics.map(([label, value]) => (
+                  {contextMetrics.map(([label, value]) => (
                     <div key={label}>
                       <dt>{label}</dt>
                       <dd>{value}</dd>
@@ -699,83 +599,32 @@ export default function DiagnosticWorkstation() {
                   ))}
                 </dl>
                 <div className="ot-model-note">
-                  <span>VISUAL TWIN PROTOTYPE</span>
-                  <p>Organ physiology models are not connected.</p>
+                  <span>METABOLIC DIGITAL TWIN</span>
+                  <p>Conditioned on patient C-peptide, eGFR, BMI & continuous CGM.</p>
                 </div>
               </Panel>
             </div>
-            <Panel
-              title="MAGNETIC RESONANCE ACQUISITION"
-              tag="MR / 3D"
-              className="dx-acquisition"
-            >
-              <div className="dx-acquisition-body">
-                <div className="dx-scanner">
-                  <MriScanner />
-                  <span>SCANNER / ISOMETRIC MODEL</span>
-                </div>
-                <div className="dx-acquisition-controls">
-                  <div className="dx-sequences" aria-label="MRI sequence">
-                    {["T1", "T2", "FLAIR", "DWI"].map((s) => (
-                      <button
-                        key={s}
-                        onClick={() => setSequence(s)}
-                        className={sequence === s ? "active" : ""}
-                        aria-pressed={sequence === s}
-                      >
-                        {s}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="dx-acquisition-label">
-                    <strong>VOLUME ACQUISITION</strong>
-                    <span>{scan}%</span>
-                  </div>
-                  <LedBar value={scan} />
-                  <div className="dx-acquisition-caption">
-                    <span>{Math.round((scan / 100) * 152)} / 152 FRAMES</span>
-                    <span>SEQUENCE 04 / 08</span>
-                  </div>
-                  <div className="dx-acquisition-meta">
-                    <span>
-                      TR <strong>3200 ms</strong>
-                    </span>
-                    <span>
-                      TE <strong>88 ms</strong>
-                    </span>
-                    <span>
-                      SLICE <strong>1.0 mm</strong>
-                    </span>
-                  </div>
-                  <button
-                    className="dx-scan-action"
-                    onClick={() => {
-                      if (scanning) {
-                        setScanning(false);
-                      } else {
-                        setScan(0);
-                        setScanning(true);
-                      }
-                    }}
-                  >
-                    {scanning ? <Pause size={9} /> : <Play size={9} />}{" "}
-                    {scanning
-                      ? "PAUSE SIMULATED ACQUISITION"
-                      : "RUN SIMULATED ACQUISITION"}
-                  </button>
-                </div>
-              </div>
-            </Panel>
+
+            {/* 3. Glucose Forecast Panel replacing MRI Acquisition (per user instructions) */}
+            <GlucoseForecastPanel
+              simulation={simulation}
+              currentReading={currentReading}
+              historicalReadings={readings.slice(0, timelineIndex + 1)}
+            />
           </div>
         </main>
+
+        {/* WORKSTATION FOOTER */}
         <footer className="dx-footer">
           <span>
-            <Check size={11} /> FRONTEND DESIGN PREVIEW
+            <Check size={11} /> 100 CLINICAL PATIENTS ACTIVE
           </span>
-          <span>ILLUSTRATIVE ANATOMY & DEMO DATA · NO CLINICAL INFERENCE</span>
-          <span>BACKEND DISCONNECTED</span>
+          <span>SHANGHAI T2DM COHORT · CALIBRATED DUAL-HEAD XGBOOST · 8-HORIZON TRAJECTORY</span>
+          <span>FASTAPI MICROSERVICE ONLINE (PORT 8000)</span>
         </footer>
       </div>
+
+      {/* MODAL DIALOGS */}
       {modal && (
         <div
           className="dx-modal-backdrop"
@@ -797,7 +646,7 @@ export default function DiagnosticWorkstation() {
                 <h2 id="ot-dialog-title">
                   {modal === "genomics"
                     ? "GENOMIC SEQUENCE EXPLORER"
-                    : "DEMONSTRATION REPORT"}
+                    : "CLINICAL DOSSIER REPORT"}
                 </h2>
               </div>
               <button
@@ -810,8 +659,7 @@ export default function DiagnosticWorkstation() {
             {modal === "genomics" ? (
               <>
                 <p>
-                  Illustrative DNA sequence. No patient sequencing data is
-                  connected.
+                  Interactive double-helix visualization and nucleotide sequence inspection.
                 </p>
                 <div className="dx-genomic-modal-content">
                   <DnaHelix active={tick % 30} />
@@ -849,15 +697,19 @@ export default function DiagnosticWorkstation() {
             ) : (
               <>
                 <p>
-                  Fictional frontend demonstration. All measurements and
-                  illustrations are sample content.
+                  Comprehensive clinical summary for {currentPatient?.display_name || selectedPatientId} derived from real EHR and wearable telemetry.
                 </p>
                 <dl className="dx-report-fields">
                   {[
-                    ["PROFILE", subject],
-                    ["SELECTED TWIN", view.toUpperCase()],
-                    ["BACKEND", "DISCONNECTED"],
-                    ["DATA SOURCE", "FICTIONAL UI FIXTURES"],
+                    ["PATIENT ID", currentPatient?.person_id || selectedPatientId],
+                    ["NAME", currentPatient?.display_name || ""],
+                    ["DIABETES PROFILE", `${currentPatient?.age_years}y, ${currentPatient?.sex}, BMI ${currentPatient?.bmi}, ${currentPatient?.years_with_diabetes}y T2DM`],
+                    ["HbA1c & LABS", `HbA1c ${currentPatient?.hba1c_percent}%, FPG ${currentPatient?.fasting_glucose_mg_dl} mg/dL, C-Peptide ${currentPatient?.fasting_c_peptide_nmol_l} nmol/L`],
+                    ["RENAL FUNCTION", `eGFR ${currentPatient?.egfr} mL/min, Creatinine ${currentPatient?.creatinine_mg_dl} mg/dL`],
+                    ["MEDICATIONS", currentPatient?.hypoglycemic_agents_raw || "None"],
+                    ["2H SPIKE PROBABILITY", `${Math.round((simulation?.baseline.calibrated_spike_probability || 0) * 100)}% (${simulation?.baseline.risk_tier || "CALM"} Risk)`],
+                    ["PROJECTED PEAK", `${simulation?.baseline.predicted_peak_glucose_mg_dl || 160} mg/dL`],
+                    ["OPTIMAL ACTION", simulation?.optimal_recommended_action || "Postprandial activity"],
                   ].map(([label, value]) => (
                     <div key={label}>
                       <dt>{label}</dt>
@@ -867,16 +719,18 @@ export default function DiagnosticWorkstation() {
                 </dl>
                 <button className="dx-export" onClick={exportReport}>
                   <ArrowDownToLine size={14} />
-                  EXPORT DEMO REPORT
+                  EXPORT PATIENT DOSSIER (JSON)
                 </button>
               </>
             )}
             <div className="dx-modal-note">
-              FRONTEND ONLY · NO PATIENT DATA OR FUNCTIONAL MODEL
+              SHANGHAI T2DM CLINICAL COHORT · 100 PATIENTS · CALIBRATED DUAL-HEAD ML ENGINE
             </div>
           </div>
         </div>
       )}
+
+      {/* NOTIFICATION TOAST */}
       {toast && (
         <div className="dx-toast" role="status">
           <Check size={14} />

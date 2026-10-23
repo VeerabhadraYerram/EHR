@@ -121,10 +121,10 @@ export default function BrainTwinDeepDive({
                 {brain.hypoAlarm
                   ? "Glucose below 70 mg/dL: Urgent autonomic counter-regulatory adrenaline surge active"
                   : brain.dawnPhenomenon
-                  ? "Circadian dawn phenomenon: Morning cortisol & GH surge stimulating hepatic glucose output"
-                  : brain.hyperAlarm
-                  ? "Severe hyperglycemia: Postprandial neuro-vascular sluggishness and osmotic strain"
-                  : "Central glucose sensing intact; homeostatic autonomic equilibrium"}
+                    ? "Circadian dawn phenomenon: Morning cortisol & GH surge stimulating hepatic glucose output"
+                    : brain.hyperAlarm
+                      ? "Severe hyperglycemia: Postprandial neuro-vascular sluggishness and osmotic strain"
+                      : "Central glucose sensing intact; homeostatic autonomic equilibrium"}
               </span>
             </div>
           </div>

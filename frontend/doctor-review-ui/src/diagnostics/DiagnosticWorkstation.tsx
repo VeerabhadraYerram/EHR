@@ -657,15 +657,6 @@ export default function DiagnosticWorkstation() {
             />
           </div>
         </main>
-
-        {/* WORKSTATION FOOTER */}
-        <footer className="dx-footer">
-          <span>
-            <Check size={11} /> 100 CLINICAL PATIENTS ACTIVE
-          </span>
-          <span>SHANGHAI T2DM COHORT · CALIBRATED DUAL-HEAD XGBOOST · 8-HORIZON TRAJECTORY</span>
-          <span>FASTAPI MICROSERVICE ONLINE (PORT 8000)</span>
-        </footer>
       </div>
 
       {/* MODAL DIALOGS */}

@@ -1748,3 +1748,100 @@
 .dt-mb-sub strong {
   color: #a5cad4;
 }
+
+/* ==========================================================================
+   MINIMALIST ORGAN TWIN CENTERING & FLOATING ANIMATION
+   ========================================================================== */
+.ot-isolated-organ {
+  position: absolute !important;
+  inset: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  pointer-events: auto !important;
+}
+
+.ot-organ-hero-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes organFloatingHover {
+  0% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02);
+  }
+  100% {
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.ot-floating-organ {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 86% !important;
+  max-height: 86% !important;
+  object-fit: contain !important;
+  pointer-events: none !important;
+  user-select: none !important;
+  animation: organFloatingHover 5s ease-in-out infinite !important;
+  mix-blend-mode: normal !important;
+  filter: none !important;
+}
+
+.ot-organ-minimal-hud {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  background: rgba(6, 20, 31, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 229, 255, 0.35);
+  border-radius: 2px;
+  font-family: var(--dx-mono, monospace);
+  font-size: 8px;
+  letter-spacing: 0.5px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.ot-hud-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ot-hud-text {
+  font-weight: 600;
+}
+
+/* Opaque Solid Styling for Forecast Panel */
+.dx-forecast-panel {
+  background: #071924 !important;
+  position: relative !important;
+  z-index: 2 !important;
+  border: 1px solid #163644 !important;
+  margin-bottom: 24px !important;
+}
+
+.dx-forecast-heading {
+  background: #071924 !important;
+  position: relative !important;
+  z-index: 3 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  border-bottom: 1px solid #163644 !important;
+}
+

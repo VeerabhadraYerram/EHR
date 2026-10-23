@@ -1752,45 +1752,146 @@
 /* ==========================================================================
    MINIMALIST ORGAN TWIN CENTERING & FLOATING ANIMATION
    ========================================================================== */
+.ot-view-art {
+  mix-blend-mode: normal !important;
+}
+
 .ot-isolated-organ,
 .ot-isolated-organ.pancreas,
 .ot-isolated-organ.kidneys,
 .ot-isolated-organ.heart,
 .ot-isolated-organ.brain {
   position: absolute !important;
-  inset: auto !important;
-  left: 50% !important;
-  top: 50% !important;
-  width: min(88cqw, 88cqh) !important;
-  height: min(88cqw, 88cqh) !important;
-  transform: translate(-50%, -50%) !important;
-  animation: organFloatCenter 5s ease-in-out infinite !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+  transform: none !important;
+  animation: none !important;
 }
 
-@keyframes organFloatCenter {
-  0% {
-    transform: translate(-50%, -50%) translateY(0px);
-  }
-  50% {
-    transform: translate(-50%, -50%) translateY(-10px);
-  }
-  100% {
-    transform: translate(-50%, -50%) translateY(0px);
-  }
+.ot-organ-viewport {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+.ot-isolated-organ img.ot-organ-img-centered,
 .ot-isolated-organ > img,
-.ot-isolated-organ img.ot-organ-artwork {
-  width: 100% !important;
-  height: 100% !important;
+.ot-isolated-organ img.ot-organ-artwork,
+.ot-isolated-organ svg.ot-organ-img-centered {
+  max-width: 76% !important;
+  max-height: 76% !important;
+  width: auto !important;
+  height: auto !important;
   object-fit: contain !important;
-  pointer-events: none !important;
-  user-select: none !important;
+  margin: auto !important;
+  animation: organFloat 5s ease-in-out infinite !important;
   mix-blend-mode: normal !important;
   filter: none !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+@keyframes organFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+/* Minimalist Telemetry Indicators with Colored Arrow Ring */
+.ot-mini-tag {
+  position: absolute;
+  top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: rgba(7, 25, 36, 0.85);
+  border: 1px solid rgba(22, 54, 68, 0.85);
+  border-radius: 24px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+  z-index: 10;
+  transition: all 0.25s ease;
+}
+
+.ot-mini-tag.top-left {
+  left: 18px;
+}
+
+.ot-mini-tag.top-right {
+  right: 18px;
+}
+
+.ot-mini-tag:hover {
+  background: rgba(9, 30, 43, 0.96);
+  border-color: rgba(36, 88, 108, 0.95);
+}
+
+/* Simple arrow with color around it */
+.ot-arrow-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid currentColor;
+  background: rgba(0, 0, 0, 0.35);
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.25s ease;
+}
+
+.ot-mini-tag:hover .ot-arrow-circle {
+  transform: scale(1.1);
+}
+
+.ot-badge-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.ot-badge-name {
+  font-family: var(--dx-mono, monospace);
+  font-size: 8px;
+  color: #7ba2b0;
+  letter-spacing: 0.65px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ot-badge-stat {
+  font-family: var(--dx-mono, monospace);
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.ot-badge-stat small {
+  font-size: 9px;
+  font-weight: 500;
+  color: #8bb1be;
+  text-transform: none;
+}
+
+/* Hide cluttering description box below organ */
+.ot-organ-insight {
+  display: none !important;
 }
 
 /* Opaque Solid Styling for Forecast Panel */

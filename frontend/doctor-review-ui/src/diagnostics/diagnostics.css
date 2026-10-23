@@ -1,0 +1,2145 @@
+@import url("/fonts/fonts.css");
+body:has(.diagnostic-workstation) {
+  margin: 0;
+  background: #050e18;
+}
+.diagnostic-workstation {
+  --dx-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  min-height: 100svh;
+  padding: 24px 26px 0;
+  background:
+    radial-gradient(ellipse at 46% 42%, #0b243251, transparent 56%), #050e18;
+  color: #d1e4e7;
+  font-family: "DM Sans", sans-serif;
+  font-size: 12px;
+  line-height: 1.5;
+  position: relative;
+  overflow: hidden;
+}
+.diagnostic-workstation *,
+.diagnostic-workstation *::before,
+.diagnostic-workstation *::after {
+  box-sizing: border-box;
+}
+.diagnostic-workstation button,
+.diagnostic-workstation select {
+  font: inherit;
+  color: inherit;
+}
+.diagnostic-workstation button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.2s,
+    background 0.2s,
+    opacity 0.2s;
+}
+.diagnostic-workstation button:focus-visible,
+.diagnostic-workstation a:focus-visible,
+.diagnostic-workstation select:focus-visible {
+  outline: 1px solid #7cd4d2;
+  outline-offset: 4px;
+}
+.diagnostic-workstation h1,
+.diagnostic-workstation h2,
+.diagnostic-workstation h3,
+.diagnostic-workstation p {
+  margin: 0;
+}
+.diagnostic-workstation a {
+  color: inherit;
+  text-decoration: none;
+}
+.diagnostic-workstation::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#79b5ba27 0.65px, transparent 0.7px);
+  background-size: 61px 61px;
+  opacity: 0.35;
+  pointer-events: none;
+}
+.dx-frame-line {
+  position: absolute;
+  inset: 5px;
+  border: 1px solid #54717b42;
+  pointer-events: none;
+}
+.dx-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.45fr 0.55fr 1.25fr;
+  align-items: center;
+  gap: 30px;
+  padding: 9px 0 24px;
+  border-bottom: 1px solid #365965;
+}
+.dx-header::after {
+  content: "";
+  position: absolute;
+  height: 2px;
+  width: 36%;
+  bottom: -2px;
+  background: linear-gradient(90deg, transparent, #70b3bf60, transparent);
+}
+.dx-brand {
+  display: flex;
+  gap: 17px;
+  align-items: flex-start;
+}
+.dx-cross {
+  display: inline-flex;
+  padding-top: 3px;
+  color: #76c6ce;
+}
+.dx-brand p {
+  font-family: var(--dx-mono);
+  font-size: 8px;
+  letter-spacing: 1.8px;
+  color: #8ba9b8;
+}
+.dx-brand p > span {
+  margin: 0 11px;
+  color: #567886;
+}
+.dx-brand h1 {
+  font-size: 27px;
+  font-weight: 650;
+  letter-spacing: 2.3px;
+  line-height: 1.3;
+  margin: 5px 0 3px;
+  color: #dcf0ee;
+  text-shadow: 0 0 17px #5bcdce15;
+}
+.dx-brand > div > span {
+  font-family: var(--dx-mono);
+  font-size: 7.3px;
+  letter-spacing: 0.8px;
+  color: #7bb6c0;
+}
+.dx-brand i {
+  font-style: normal;
+  margin: 0 9px;
+  color: #456f7b;
+}
+.dx-subject {
+  border-left: 1px solid #1c3641;
+  padding: 0 0 0 18px;
+  font-family: var(--dx-mono);
+  white-space: nowrap;
+}
+.dx-subject > label {
+  color: #8ca2af;
+  display: block;
+  font-size: 7px;
+  letter-spacing: 0.8px;
+}
+.dx-subject > div {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  margin: 4px 0 12px;
+  font-size: 11px;
+  color: #c6dde0;
+}
+.dx-subject select {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-size: 11px;
+}
+.dx-subject select option {
+  background: #0b1f2c;
+  color: #c6dde0;
+}
+.dx-subject > span {
+  font-size: 6.5px;
+  color: #849fac;
+  letter-spacing: 0.6px;
+}
+.dx-subject > span > i {
+  font-style: normal;
+  color: #5e8796;
+  padding: 0 7px;
+}
+.dx-header-actions {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+}
+.dx-mode-row {
+  font-family: var(--dx-mono);
+  display: flex;
+  align-items: center;
+  font-size: 6.5px;
+  letter-spacing: 0.6px;
+  color: #89a2af;
+}
+.dx-mode-row > span {
+  color: #7aceb0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.dx-mode-row > span > i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #88d7ba;
+  box-shadow:
+    0 0 0 3px #77d6bd13,
+    0 0 9px #77d6bd65;
+}
+.dx-mode-row > small {
+  margin-left: auto;
+  font-size: 6.5px;
+}
+.dx-mode-row > a {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+}
+.dx-header-actions nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.diagnostic-workstation .dx-header-actions nav > button {
+  padding: 9px 10px;
+  clip-path: polygon(
+    6px 0,
+    calc(100% - 6px) 0,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    0 calc(100% - 6px),
+    0 6px
+  );
+  border: 1px solid #27444f;
+  background: #0b1d29;
+  color: #a4c1cb;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.diagnostic-workstation .dx-header-actions nav > button.active,
+.diagnostic-workstation .dx-header-actions nav > button:hover {
+  background: #123641;
+  border-color: #5aa0b0;
+  color: #83e3dd;
+}
+.dx-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.03fr) minmax(0, 1.64fr) minmax(0, 1.5fr);
+  gap: 14px;
+  height: calc(100svh - 158px);
+  min-height: 680px;
+  position: relative;
+  padding: 15px 0;
+}
+.dx-left-stack {
+  display: grid;
+  grid-template-rows: 1.12fr 0.93fr 1.03fr;
+  gap: 13px;
+  min-height: 0;
+}
+.dx-right-stack {
+  display: grid;
+  grid-template-rows: 1.03fr 1.25fr 0.83fr;
+  gap: 13px;
+  min-height: 0;
+}
+.dx-panel {
+  min-width: 0;
+  min-height: 0;
+  background: linear-gradient(145deg, #0c1f2c99, #071722b5 70%);
+  border: 1px solid #183440;
+  position: relative;
+  clip-path: polygon(
+    8px 0,
+    calc(100% - 8px) 0,
+    100% 8px,
+    100% calc(100% - 8px),
+    calc(100% - 8px) 100%,
+    8px 100%,
+    0 calc(100% - 8px),
+    0 8px
+  );
+}
+.dx-panel::before {
+  content: "";
+  position: absolute;
+  width: 46px;
+  height: 1px;
+  background: #69bac0;
+  left: 18px;
+  top: 0;
+  opacity: 0.7;
+}
+.dx-panel-decoration {
+  position: absolute;
+  right: 13px;
+  bottom: 9px;
+  width: 23px;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    #5e93a3 0px,
+    #5e93a3 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  opacity: 0.5;
+}
+.dx-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 14px;
+  height: 39px;
+  border-bottom: 1px solid #193541;
+  flex-shrink: 0;
+}
+.dx-panel-heading h2 {
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.dx-panel-heading h2 > span {
+  color: #a4bcc5;
+}
+.dx-panel-tag,
+.dx-panel-heading > button {
+  font-family: var(--dx-mono);
+  font-size: 6.5px;
+  color: #79c6b1;
+  letter-spacing: 0.6px;
+  white-space: nowrap;
+}
+.diagnostic-workstation .dx-panel-heading > button {
+  width: 22px;
+  height: 22px;
+  color: #7dbabf;
+}
+.dx-subheading {
+  font-family: var(--dx-mono);
+  font-size: 6px;
+  letter-spacing: 0.4px;
+  color: #84a3b2;
+  padding: 11px 15px 0;
+}
+.dx-subheading > span {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.dx-subheading i {
+  font-style: normal;
+}
+.dx-neural,
+.dx-mri,
+.dx-thorax,
+.dx-genomics,
+.dx-reconstruction,
+.dx-physiology,
+.dx-acquisition {
+  display: flex;
+  flex-direction: column;
+}
+.diagnostic-workstation .dx-visual-button {
+  display: flex;
+  min-height: 0;
+  width: 100%;
+  flex: 1;
+}
+.dx-visual-button:hover {
+  filter: brightness(1.2);
+}
+.dx-brain {
+  width: 100%;
+  max-height: 100%;
+  padding: 0 6px;
+}
+.dx-svg-label {
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  fill: #84c7cb;
+  letter-spacing: 0.1px;
+}
+.dx-svg-micro {
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  fill: #88adbb;
+}
+.dx-panel-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px 12px;
+  font-family: var(--dx-mono);
+  font-size: 6.5px;
+  letter-spacing: 0.5px;
+  color: #81a3b0;
+}
+.dx-panel-footer > span:first-child {
+  color: #72bebd;
+}
+.dx-small-leds {
+  font-size: 8px;
+  color: #79c5aa;
+  letter-spacing: 1px;
+}
+.dx-small-leds > i {
+  color: #27545c;
+  font-style: normal;
+}
+.dx-mri-planes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 10px 12px 14px;
+}
+.diagnostic-workstation .dx-mri-planes > button {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  opacity: 0.72;
+}
+.diagnostic-workstation .dx-mri-planes > button:hover,
+.diagnostic-workstation .dx-mri-planes > button.active {
+  opacity: 1;
+}
+.dx-mri-planes svg {
+  width: 100%;
+  max-height: 139px;
+}
+.dx-mri-planes strong {
+  font-family: var(--dx-mono);
+  font-size: 7px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.dx-mri-planes button > span {
+  font-family: var(--dx-mono);
+  font-size: 5.5px;
+  color: #82a4b1;
+}
+.dx-thorax-content {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  flex: 1;
+  min-height: 0;
+  gap: 10px;
+  padding: 10px 13px 15px;
+}
+.dx-thorax-content > button {
+  min-height: 0;
+}
+.dx-thorax-content svg {
+  width: 100%;
+  height: 100%;
+  max-height: 230px;
+}
+.dx-thorax-legend {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 6px;
+  padding-top: 5px;
+}
+.diagnostic-workstation .dx-thorax-legend > button {
+  gap: 7px;
+  justify-content: flex-start;
+  text-align: left;
+}
+.dx-thorax-legend > button > i {
+  border: 1px solid #579596;
+  height: 5px;
+  width: 5px;
+  border-radius: 50%;
+}
+.dx-thorax-legend strong {
+  display: block;
+  font-size: 7px;
+  letter-spacing: 0.4px;
+  font-weight: 600;
+}
+.dx-thorax-legend small {
+  display: block;
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  color: #85a5b2;
+  margin-top: 4px;
+}
+.dx-thorax-legend > span {
+  font-family: var(--dx-mono);
+  font-size: 5.5px;
+  letter-spacing: 0.5px;
+  color: #73bbb8;
+  margin-top: 8px;
+}
+.dx-anatomy-panel {
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse at 50% 43%, #0b3e494a, #071b26 73%);
+}
+.dx-anatomy-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 14px 16px 0;
+  font-family: var(--dx-mono);
+  font-size: 6px;
+  letter-spacing: 0.35px;
+  color: #8aabba;
+}
+.dx-model-badge {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 5px 7px;
+  background: #17463a7a;
+  color: #91d5b3;
+  font-size: 5.5px;
+}
+.dx-model-badge > i {
+  height: 3px;
+  width: 3px;
+  background: #84d7b5;
+  border-radius: 50%;
+}
+.dx-anatomy-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  isolation: isolate;
+}
+.dx-stage-radial {
+  position: absolute;
+  width: 96%;
+  height: 96%;
+  left: 2%;
+  top: 0;
+  border-radius: 50%;
+  border: 1px solid #31727e0c;
+  box-shadow: inset 0 0 100px #246b7807;
+}
+.dx-body-image {
+  position: absolute;
+  inset: 1% 11% 4%;
+  z-index: 1;
+  mix-blend-mode: screen;
+  opacity: 0.8;
+  pointer-events: none;
+  transition:
+    transform 1s ease,
+    opacity 0.5s ease;
+}
+.dx-body-image img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: brightness(0.7) saturate(0.65) hue-rotate(-6deg);
+}
+.dx-body-image > svg {
+  height: 100%;
+  width: 100%;
+}
+.dx-body-image.oblique {
+  transform: perspective(700px) rotateY(23deg) scaleX(0.94);
+}
+.dx-body-image.skeleton-muted {
+  opacity: 0.15;
+}
+.dx-body-overlays {
+  position: absolute;
+  top: 0;
+  height: 93%;
+  left: 25%;
+  width: 50%;
+  z-index: 2;
+  pointer-events: none;
+}
+.dx-anatomy-connectors {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+}
+.diagnostic-workstation .dx-callout {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 3px;
+  z-index: 5;
+  font-family: var(--dx-mono);
+}
+.dx-callout small {
+  font-size: 5.5px;
+  letter-spacing: 0.6px;
+  color: #8eabb6;
+}
+.dx-callout strong {
+  font-family: "DM Sans", sans-serif;
+  font-size: 8.5px;
+  letter-spacing: 0.7px;
+  font-weight: 600;
+  color: #8ddcdb;
+}
+.dx-callout > span {
+  font-size: 4.5px;
+  color: #86a8b4;
+  letter-spacing: 0.15px;
+}
+.dx-callout.left {
+  left: 13px;
+  max-width: 145px;
+}
+.dx-callout.left.neural {
+  top: 8%;
+}
+.dx-callout.left.cardiac {
+  top: 27%;
+}
+.dx-callout.left.abdominal {
+  top: 50%;
+}
+.dx-callout.left.skeletal {
+  top: 76%;
+}
+.dx-callout.right {
+  align-items: flex-end;
+  text-align: right;
+  right: 13px;
+}
+.dx-callout.right.cranial {
+  top: 15%;
+}
+.dx-callout.right.scan {
+  top: 42%;
+}
+.dx-callout.right.vascular {
+  top: 58%;
+}
+.dx-callout.right.joint {
+  top: 78%;
+}
+.dx-callout.focused strong {
+  color: #b1f8e8;
+  text-shadow: 0 0 12px #82ead740;
+}
+.dx-callout.focused::before {
+  content: "";
+  position: absolute;
+  width: 2px;
+  top: 0;
+  bottom: 0;
+  left: -7px;
+  background: #8bd9c9;
+}
+.dx-callout.right.focused::before {
+  left: auto;
+  right: -7px;
+}
+.dx-scan-plane {
+  position: absolute;
+  top: 42%;
+  height: 37px;
+  left: 27%;
+  width: 46%;
+  border: 1px solid #68c3b866;
+  background: linear-gradient(90deg, #64d8b706, #62d9cc25, #65dab706);
+  transform: skewY(-9deg);
+  z-index: 3;
+  pointer-events: none;
+  animation: dx-scan 7s ease-in-out infinite;
+  box-shadow: 0 0 25px #6dd5c015;
+}
+.dx-scan-plane > i {
+  position: absolute;
+  width: 100%;
+  height: 1px;
+  top: 50%;
+  background: #92efd166;
+}
+.dx-stage-rings {
+  position: absolute;
+  bottom: 1%;
+  left: 24%;
+  width: 52%;
+  height: 7%;
+  z-index: 2;
+}
+.dx-stage-rings > i {
+  position: absolute;
+  inset: 0;
+  border: 1px solid #44899670;
+  border-radius: 50%;
+}
+.dx-stage-rings > i:nth-child(2) {
+  inset: 7px 13px;
+  border-color: #83d2ce70;
+}
+.dx-stage-rings > i:nth-child(3) {
+  inset: -5px -14px;
+  border-color: #386b7a50;
+  border-style: dashed;
+}
+.dx-orientation {
+  position: absolute;
+  bottom: 3%;
+  left: 16px;
+  width: 66px;
+  z-index: 5;
+}
+.dx-orientation text {
+  fill: #89a7b1;
+  font-size: 6px;
+  font-family: var(--dx-mono);
+}
+.diagnostic-workstation .dx-angle {
+  position: absolute;
+  bottom: 4%;
+  right: 15px;
+  gap: 5px;
+  z-index: 5;
+  text-align: right;
+  color: #87a9b5;
+  font-family: var(--dx-mono);
+  font-size: 5.5px;
+}
+.dx-angle strong {
+  display: block;
+  font-size: 6px;
+  color: #7cc4c8;
+  font-weight: 400;
+  margin-top: 5px;
+}
+.dx-layer-controls {
+  margin: 0 15px;
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #193541;
+  min-height: 35px;
+  font-family: var(--dx-mono);
+  font-size: 6px;
+  color: #9ebac2;
+}
+.dx-layer-controls > div {
+  display: flex;
+  gap: 15px;
+}
+.diagnostic-workstation .dx-layer-controls button {
+  gap: 5px;
+  font-size: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  color: #a5c1c8;
+}
+.dx-layer-controls button > span {
+  display: grid;
+  place-items: center;
+  width: 8px;
+  height: 8px;
+  border: 1px solid #447a82;
+}
+.dx-layer-controls button > span.checked {
+  color: #80ccc0;
+  background: #23534f;
+}
+.dx-layer-controls > span {
+  color: #83bdb4;
+  font-size: 5.5px;
+}
+.dx-vitals {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 14px 13px 8px;
+}
+.dx-vitals > div {
+  min-width: 0;
+  padding: 0 10px;
+  border-right: 1px solid #173341;
+}
+.dx-vitals > div:first-child {
+  padding-left: 0;
+}
+.dx-vitals > div:last-child {
+  border: 0;
+  padding-right: 0;
+}
+.dx-vitals > div > span {
+  font-family: var(--dx-mono);
+  color: #91adbb;
+  font-size: 6px;
+  letter-spacing: 0.6px;
+  display: block;
+  margin-bottom: 4px;
+}
+.dx-vitals strong {
+  color: #88e1cc;
+  font-size: 26px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.dx-vitals > div:nth-child(2) strong,
+.dx-vitals > div:nth-child(3) strong {
+  color: #7cd6df;
+}
+.dx-vitals strong > small {
+  font-family: var(--dx-mono);
+  margin-left: 5px;
+  color: #9db6be;
+  font-size: 7px;
+}
+.dx-wave {
+  width: 100%;
+  height: 100%;
+  color: #72cfb8;
+  overflow: visible;
+}
+.dx-wave.compact {
+  height: 19px;
+  display: block;
+  opacity: 0.6;
+  margin-top: 3px;
+}
+.dx-ecg-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px 5px;
+  font-family: var(--dx-mono);
+  font-size: 5.5px;
+  color: #8da9b6;
+}
+.dx-ecg-caption > strong {
+  font-weight: 400;
+  font-size: 6px;
+  color: #7cc5ce;
+}
+.dx-ecg-caption > span {
+  margin-left: auto;
+  margin-right: 10px;
+}
+.diagnostic-workstation .dx-ecg-caption > button {
+  width: 17px;
+  height: 17px;
+  color: #8acbc9;
+}
+.dx-ecg-display {
+  position: relative;
+  height: 65px;
+  flex: 1;
+  margin: 0 14px;
+  min-height: 40px;
+  overflow: hidden;
+}
+.dx-ecg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(#33576417 1px, transparent 1px),
+    linear-gradient(90deg, #33576417 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+.dx-ecg-display > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.dx-ecg-cursor {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #a0f1ca;
+  box-shadow: 0 0 13px #7cd8bb66;
+  animation: dx-ecg-scan 7s linear infinite;
+}
+.dx-ecg-cursor::after {
+  content: "";
+  position: absolute;
+  left: -30px;
+  top: 0;
+  bottom: 0;
+  width: 30px;
+  background: linear-gradient(90deg, transparent, #74cbae0c);
+}
+.dx-physiology-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 14px 11px;
+}
+.dx-physiology-footer > .dx-led-row {
+  width: 61%;
+}
+.dx-physiology-footer > span {
+  margin-left: auto;
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  color: #91aab7;
+  letter-spacing: 0.4px;
+}
+.dx-led-row {
+  font-family: var(--dx-mono);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #a6c1c6;
+  font-size: 5.5px;
+}
+.dx-led-row > span {
+  white-space: nowrap;
+}
+.dx-led-track {
+  flex: 1;
+  display: flex;
+  gap: 2px;
+  height: 5px;
+  min-width: 0;
+}
+.dx-led-track > i {
+  flex: 1;
+  min-width: 1px;
+  background: #193b47;
+}
+.dx-led-track > i.lit {
+  background: #70c5af;
+  box-shadow: 0 0 2px #69c6b015;
+}
+.dx-led-row > strong {
+  color: #88cfba;
+  font-size: 5.5px;
+  font-weight: 400;
+}
+.dx-physiology-footer .dx-led-row > strong {
+  display: none;
+}
+.dx-right-middle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  min-height: 0;
+}
+.dx-genomics .dx-subheading {
+  font-size: 5px;
+}
+.dx-genomic-body {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  align-items: center;
+  padding: 7px 10px 0;
+  flex: 1;
+  min-height: 0;
+}
+.dx-genomic-body .dx-visual-button {
+  align-self: stretch;
+  min-height: 0;
+}
+.dx-dna {
+  width: 100%;
+  height: 100%;
+  max-height: 207px;
+}
+.dx-base-pairs {
+  font-family: var(--dx-mono);
+  padding-left: 4px;
+}
+.dx-base-pairs > strong {
+  display: block;
+  font-size: 6px;
+  letter-spacing: 0.6px;
+  font-weight: 400;
+  margin-bottom: 11px;
+}
+.dx-base-pairs > div {
+  margin-bottom: 11px;
+}
+.dx-base-pairs > div > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 7px;
+  letter-spacing: 1px;
+  color: #a0d3d7;
+}
+.dx-base-pairs i {
+  width: 5px;
+  height: 6px;
+  background: #65b8bd;
+}
+.dx-base-pairs small {
+  display: block;
+  font-size: 4.8px;
+  margin-top: 4px;
+  color: #9bb7c0;
+}
+.dx-base-pairs > small {
+  font-size: 4.5px;
+  margin-top: 22px;
+}
+.dx-sequence {
+  padding: 4px 12px 14px;
+  font-family: var(--dx-mono);
+}
+.dx-sequence > span {
+  font-size: 5px;
+  color: #88acba;
+  letter-spacing: 0.7px;
+}
+.dx-sequence > div {
+  display: flex;
+  gap: 2px;
+  margin-top: 5px;
+}
+.diagnostic-workstation .dx-sequence button {
+  font-size: 5px;
+  color: #8ecbc8;
+  background: #173543;
+  width: 8px;
+  min-width: 0;
+  height: 12px;
+}
+.diagnostic-workstation .dx-sequence button.active,
+.diagnostic-workstation .dx-sequence button:hover {
+  background: #336b70;
+  color: #b5f4de;
+}
+.dx-reconstruction-top {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  align-items: center;
+  padding: 10px 11px 4px;
+  flex: 1;
+}
+.dx-system-ring {
+  position: relative;
+  aspect-ratio: 1;
+  width: 100%;
+}
+.dx-system-ring > svg {
+  width: 100%;
+  height: 100%;
+  animation: dx-ring 80s linear infinite;
+}
+.dx-system-ring > strong {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-weight: 400;
+  font-size: 24px;
+  color: #c4e1e0;
+}
+.dx-system-ring strong > span {
+  font-family: var(--dx-mono);
+  font-weight: 400;
+  font-size: 5px;
+  letter-spacing: 1px;
+  color: #9bbcc5;
+  margin-top: 2px;
+}
+.dx-systems {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding-left: 8px;
+}
+.diagnostic-workstation .dx-systems > button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--dx-mono);
+  text-align: left;
+  font-size: 4.8px;
+  color: #b6d3d8;
+}
+.dx-systems i {
+  height: 4px;
+  width: 4px;
+  background: #6eb7c5;
+  flex-shrink: 0;
+}
+.dx-systems > button:nth-child(even) > i {
+  background: #77d4b7;
+}
+.dx-systems > button > span {
+  flex: 1;
+}
+.dx-systems small {
+  font-size: 3.5px;
+  margin-left: 6px;
+  color: #83a3b2;
+}
+.dx-systems > button.active {
+  color: #a1edd5;
+}
+.dx-registration {
+  padding: 0 13px 20px;
+}
+.dx-registration > span {
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  color: #8fadb8;
+  letter-spacing: 0.5px;
+}
+.dx-registration .dx-led-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px;
+  margin-top: 8px;
+}
+.dx-registration .dx-led-track {
+  grid-row: 2;
+  grid-column: 1/-1;
+  height: 3px;
+}
+.dx-registration .dx-led-row > strong {
+  grid-row: 1;
+  grid-column: 2;
+}
+.dx-acquisition-body {
+  display: grid;
+  grid-template-columns: 1fr 1.8fr;
+  gap: 13px;
+  padding: 12px 14px 17px;
+  min-height: 0;
+  flex: 1;
+}
+.dx-scanner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  min-width: 0;
+}
+.dx-scanner > svg {
+  width: 100%;
+  height: 100%;
+  max-height: 150px;
+}
+.dx-scanner > span {
+  font-family: var(--dx-mono);
+  font-size: 4.5px;
+  letter-spacing: 0.3px;
+  color: #8aadb9;
+  white-space: nowrap;
+}
+.dx-acquisition-controls {
+  min-width: 0;
+}
+.dx-sequences {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+}
+.diagnostic-workstation .dx-sequences > button {
+  border: 1px solid #24424f;
+  background: #0b202c;
+  color: #99b6c3;
+  border-radius: 3px;
+  padding: 5px;
+  font-family: var(--dx-mono);
+  font-size: 6px;
+}
+.diagnostic-workstation .dx-sequences > button.active,
+.diagnostic-workstation .dx-sequences > button:hover {
+  background: #1c4a46;
+  border-color: #397e78;
+  color: #91e5ce;
+}
+.dx-acquisition-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 11px 0 7px;
+}
+.dx-acquisition-label > strong {
+  font-family: var(--dx-mono);
+  font-size: 6px;
+  letter-spacing: 0.5px;
+  font-weight: 400;
+}
+.dx-acquisition-label > span {
+  font-size: 15px;
+  color: #81dabf;
+  font-family: var(--dx-mono);
+}
+.dx-acquisition-controls > .dx-led-row {
+  height: 8px;
+}
+.dx-acquisition-controls > .dx-led-row > strong {
+  display: none;
+}
+.dx-acquisition-controls > .dx-led-row > .dx-led-track {
+  height: 8px;
+  gap: 2px;
+}
+.dx-acquisition-controls > .dx-led-row > .dx-led-track .lit {
+  background: #66b6bf;
+}
+.dx-acquisition-caption {
+  display: flex;
+  justify-content: space-between;
+  margin: 7px 0 12px;
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  color: #8baebb;
+}
+.dx-acquisition-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  border-bottom: 1px solid #1b3944;
+  padding-bottom: 7px;
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  color: #8ca9b8;
+}
+.dx-acquisition-meta strong {
+  color: #bbd5d9;
+  font-size: 5px;
+  font-weight: 400;
+  margin-left: 6px;
+}
+.diagnostic-workstation .dx-scan-action {
+  font-family: var(--dx-mono);
+  font-size: 5px;
+  color: #9be0c6;
+  gap: 5px;
+  padding-top: 8px;
+}
+.dx-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  height: 35px;
+  border-top: 1px solid #2a4a57;
+  position: relative;
+  color: #85a6b4;
+  font-family: var(--dx-mono);
+  font-size: 6px;
+  letter-spacing: 0.5px;
+}
+.dx-footer > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dx-footer > span:last-child {
+  color: #81c9cd;
+}
+.dx-footer i {
+  font-style: normal;
+  margin: 0 4px;
+  color: #5c8695;
+}
+.dx-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #020910d9;
+  backdrop-filter: blur(8px);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  animation: dx-appear 0.2s ease;
+}
+.dx-modal {
+  width: 690px;
+  max-width: 100%;
+  max-height: calc(100svh - 50px);
+  overflow: auto;
+  padding: 28px;
+  background: #0a1b28;
+  clip-path: none;
+  outline: none;
+  box-shadow: 0 30px 100px #0009;
+}
+.dx-modal > header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #284754;
+  padding-bottom: 18px;
+}
+.dx-modal > header span {
+  font-family: var(--dx-mono);
+  font-size: 8px;
+  color: #8ebcc7;
+  letter-spacing: 1px;
+}
+.dx-modal > header h2 {
+  font-size: 19px;
+  letter-spacing: 1.6px;
+  margin-top: 9px;
+  color: #d5eae9;
+}
+.dx-modal > header > button {
+  color: #8ebcc7;
+  width: 30px;
+  height: 30px;
+}
+.dx-modal > p {
+  font-size: 12px;
+  color: #a2bac8;
+  line-height: 1.9;
+  margin: 20px 0;
+}
+.dx-modal-planes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+  margin-bottom: 25px;
+}
+.diagnostic-workstation .dx-modal-planes > button {
+  flex-direction: column;
+  gap: 10px;
+  color: #8ebcc7;
+  font-family: var(--dx-mono);
+  text-transform: uppercase;
+  font-size: 10px;
+}
+.dx-modal-planes svg {
+  width: 100%;
+  max-height: 240px;
+}
+.diagnostic-workstation .dx-modal .dx-sequences > button {
+  font-size: 10px;
+  padding: 10px;
+}
+.dx-modal > small {
+  display: block;
+  font-family: var(--dx-mono);
+  font-size: 8px;
+  margin-top: 17px;
+  color: #8ebcc7;
+}
+.dx-modal-note {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 24px;
+  border-top: 1px solid #24424f;
+  padding-top: 15px;
+  font-family: var(--dx-mono);
+  color: #92b9c7;
+  font-size: 8px;
+}
+.dx-genomic-modal-content {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  align-items: center;
+  gap: 30px;
+}
+.dx-genomic-modal-content .dx-dna {
+  height: 280px;
+  max-height: none;
+}
+.dx-genomic-modal-content h3 {
+  font-size: 11px;
+  letter-spacing: 1px;
+  font-weight: 500;
+  color: #9ec9d0;
+}
+.dx-sequence-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+  margin: 17px 0;
+}
+.diagnostic-workstation .dx-sequence-grid > button {
+  padding: 8px;
+  border: 1px solid #25505e;
+  background: #102d3a;
+  color: #9ce8db;
+  font-family: var(--dx-mono);
+  font-size: 11px;
+}
+.diagnostic-workstation .dx-sequence-grid > button.active {
+  background: #28584f;
+  border-color: #6eae9c;
+}
+.dx-genomic-modal-content p {
+  font-family: var(--dx-mono);
+  font-size: 10px;
+  color: #86b6c3;
+  line-height: 2;
+}
+.dx-report-fields {
+  margin: 20px 0;
+}
+.dx-report-fields > div {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #1c3947;
+  font-family: var(--dx-mono);
+  font-size: 10px;
+}
+.dx-report-fields dt {
+  width: 160px;
+  flex-shrink: 0;
+  color: #88adbd;
+}
+.dx-report-fields dd {
+  margin: 0;
+  color: #b6dbd8;
+}
+.diagnostic-workstation .dx-export {
+  padding: 12px 17px;
+  background: #153e43;
+  border: 1px solid #3d7a7d;
+  color: #a0e5d6;
+  font-family: var(--dx-mono);
+  font-size: 10px;
+  gap: 9px;
+}
+.dx-toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #10303a;
+  border: 1px solid #477f85;
+  padding: 14px 18px;
+  color: #a1e0d2;
+  font-size: 12px;
+  z-index: 100;
+  box-shadow: 0 10px 35px #0007;
+}
+.dx-toast > button {
+  color: #9ebdc7;
+  margin-left: 10px;
+}
+.dx-paused .dx-ecg-cursor,
+.dx-paused .dx-scan-plane,
+.dx-paused .dx-system-ring > svg {
+  animation-play-state: paused;
+}
+@keyframes dx-scan {
+  0%,
+  100% {
+    top: 38%;
+    opacity: 0.5;
+  }
+  50% {
+    top: 48%;
+    opacity: 0.9;
+  }
+}
+@keyframes dx-ecg-scan {
+  from {
+    left: 0;
+  }
+  to {
+    left: 100%;
+  }
+}
+@keyframes dx-ring {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes dx-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (min-width: 1800px) {
+  .diagnostic-workstation {
+    padding: 27px 30px 0;
+  }
+  .dx-brand h1 {
+    font-size: 32px;
+  }
+  .dx-brand p {
+    font-size: 9px;
+  }
+  .dx-panel-heading {
+    height: 43px;
+    margin: 0 17px;
+  }
+  .dx-panel-heading h2 {
+    font-size: 11px;
+  }
+  .dx-panel-tag {
+    font-size: 7px;
+  }
+  .dx-subheading {
+    font-size: 7px;
+    padding-top: 14px;
+  }
+  .dx-mri-planes svg {
+    max-height: 175px;
+  }
+  .dx-thorax-legend strong {
+    font-size: 8px;
+  }
+  .dx-thorax-legend small {
+    font-size: 6px;
+  }
+  .dx-callout strong {
+    font-size: 10px;
+  }
+  .dx-callout small {
+    font-size: 6px;
+  }
+  .dx-callout > span {
+    font-size: 5.5px;
+  }
+  .dx-vitals strong {
+    font-size: 31px;
+  }
+  .dx-vitals > div > span {
+    font-size: 7px;
+  }
+  .dx-vitals strong > small {
+    font-size: 9px;
+  }
+  .diagnostic-workstation .dx-systems > button {
+    font-size: 6px;
+  }
+  .dx-systems small {
+    font-size: 5px;
+  }
+  .dx-led-row {
+    font-size: 6px;
+  }
+  .dx-registration {
+    padding-bottom: 24px;
+  }
+  .dx-acquisition-controls .dx-sequences > button {
+    font-size: 8px;
+  }
+  .dx-acquisition-label > strong {
+    font-size: 7px;
+  }
+  .dx-acquisition-meta,
+  .dx-acquisition-meta strong {
+    font-size: 6px;
+  }
+  .dx-base-pairs > strong {
+    font-size: 7px;
+  }
+  .dx-base-pairs > div > span {
+    font-size: 8px;
+  }
+  .dx-base-pairs small {
+    font-size: 6px;
+  }
+  .dx-footer {
+    font-size: 7px;
+  }
+}
+@media (max-width: 1350px) {
+  .diagnostic-workstation {
+    padding: 18px 18px 0;
+  }
+  .dx-header {
+    gap: 18px;
+    grid-template-columns: 1.3fr 0.52fr 1.1fr;
+  }
+  .dx-brand {
+    gap: 10px;
+  }
+  .dx-brand h1 {
+    font-size: 22px;
+    letter-spacing: 1.6px;
+  }
+  .dx-brand p {
+    font-size: 6px;
+    letter-spacing: 1.3px;
+  }
+  .dx-brand > div > span {
+    font-size: 5.8px;
+  }
+  .dx-header-actions nav {
+    gap: 6px;
+  }
+  .diagnostic-workstation .dx-header-actions nav > button {
+    font-size: 8px;
+    padding: 8px;
+  }
+  .dx-mode-row > small {
+    display: none;
+  }
+  .dx-subject {
+    padding-left: 13px;
+  }
+  .dx-subject > div,
+  .dx-subject select {
+    font-size: 9px;
+  }
+  .dx-grid {
+    gap: 11px;
+    height: calc(100svh - 141px);
+  }
+  .dx-right-middle {
+    gap: 10px;
+  }
+  .dx-panel-heading {
+    margin: 0 10px;
+    gap: 5px;
+    height: 35px;
+  }
+  .dx-panel-heading h2 {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+  }
+  .dx-panel-tag {
+    font-size: 5px;
+  }
+  .dx-anatomy-kicker {
+    font-size: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .dx-model-badge {
+    font-size: 4px;
+    padding: 4px;
+  }
+  .dx-callout strong {
+    font-size: 7px;
+  }
+  .dx-callout > span {
+    font-size: 4px;
+  }
+  .dx-callout small {
+    font-size: 5px;
+  }
+  .dx-layer-controls {
+    margin: 0 10px;
+    font-size: 5px;
+  }
+  .dx-layer-controls > div {
+    gap: 9px;
+  }
+  .diagnostic-workstation .dx-layer-controls button {
+    font-size: 5px;
+  }
+  .dx-acquisition-body {
+    padding-left: 10px;
+    padding-right: 10px;
+    gap: 7px;
+  }
+  .dx-acquisition-meta,
+  .dx-acquisition-meta strong {
+    font-size: 4px;
+  }
+  .dx-vitals strong {
+    font-size: 23px;
+  }
+  .dx-vitals strong small {
+    margin-left: 3px;
+    font-size: 6px;
+  }
+  .dx-systems small {
+    display: none;
+  }
+  .dx-base-pairs > div {
+    margin-bottom: 9px;
+  }
+  .dx-footer {
+    font-size: 5px;
+  }
+}
+@media (max-width: 1100px) {
+  .dx-header {
+    grid-template-columns: 1fr 0.5fr;
+  }
+  .dx-header-actions {
+    grid-column: 1/-1;
+    flex-direction: row;
+    align-items: center;
+  }
+  .dx-header-actions nav {
+    min-width: 430px;
+  }
+  .dx-mode-row {
+    gap: 20px;
+  }
+  .dx-grid {
+    height: auto;
+    min-height: 0;
+    grid-template-columns: 1fr 1.5fr;
+  }
+  .dx-left-stack {
+    min-height: 740px;
+  }
+  .dx-anatomy-panel {
+    min-height: 740px;
+  }
+  .dx-right-stack {
+    grid-column: 1/-1;
+    min-height: 540px;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .dx-right-middle {
+    grid-column: 2;
+    grid-row: 1/3;
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr;
+  }
+  .dx-acquisition {
+    grid-row: 2;
+    grid-column: 1;
+  }
+  .dx-panel-heading h2 {
+    font-size: 10px;
+  }
+  .dx-callout strong {
+    font-size: 9px;
+  }
+  .dx-callout small {
+    font-size: 6px;
+  }
+  .dx-callout > span {
+    font-size: 5px;
+  }
+  .dx-genomic-body {
+    grid-template-columns: 1fr 1fr;
+    max-height: 210px;
+  }
+  .dx-genomic-body .dx-dna {
+    max-height: 170px;
+  }
+  .dx-reconstruction-top {
+    max-height: 180px;
+  }
+  .dx-system-ring {
+    max-width: 140px;
+  }
+  .dx-systems {
+    gap: 14px;
+  }
+  .diagnostic-workstation .dx-systems > button {
+    font-size: 7px;
+  }
+  .dx-systems small {
+    display: block;
+    font-size: 5px;
+  }
+  .dx-base-pairs > div > span {
+    font-size: 8px;
+  }
+  .dx-base-pairs small {
+    font-size: 6px;
+  }
+  .dx-footer {
+    height: auto;
+    padding: 15px 0;
+    flex-wrap: wrap;
+    font-size: 6px;
+  }
+}
+@media (max-width: 650px) {
+  .diagnostic-workstation {
+    padding: 18px 13px 0;
+  }
+  .dx-header {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 0 3px 19px;
+  }
+  .dx-brand {
+    gap: 11px;
+  }
+  .dx-cross svg {
+    width: 28px;
+    height: 28px;
+  }
+  .dx-brand h1 {
+    font-size: 20px;
+    letter-spacing: 1px;
+    margin-top: 6px;
+  }
+  .dx-brand p {
+    font-size: 5px;
+    letter-spacing: 0.8px;
+  }
+  .dx-brand > div > span {
+    font-size: 5px;
+  }
+  .dx-subject {
+    border-left: 0;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 0;
+  }
+  .dx-subject > div {
+    margin: 0;
+    font-size: 10px;
+  }
+  .dx-subject > span {
+    margin-left: auto;
+    font-size: 5px;
+  }
+  .dx-subject > label {
+    font-size: 6px;
+  }
+  .dx-header-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 13px;
+  }
+  .dx-header-actions nav {
+    min-width: 0;
+    width: 100%;
+    gap: 7px;
+  }
+  .diagnostic-workstation .dx-header-actions nav > button {
+    padding: 9px 6px;
+    font-size: 8px;
+  }
+  .dx-mode-row {
+    font-size: 6px;
+  }
+  .dx-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-top: 15px;
+  }
+  .dx-anatomy-panel {
+    order: -1;
+    height: 710px;
+    min-height: 710px;
+  }
+  .dx-left-stack {
+    min-height: 0;
+    gap: 15px;
+    grid-template-rows: 280px 240px 280px;
+  }
+  .dx-right-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+  .dx-right-middle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr;
+    height: 285px;
+  }
+  .dx-physiology {
+    min-height: 245px;
+  }
+  .dx-acquisition {
+    min-height: 220px;
+  }
+  .dx-panel-heading {
+    margin: 0 13px;
+    height: 39px;
+  }
+  .dx-panel-heading h2 {
+    font-size: 9px;
+  }
+  .dx-callout strong {
+    font-size: 7px;
+  }
+  .dx-callout small {
+    font-size: 5px;
+  }
+  .dx-callout > span {
+    font-size: 4px;
+  }
+  .dx-anatomy-kicker {
+    font-size: 4.5px;
+    padding-top: 13px;
+  }
+  .dx-model-badge {
+    font-size: 4px;
+  }
+  .dx-body-image {
+    inset: 2% 1% 6%;
+    opacity: 0.7;
+  }
+  .dx-callout.left {
+    left: 11px;
+    max-width: 95px;
+  }
+  .dx-callout.right {
+    right: 11px;
+    max-width: 100px;
+  }
+  .dx-stage-rings {
+    left: 15%;
+    width: 70%;
+  }
+  .dx-layer-controls {
+    margin: 0 13px;
+    min-height: 40px;
+  }
+  .dx-layer-controls > div {
+    gap: 12px;
+  }
+  .dx-subheading {
+    font-size: 6px;
+  }
+  .dx-brain {
+    max-width: 350px;
+  }
+  .dx-mri-planes {
+    padding: 12px;
+  }
+  .dx-mri-planes svg {
+    max-height: 158px;
+  }
+  .dx-mri-planes strong {
+    font-size: 8px;
+  }
+  .dx-thorax-content {
+    grid-template-columns: 1fr 1fr;
+    padding-top: 13px;
+  }
+  .dx-thorax-legend strong {
+    font-size: 9px;
+  }
+  .dx-thorax-legend small {
+    font-size: 6px;
+  }
+  .dx-vitals {
+    padding-top: 19px;
+  }
+  .dx-vitals > div {
+    padding: 0 8px;
+  }
+  .dx-vitals > div > span {
+    font-size: 5px;
+  }
+  .dx-vitals strong {
+    font-size: 22px;
+  }
+  .dx-ecg-display {
+    min-height: 65px;
+  }
+  .dx-genomics .dx-panel-heading h2,
+  .dx-reconstruction .dx-panel-heading h2 {
+    font-size: 7px;
+    letter-spacing: 0.3px;
+  }
+  .dx-genomics .dx-subheading {
+    font-size: 4px;
+    padding-left: 10px;
+  }
+  .dx-genomic-body {
+    padding: 10px 4px 0;
+    grid-template-columns: 1fr 0.8fr;
+  }
+  .dx-base-pairs {
+    padding-left: 0;
+  }
+  .dx-base-pairs > strong {
+    font-size: 5px;
+  }
+  .dx-base-pairs > div > span {
+    font-size: 6px;
+  }
+  .dx-base-pairs small {
+    font-size: 4px;
+  }
+  .dx-base-pairs > small {
+    margin-top: 13px;
+  }
+  .dx-sequence {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+  .dx-sequence > div {
+    gap: 1.5px;
+  }
+  .diagnostic-workstation .dx-sequence button {
+    font-size: 4px;
+    width: 6px;
+  }
+  .dx-reconstruction-top {
+    display: block;
+    position: relative;
+    min-height: 145px;
+    padding: 10px 8px;
+  }
+  .dx-system-ring {
+    width: 105px;
+    margin: 0 auto;
+  }
+  .dx-systems {
+    display: none;
+  }
+  .dx-registration {
+    padding: 0 10px 17px;
+  }
+  .dx-registration .dx-led-row {
+    font-size: 5px;
+  }
+  .dx-acquisition-body {
+    grid-template-columns: 1fr 1.6fr;
+    padding: 15px 13px;
+  }
+  .dx-acquisition-meta {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .dx-footer {
+    justify-content: center;
+    text-align: center;
+    font-size: 5px;
+    gap: 10px;
+    padding-top: 18px;
+    padding-bottom: 20px;
+  }
+  .dx-footer > span:nth-child(2) {
+    font-size: 4.5px;
+  }
+  .dx-modal-backdrop {
+    padding: 13px;
+  }
+  .dx-modal {
+    padding: 20px;
+  }
+  .dx-modal > header h2 {
+    font-size: 15px;
+    letter-spacing: 0.8px;
+  }
+  .dx-modal > header span {
+    font-size: 6px;
+  }
+  .dx-modal > p {
+    font-size: 11px;
+  }
+  .dx-modal-planes {
+    gap: 10px;
+  }
+  .dx-modal-note {
+    font-size: 6px;
+  }
+  .dx-genomic-modal-content {
+    grid-template-columns: 90px 1fr;
+    gap: 15px;
+  }
+  .dx-genomic-modal-content .dx-dna {
+    height: 200px;
+  }
+  .dx-genomic-modal-content h3 {
+    font-size: 8px;
+  }
+  .dx-sequence-grid {
+    gap: 3px;
+  }
+  .diagnostic-workstation .dx-sequence-grid > button {
+    font-size: 8px;
+    padding: 5px;
+  }
+  .dx-report-fields > div {
+    font-size: 8px;
+    gap: 10px;
+  }
+  .dx-report-fields dt {
+    width: 105px;
+  }
+  .dx-toast {
+    font-size: 10px;
+    padding: 12px;
+    max-width: 90%;
+    width: max-content;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .diagnostic-workstation *,
+  .diagnostic-workstation *::before,
+  .diagnostic-workstation *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+/* Keep the entire desktop workstation in one viewport; let smaller screens flow. */
+@media (min-width: 1101px) {
+  .diagnostic-workstation {
+    height: 100svh;
+    min-height: 860px;
+    display: flex;
+    flex-direction: column;
+  }
+  .dx-header,
+  .dx-footer {
+    flex-shrink: 0;
+  }
+  .dx-grid {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+  }
+}
+.dx-neural .dx-visual-button {
+  overflow: hidden;
+  position: relative;
+  isolation: isolate;
+}
+.dx-brain-image {
+  width: 94%;
+  height: 100%;
+  min-height: 0;
+  object-fit: contain;
+  mix-blend-mode: screen;
+  filter: brightness(0.75) saturate(0.65);
+  padding: 5px 6px;
+}
+.dx-brain {
+  max-height: 100%;
+  height: 100%;
+}
+.diagnostic-workstation {
+  box-sizing: border-box;
+}
+.dx-brain-image {
+  transform: scale(1.28);
+  filter: brightness(0.85) saturate(0.7);
+}
+.dx-body-image img {
+  filter: brightness(0.85) saturate(0.7) hue-rotate(-6deg);
+}

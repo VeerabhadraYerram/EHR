@@ -3,6 +3,89 @@
 This document tracks the progress of the EHR Clinical Intelligence & Interoperability Platform implementation. 
 Append your updates to the top of the log when you complete a significant chunk of work.
 
+### [2026-10-23] Diagnostic Workstation as the Only Frontend
+**Author:** Codex
+
+**Work Completed:**
+- Made the anatomical diagnostic workstation the default application at `/`, while retaining `/diagnostics` as an equivalent entry point. Retired frontend URLs normalize to `/`.
+- Removed the clinic-view link, prior dashboards, legacy screens/components/styles, unused starter assets, generated frontend cohort JSON, and unused serif fonts. Existing backend services, clinical datasets, trained models, and pipeline scripts were preserved.
+- Included the diagnostic artwork, SVG technical visualizations, interactive controls, locally hosted DM Sans typography with its license, and the Lucide icon dependency.
+- Removed the unused React Router dependency and updated the frontend README, document metadata, and favicon for the diagnostic-only application.
+- Verified production build and whitespace checks. Chrome checks passed for both entry points, retired route normalization, artwork loading, signal controls, imaging dialogs, report downloads, and four responsive widths; zero browser errors and no Axe WCAG 2 A/AA violations were reported.
+- The workstation remains an explicitly illustrative concept, with no claim of live clinical diagnostics or medical-device integration.
+- Prepared for the user-authorized commit and push to `main`.
+
+### [2026-10-23] Frontend and Digital Twin Backend Restart
+**Author:** Codex
+
+**Work Completed:**
+- Started Vite at `http://127.0.0.1:5188` and the Digital Twin FastAPI backend at `http://127.0.0.1:8000`.
+- Verified HTTP 200 for `/diagnostics`, backend `/health`, and the frontend-proxied patient registry (100 patients).
+- Existing serialized model dependency-version warnings remain; startup health does not resolve the previously documented model-validation issues.
+- No application code changed, and no GitHub push was performed.
+
+### [2026-10-23] Reference-Inspired Anatomical Diagnostic Workstation
+**Author:** Codex
+
+**Work Completed:**
+- Added a separate, lazy-loaded `/diagnostics` visual concept inspired by the supplied full-body diagnostic workstation reference; the default clinic workspace remains available at `/`.
+- Built a dark navy/cyan technical design with eight diagnostic panels, fine leader lines, clipped panel corners, grid textures, a scanning plane, animated illustrative ECG, and reconstruction indicators.
+- Generated dedicated anatomical skeleton and cortical brain illustration assets with the ImageGen skill and copied them into `frontend/doctor-review-ui/public/diagnostics/`. Other visual diagrams (MRI planes, thorax, DNA, scanner, and overlays) are implemented in SVG.
+- Implemented illustration-overlay controls, a projected view-angle toggle, anatomical focus controls, MRI plane/sequence selection, imaging and genomic dialogs, base selection, demo subject switching, signal pause/resume, simulated acquisition, and downloadable concept reports.
+- All physiology, imaging, and reconstruction values are explicitly illustrative. No clinical inference, actual scan reconstruction, genomic analysis, or live medical-device integration was added. The view-angle control transforms an illustration; it is not a volumetric 3D renderer.
+- Production build and whitespace checks passed. Chrome verified generated assets, all new interactive controls, keyboard dialog dismissal, and five responsive viewport widths without horizontal overflow; no JavaScript errors were observed. Final desktop viewport fit was checked at 1728x1000 with document height exactly 1000 pixels.
+- Automated Axe WCAG 2 A/AA checks reported no violations in the diagnostic overview. Desktop and mobile visual previews were captured and reviewed.
+- Changes remain local and uncommitted. No GitHub push or deployment occurred.
+
+### [2026-10-23] Simplified Clinic and Pharmaceutical Visual Theme
+**Author:** Codex
+
+**Work Completed:**
+- Replaced the forest/ivory editorial treatment with white clinical surfaces, a pale blue-gray canvas, muted medical-blue accents, slate typography, and a simple medical-cross identity/favicon.
+- Removed the decorative sidebar promotion and oversized circular probability display. Simplified page, navigation, and card labels to Patient overview, Glucose monitoring, Meal history, Glucose forecast, Compare scenarios, Cohort summary, and Review notes.
+- Collapsed detailed model contributions into an accessible expandable section and reduced motion intensity, uppercase headings, decorative texture, and unnecessary visual emphasis.
+- Preserved patient search, data views, model integration, scenarios, historical playback, notes, exports, dialogs, mobile navigation, and the original workspace routes.
+- Production build and whitespace checks passed. Chrome interaction checks passed, including model-explanation expansion. No JavaScript errors or page overflow at 1440, 1024, 768, or 390 pixels; reduced-motion and API-offline checks passed.
+- Automated Axe WCAG 2 A/AA checks reported no violations on all four new views and the mobile workspace. Desktop and mobile screenshots were reviewed locally.
+- Changes remain local. No commit, push, or deployment was performed.
+
+### [2026-10-23] Metabolic Studio Interface Redesign (Local Only)
+**Author:** Codex
+
+**Work Completed:**
+- Rebuilt the default frontend as EHR Metabolic Studio with a custom botanical cross mark, forest-green and ivory design system, locally hosted DM Sans / Instrument Serif typography (OFL licenses included), and Lucide SVG icons.
+- Added a responsive patient workspace, searchable 100-patient directory, data-derived cohort infographics, locally persisted review journal, patient details, snapshot JSON exports, preferences, and workspace updates.
+- Created custom SVG glucose charts and sparklines with hover inspection, time replay, observed-versus-forecast separation, scenario overlays, animated chart entry, risk-ring transitions, and reduced-motion support.
+- The new interface sends timestamp-derived historical features to the existing model API and uses its baseline/SHAP outputs. It does not derive displayed forecasts from future observed glucose. Assumption-based intervention results and historical replay are explicitly labeled; backend model validity remains unresolved as documented in the preceding audit.
+- Preserved the prior application in `src/LegacyApp.tsx` at `/legacy`, `/review`, and `/timeline`; lazy-loaded its styles/code to keep the default workspace isolated from legacy styling. Backend/model files were not changed.
+- Verified a successful production build and `git diff --check`; Chrome interaction checks passed for patient selection/filtering, replay stepping/date selection, scenario sliders, review persistence/journal, exports, mobile navigation, and preferences.
+- Verified layouts at 1440, 1024, 768, and 390 pixels without horizontal page overflow; zero browser runtime errors; backend-offline behavior shows observed data without fabricated forecasts; original workspace remains accessible.
+- Axe automated WCAG 2 A/AA checks reported zero violations on the patient workspace, directory, cohort insights, review journal, and mobile workspace. This is an automated check, not a full accessibility certification.
+- All changes remain local and uncommitted. No GitHub push or deployment was performed.
+
+### [2026-10-23] Competition Fit and Prototype Evidence Audit
+**Author:** Codex
+
+**Work Completed:**
+- Reviewed the live Unstop AMP listing for the CRP Digital Twin Challenge against the current prototype, training pipeline, dataset, UI, simulator, and submission materials. The live listing showed submission closing 24 October 2026 at 19:00 IST.
+- Verified training-table patient separation: 70 learn / 15 tune / 15 test, with no patient IDs shared between partitions.
+- Found future-target leakage in dashboard `dynamicRisk` and `dynamicTrajectory`: displayed warnings use future observed glucose, and forecast points incorporate 94% of the future observed change. These displays do not establish prospective model performance.
+- Re-evaluated existing saved model artifacts on all 15,467 test examples without retraining. Local results: ROC-AUC 0.885509; PR-AUC 0.596740; Brier 0.125096; confusion matrix at 0.22 [[7540, 5534], [145, 2248]]; mean trajectory MAE 127.992256 mg/dL; persistence MAE 17.581873 mg/dL. These do not reproduce checked-in benchmark claims. Runtime warnings identified scikit-learn artifacts from 1.9.1 loaded with 1.7.1 and XGBoost serialization incompatibility; classifier JSON records version 3.4.1 versus installed XGBoost 3.0.5. Root cause was not established and these local results are diagnostic, not a corrected benchmark.
+- Identified assumed intervention response curves/risk multipliers, fixed uncertainty widths, nonstandard Clarke safety labels, hardcoded ancillary sensor values, static audit/compliance entries, simulated onboarding, unsupported hardcoded peer outcome statistics, and simplified long-term risk formulas.
+- Root README remains focused on the prior EHR pipeline; required competition team/video/license/presentation/architecture submission materials were not found in the tracked file inventory reviewed.
+- No application or model code changed during this assessment.
+
+### [2026-10-23] Local Main Sync and Application Startup
+**Author:** Codex
+
+**Work Completed:**
+- Fast-forwarded local `main` from `c3b456f` to `ea6f9e8` using `git pull --ff-only origin main`.
+- Started Docker Desktop and the repository PostgreSQL and MinIO containers; PostgreSQL reported healthy.
+- Refreshed frontend dependencies with `npm ci --no-audit --no-fund` to resolve a native bundler startup stall, then started Vite on `http://localhost:5188`.
+- Started the Digital Twin API on port 8000, identity resolution API on port 8002, and clinical fusion API on port 8003.
+- Verified HTTP 200 for the frontend, transformed App module, proxied health endpoint, all three API health endpoints, and proxied patient registry (100 patients). A live Digital Twin simulation returned HTTP 200 with one counterfactual branch.
+- The backend reported serialized model library version warnings (scikit-learn 1.9.1 artifacts loaded with 1.7.1, plus XGBoost serialization warning). The live simulation smoke check passed; model parity was not evaluated. The pytest suite could not run because pytest is not installed.
+
 ### [2026-10-22] CRP Digital Twin Challenge 2026: Priority 1 Winning Suite — Indian Bio-Swaps, Real-Time Audio Alerts, Circadian Heatmap, 90-Day Prognosis & Population Analytics
 **Author:** AI Assistant
 

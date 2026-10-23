@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# EHR Diagnostic Workstation
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+The diagnostic workstation is the only active frontend. Both `/` and `/diagnostics` open the same interface; retired application paths normalize to `/`.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+cd frontend/doctor-review-ui
+npm ci
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Open http://127.0.0.1:5188/.
+
+```bash
+npm run build
+npm run preview
+```
+
+## Interface
+
+- Anatomical and cortical illustrations with interactive overlay controls and a projected view-angle toggle.
+- Illustrative MRI planes, thoracic imaging, physiology signals, genomic sequence exploration, and reconstruction indicators.
+- Demo subject selection, signal pause/resume, simulated acquisition controls, and downloadable concept reports.
+- Responsive layouts, keyboard-accessible dialogs, and reduced-motion support.
+
+All displayed medical signals, imaging, and reconstruction values are illustrative. The interface does not perform clinical diagnosis, medical-image reconstruction, genomic analysis, or live device monitoring. The anatomical view is an illustration with overlays, not a volumetric 3D renderer.
+
+The existing FastAPI services and model/data pipelines remain in the repository. Vite retains `/api` and `/health` proxying to port 8000; the workstation concept does not claim integration with those services.
+
+DM Sans is self-hosted under `public/fonts/`, with its SIL Open Font License included. Anatomical artwork is stored under `public/diagnostics/`; the remaining technical diagrams are implemented as SVG.

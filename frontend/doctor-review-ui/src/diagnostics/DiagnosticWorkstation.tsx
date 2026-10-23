@@ -13,7 +13,6 @@ import {
   X,
 } from "lucide-react";
 import {
-  BodyFallback,
   DnaHelix,
 } from "./MedicalVisuals";
 import { OrganVisual } from "./OrganVisuals";
@@ -23,13 +22,15 @@ import "./diagnostics.css";
 import "./organ-twins.css";
 import "./patient-workstation.css";
 
+import BodyTwinVisual from "./BodyTwinVisual";
+import { computeKineticTelemetry } from "./kineticEngine";
+
 import type { Patient, Reading, PatientSimulation } from "./types";
 import { fetchPatientsList, fetchPatientReadings, fetchPatientSimulation } from "./patientService";
 import PatientRegistryPanel from "./PatientRegistryPanel";
 import LiveWearablesPanel from "./LiveWearablesPanel";
 import GlucoseForecastPanel from "./GlucoseForecastPanel";
 
-const organList: Organ[] = ["pancreas", "kidneys", "heart", "brain"];
 const bases = "ATCGGATCGAGCTAGCATCGTAGCATGCGATC".split("");
 
 const structureNotes: Record<Organ, string[]> = {
@@ -105,7 +106,6 @@ export default function DiagnosticWorkstation() {
   const [zoom, setZoom] = useState(false);
   const [labels, setLabels] = useState(true);
   const [structure, setStructure] = useState(0);
-  const [bodyReady, setBodyReady] = useState(true);
   const [toast, setToast] = useState("");
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -146,6 +146,12 @@ export default function DiagnosticWorkstation() {
 
   // Current wearable reading at scrubber
   const currentReading = readings[timelineIndex] || readings[readings.length - 1] || null;
+  const prevReading = timelineIndex >= 2 ? readings[timelineIndex - 2] : readings[0];
+
+  // Dynamic Biophysical Kinetic Telemetry across all organs
+  const telemetry = useMemo(() => {
+    return computeKineticTelemetry(currentPatient, currentReading || undefined, prevReading || undefined);
+  }, [currentPatient, currentReading, prevReading]);
 
   // Organ view navigation
   const chooseView = (next: TwinView) => {
@@ -204,6 +210,7 @@ export default function DiagnosticWorkstation() {
         current_glucose_mg_dl: currentReading?.glucose_mg_dl,
         reading_time: currentReading?.reading_time,
         total_readings_logged: readings.length,
+        biophysical_kinetic_telemetry: telemetry,
       },
       ml_inference: simulation?.baseline,
       counterfactual_simulations: simulation?.counterfactual_branches,
@@ -221,43 +228,47 @@ export default function DiagnosticWorkstation() {
     setToast(`Clinical Dossier for ${currentPatient?.display_name || selectedPatientId} exported.`);
   };
 
-  // Organ twin context dynamic values from patient EHR
+  // Organ twin context dynamic values from patient EHR and real-time kinetics
   const contextMetrics = useMemo(() => {
     if (!currentPatient) return [];
     if (view === "kidneys") {
       return [
-        ["eGFR (RENAL CLEARANCE)", `${currentPatient.egfr} mL/min/1.73 m²`],
-        ["SERUM CREATININE", `${currentPatient.creatinine_mg_dl} mg/dL`],
-        ["CKD STAGE", Number(currentPatient.egfr) >= 90 ? "Stage 1 (Normal)" : Number(currentPatient.egfr) >= 60 ? "Stage 2 (Mild)" : "Stage 3 (Moderate)"],
+        ["eGFR (RENAL CLEARANCE)", `${telemetry.kidneys.egfr} mL/min/1.73 m²`],
+        ["SERUM CREATININE", `${telemetry.kidneys.creatinine} mg/dL`],
+        ["SGLT-2 STATUS", telemetry.kidneys.sglt2Status],
+        ["ACTIVE GLYCOSURIA", `${telemetry.kidneys.glycosuriaRate} mg/min`],
       ];
     }
     if (view === "heart") {
       return [
-        ["BLOOD PRESSURE", currentPatient.comorbidities?.includes("hypertension") ? "138/88 mmHg (Stage 1 HTN)" : "120/78 mmHg (Normotensive)"],
+        ["SYMPATHETIC HEART RATE", `${telemetry.heart.heartRate} BPM`],
+        ["VASCULAR SHEAR STRESS", `${telemetry.heart.vascularShearStress}%`],
+        ["HEMODYNAMIC STATE", telemetry.heart.cardioStatus],
         ["LIPID PANEL (LDL)", `${currentPatient.ldl_mg_dl || 105} mg/dL`],
-        ["TRIGLYCERIDES", `${currentPatient.triglycerides_mg_dl || 140} mg/dL`],
       ];
     }
     if (view === "brain") {
       return [
-        ["CIRCADIAN PHASE", "Dawn Phenomenon Active"],
-        ["NEUROLOGICAL STATUS", "Intact Autonomic Regulation"],
-        ["GLUCOSE SENSING", `${Math.round(currentReading?.glucose_mg_dl || 135)} mg/dL Interstitial`],
+        ["CENTRAL GLUCOSE SENSOR", `${telemetry.brain.interstitialSensor} mg/dL Interstitial`],
+        ["AUTONOMIC REGULATION", telemetry.brain.brainStatus],
+        ["CIRCADIAN DAWN DRIVE", telemetry.brain.dawnPhenomenon ? "Active Surge (Cortisol)" : "Quiescent / Basal"],
       ];
     }
     if (view === "pancreas") {
       return [
-        ["FASTING C-PEPTIDE", `${currentPatient.fasting_c_peptide_nmol_l} nmol/L`],
-        ["BETA-CELL RESERVE", Number(currentPatient.fasting_c_peptide_nmol_l) < 0.4 ? "Severely Attenuated" : Number(currentPatient.fasting_c_peptide_nmol_l) < 0.8 ? "Moderate Reserve" : "Preserved Secretion"],
-        ["POSTPRANDIAL PEAK", `${currentPatient.postprandial_glucose_mg_dl} mg/dL`],
+        ["FASTING C-PEPTIDE", `${telemetry.pancreas.cPeptide} nmol/L`],
+        ["BETA-CELL LOAD", `${telemetry.pancreas.betaDemandIndex}% Capacity`],
+        ["ENDOCRINE STATUS", telemetry.pancreas.stressState],
+        ["HOVORKA INSULIN APPEARANCE", `${telemetry.pancreas.insulinAppearance} mU/min`],
       ];
     }
     return [
       ["HbA1c", `${currentPatient.hba1c_percent}%`],
-      ["FASTING C-PEPTIDE", `${currentPatient.fasting_c_peptide_nmol_l} nmol/L`],
-      ["HEPATIC EGP", currentPatient.on_metformin === "yes" ? "Suppressed (Metformin)" : "Active Production"],
+      ["FASTING C-PEPTIDE", `${telemetry.pancreas.cPeptide} nmol/L`],
+      ["HEPATIC EGP", `${telemetry.liver.egpRate} mg/kg/min (${telemetry.liver.state})`],
+      ["RENAL SGLT-2", telemetry.kidneys.sglt2Status],
     ];
-  }, [view, currentPatient, currentReading]);
+  }, [view, currentPatient, telemetry]);
 
   return (
     <div className={`diagnostic-workstation ot-workstation ${isStreaming ? "dx-running" : "dx-paused"}`}>
@@ -429,38 +440,21 @@ export default function DiagnosticWorkstation() {
                 key={view}
               >
                 {view === "body" ? (
-                  <div className="ot-body-registration">
-                    <div className="ot-body-art">
-                      {bodyReady ? (
-                        <img
-                          src="/diagnostics/anatomy.png"
-                          alt="Full-body anatomical reference"
-                          onError={() => setBodyReady(false)}
-                        />
-                      ) : (
-                        <BodyFallback />
-                      )}
-                    </div>
-                    {organList.map((organ) => (
-                      <button
-                        key={organ}
-                        className={`ot-body-hotspot ${organ}`}
-                        onClick={() => chooseView(organ)}
-                        aria-label={`Select ${organInfo[organ].name.toLowerCase()} on body`}
-                      >
-                        <span className="ot-hotspot-dot" />
-                        {labels && (
-                          <span className="ot-hotspot-label">
-                            {organInfo[organ].name}
-                            <ArrowRight size={10} />
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
+                  <BodyTwinVisual
+                    patient={currentPatient}
+                    reading={currentReading || undefined}
+                    telemetry={telemetry}
+                    labels={labels}
+                    onSelectOrgan={(organ) => chooseView(organ)}
+                  />
                 ) : (
                   <div className={`ot-isolated-organ ${view}`}>
-                    <OrganVisual organ={view} />
+                    <OrganVisual
+                      organ={view}
+                      patient={currentPatient}
+                      reading={currentReading || undefined}
+                      telemetry={telemetry}
+                    />
                     {labels &&
                       organInfo[view].structures.map((name, i) => (
                         <button

@@ -175,12 +175,20 @@ def get_patient_readings(
 @app.post("/api/v1/twin/predict", response_model=PredictionResponse)
 def predict_glucose_spike(
     features: ClinicalFeatures,
-    person_id: Optional[str] = Query("P001"),
-    decision_time: Optional[str] = Query(None),
+    person_id: Optional[str] = "P001",
+    decision_time: Optional[str] = None,
+    threshold: Optional[float] = None,
+    alert_mode: Optional[str] = None,
 ) -> PredictionResponse:
     """Execute live dual-head inference for an arbitrary clinical feature state."""
     dt = decision_time or datetime.now().isoformat()
-    return engine.predict(features, decision_time=dt, person_id=person_id)
+    return engine.predict(
+        features,
+        decision_time=dt,
+        person_id=person_id,
+        threshold=threshold,
+        alert_operating_mode=alert_mode,
+    )
 
 
 @app.post("/api/v1/twin/simulate", response_model=SimulationResponse)
@@ -201,6 +209,8 @@ def simulate_counterfactuals(request: SimulationRequest) -> SimulationResponse:
         interventions=request.interventions,
         decision_time=dt,
         person_id=pid,
+        threshold=request.threshold,
+        alert_operating_mode=request.alert_mode,
     )
 
     baseline.feature_provenance = provenance
@@ -232,9 +242,20 @@ def _cohort_features(patient_id: str, decision_time: Optional[str]):
 
 
 @app.get("/api/v1/twin/patients/{patient_id}/predict", response_model=PredictionResponse)
-def predict_patient(patient_id: str, decision_time: Optional[str] = None):
+def predict_patient(
+    patient_id: str,
+    decision_time: Optional[str] = None,
+    threshold: Optional[float] = None,
+    alert_mode: Optional[str] = None,
+):
     features, dt, provenance = _cohort_features(patient_id, decision_time)
-    result = engine.predict(features, decision_time=dt, person_id=patient_id)
+    result = engine.predict(
+        features,
+        decision_time=dt,
+        person_id=patient_id,
+        threshold=threshold,
+        alert_operating_mode=alert_mode,
+    )
     result.feature_provenance = provenance
     return result
 
@@ -257,9 +278,16 @@ def simulate_patient_counterfactuals(
     patient_id: str,
     interventions: Optional[List[InterventionSpec]] = None,
     decision_time: Optional[str] = None,
+    threshold: Optional[float] = None,
+    alert_mode: Optional[str] = None,
 ) -> SimulationResponse:
-    req = SimulationRequest(person_id=patient_id, decision_time=decision_time,
-        interventions=interventions if interventions is not None else SimulationRequest().interventions)
+    req = SimulationRequest(
+        person_id=patient_id,
+        decision_time=decision_time,
+        threshold=threshold,
+        alert_mode=alert_mode,
+        interventions=interventions if interventions is not None else SimulationRequest().interventions,
+    )
     return simulate_counterfactuals(req)
 
 

@@ -105,6 +105,9 @@ export interface PatientSimulation {
     predicted_peak_time_minutes: number;
     continuous_trajectory: TrajectoryPoint[];
     top_shap_drivers: ShapDriver[];
+    hypoglycemia_risk_warning?: boolean;
+    clarke_safety_zone?: string;
+    alert_operating_mode?: string;
     event_status?: string;
     model_applicable?: boolean;
     warnings?: string[];

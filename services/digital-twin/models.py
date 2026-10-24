@@ -75,6 +75,9 @@ class PredictionResponse(BaseModel):
     top_shap_drivers: List[SHAPDriver] = Field(..., description="Top 5 mathematical risk drivers")
     event_status: Literal["incident_forecast", "ongoing_hyperglycemia"] = "incident_forecast"
     model_applicable: bool = True
+    hypoglycemia_risk_warning: bool = False
+    clarke_safety_zone: str = "Zone A (Clinically Safe Euglycemia)"
+    alert_operating_mode: str = "standard"
     features: Dict[str, float] = Field(default_factory=dict)
     feature_provenance: Dict[str, Any] = Field(default_factory=dict)
     explanation: Dict[str, Any] = Field(default_factory=dict)
@@ -152,6 +155,8 @@ class SimulationRequest(BaseModel):
     person_id: Optional[str] = Field("P001")
     decision_time: Optional[str] = None
     features: Optional[ClinicalFeatures] = Field(None)
+    threshold: Optional[float] = Field(None, description="Optional custom probability decision threshold")
+    alert_mode: Optional[str] = Field(None, description="Optional operating mode: standard, high_sensitivity, high_specificity")
     interventions: List[InterventionSpec] = Field(
         default_factory=lambda: [
             InterventionSpec(

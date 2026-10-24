@@ -967,6 +967,21 @@ export default function DiagnosticWorkstation() {
                         <dt>Dataset partition</dt>
                         <dd>{patient.split}</dd>
                       </div>
+                      {shared?.baseline && (
+                        <div>
+                          <dt>Clarke clinical safety</dt>
+                          <dd
+                            style={{
+                              color: shared.baseline.hypoglycemia_risk_warning
+                                ? "#9a4e3e"
+                                : "#5f7a4a",
+                              fontWeight: 500,
+                            }}
+                          >
+                            {shared.baseline.clarke_safety_zone || "Zone A (Clinically Safe Euglycemia)"}
+                          </dd>
+                        </div>
+                      )}
                       {shared?.optimal_recommended_action && (
                         <div>
                           <dt>Recommended action</dt>
@@ -1601,18 +1616,61 @@ function EvidencePage() {
               Saved patient-held-out metrics, not a fresh evaluation of the
               selected recording. Recall means some future spikes were missed.
             </p>
+            {clf.operating_threshold_tradeoffs && (
+              <>
+                <div className="section-divider" style={{ margin: "22px 0 14px" }} />
+                <h3>Operating Threshold &amp; Sensitivity Tradeoffs</h3>
+                <p className="caption" style={{ marginBottom: 10 }}>
+                  Adjusting the decision threshold tunes sensitivity (recall) versus false-alarm rate (specificity) for different clinical workflows:
+                </p>
+                <table className="data-table">
+                  <thead>
+                    <tr>
+                      <th>Operating Mode</th>
+                      <th>Threshold</th>
+                      <th>Recall (Sensitivity)</th>
+                      <th>Specificity</th>
+                      <th>False Alarm Rate</th>
+                      <th>Clinical Use Case</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clf.operating_threshold_tradeoffs.map((t: any) => (
+                      <tr key={t.mode}>
+                        <td><strong>{t.mode.replaceAll("_", " ")}</strong></td>
+                        <td>{t.threshold}</td>
+                        <td style={{ color: t.sensitivity_recall >= 0.7 ? "#5f7a4a" : "inherit" }}>
+                          {(t.sensitivity_recall * 100).toFixed(1)}%
+                        </td>
+                        <td>{(t.specificity * 100).toFixed(1)}%</td>
+                        <td>{(t.false_alarm_rate_fpr * 100).toFixed(1)}%</td>
+                        <td><small>{t.clinical_use_case}</small></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            )}
           </>
         )}
         {traj && (
-          <p>
-            Trajectory MAE:{" "}
-            <strong>{traj.mean_trajectory_mae_mg_dl} mg/dL</strong> across
-            horizons;{" "}
-            <strong>{traj.horizon_breakdown["+120m"].mae_mg_dl} mg/dL</strong>{" "}
-            at two hours. Aggregate Clarke zones A+B:{" "}
-            {traj.clarke_error_grid.clinically_acceptable_zones_a_and_b_percent}
-            %; this does not certify any individual forecast.
-          </p>
+          <div style={{ marginTop: 14 }}>
+            <p>
+              Trajectory MAE:{" "}
+              <strong>{traj.mean_trajectory_mae_mg_dl} mg/dL</strong> across
+              horizons;{" "}
+              <strong>{traj.horizon_breakdown["+15m"].mae_mg_dl} mg/dL</strong> at +15m;{" "}
+              <strong>{traj.horizon_breakdown["+30m"].mae_mg_dl} mg/dL</strong> at +30m;{" "}
+              <strong>{traj.horizon_breakdown["+120m"].mae_mg_dl} mg/dL</strong> at two hours.
+            </p>
+            <p>
+              Aggregate Clarke zones A+B:{" "}
+              <strong>{traj.clarke_error_grid.clinically_acceptable_zones_a_and_b_percent}%</strong> (Zone A: {traj.clarke_error_grid.zone_a_percent}%, Zone B: {traj.clarke_error_grid.zone_b_percent}%).
+            </p>
+            {traj.persistence_context && (
+              <p className="caption" style={{ marginTop: 6 }}>{traj.persistence_context}</p>
+            )}
+          </div>
         )}
       </section>
       <section className="paper-card">

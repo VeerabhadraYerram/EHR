@@ -88,9 +88,14 @@ def main(argv=None):
     parser.add_argument("--twin-mode", choices=["local", "docker"], default="local")
     parser.add_argument("--check", action="store_true", help="Read-only HTTP check of existing services")
     parser.add_argument("--timeout", type=float, default=90, help="Service startup deadline in seconds")
+    parser.add_argument("--skip-legacy", action="store_true", help="Skip legacy PostgreSQL-backed ingestion/identity/fusion services")
     args = parser.parse_args(argv)
+    active_services = [
+        item for item in SERVICES
+        if not (args.skip_legacy and item["port"] in {8000, 8002, 8003})
+    ]
     if args.check:
-        checks = [(item, *probe(item)) for item in SERVICES]
+        checks = [(item, *probe(item)) for item in active_services]
         for item, ready, detail in checks:
             print(f"{'READY' if ready else 'UNAVAILABLE'} {item['name']}: {item['url']} ({detail})")
         print("HTTP readiness does not prove external integrations or clinical validation.")
@@ -106,7 +111,7 @@ def main(argv=None):
                 targets.append("digital-twin")
             options = ["up", "-d"] + (["--build"] if args.twin_mode == "docker" else [])
             subprocess.run(compose_command() + options + targets, cwd=ROOT_DIR, check=True)
-        for item in SERVICES:
+        for item in active_services:
             if args.twin_mode == "docker" and item["port"] == 8004:
                 print("Digital twin is managed by Docker (or separately with --skip-infra).")
                 continue
@@ -120,7 +125,7 @@ def main(argv=None):
             env = os.environ.copy()
             env["PYTHONUNBUFFERED"] = "1"
             processes.append((item["name"], subprocess.Popen(item["cmd"], cwd=item["cwd"], env=env)))
-        pending = list(SERVICES)
+        pending = list(active_services)
         deadline = time.monotonic() + max(1, args.timeout)
         while pending and time.monotonic() < deadline:
             for name, process in processes:

@@ -105,3 +105,61 @@ def test_real_time_dual_head_inference():
     assert len(future_trajectory) == 8
     # Projected glucose must be within reasonable physiological limits
     assert np.all(future_trajectory >= 40.0) and np.all(future_trajectory <= 400.0)
+
+
+def test_operating_threshold_tradeoffs():
+    """Verify multi-threshold operating points document sensitivity/specificity clinical tradeoffs."""
+    metrics_file = MODEL_DIR / "metrics.json"
+    data = json.loads(metrics_file.read_text(encoding="utf-8"))
+    tradeoffs = data["test_evaluation_head_1_classifier"]["proposed_calibrated_digital_twin"].get(
+        "operating_threshold_tradeoffs", []
+    )
+    assert len(tradeoffs) >= 3, "Expected multiple operating threshold tradeoff modes"
+    # Verify higher sensitivity at lower threshold (screening mode)
+    screening = next(t for t in tradeoffs if t["threshold"] <= 0.17)
+    standard = next(t for t in tradeoffs if t["threshold"] == 0.22)
+    assert screening["sensitivity_recall"] > standard["sensitivity_recall"], (
+        "Screening threshold must deliver higher sensitivity/recall"
+    )
+    assert screening["sensitivity_recall"] >= 0.70, "Screening recall must be >= 70%"
+
+
+def test_dynamic_threshold_and_clarke_safety():
+    """Verify inference engine respects custom threshold and returns dynamic Clarke safety zones."""
+    import sys
+    digital_twin_path = str(ROOT / "services" / "digital-twin")
+    if digital_twin_path not in sys.path:
+        sys.path.insert(0, digital_twin_path)
+    from engine import DigitalTwinEngine
+    from models import ClinicalFeatures
+
+    engine = DigitalTwinEngine()
+    features = ClinicalFeatures(
+        age_years=55.0,
+        sex_male=1.0,
+        bmi=24.2,
+        years_with_diabetes=4.0,
+        hba1c_percent=8.2,
+        glucose_now=145.0,
+        glucose_mean_30min=138.0,
+        glucose_mean_2h=125.0,
+        glucose_min_2h=110.0,
+        glucose_max_2h=145.0,
+        glucose_std_2h=12.5,
+        glucose_velocity_per_hour=18.0,
+    )
+
+    # Test standard mode
+    resp_std = engine.predict(features, alert_operating_mode="standard")
+    assert resp_std.optimal_decision_threshold == 0.22
+    assert resp_std.alert_operating_mode == "standard"
+    assert "Zone" in resp_std.clarke_safety_zone
+
+    # Test high sensitivity mode
+    resp_sens = engine.predict(features, alert_operating_mode="high_sensitivity")
+    assert resp_sens.optimal_decision_threshold == 0.17
+    assert resp_sens.alert_operating_mode == "high_sensitivity"
+    # If prob is between 0.17 and 0.22, it will trigger alert on high_sensitivity
+    if resp_sens.calibrated_spike_probability >= 0.17:
+        assert resp_sens.spike_predicted is True
+

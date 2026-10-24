@@ -57,10 +57,18 @@ class MetabolicDigitalTwinSimulator:
         interventions: List[InterventionSpec],
         decision_time: str,
         person_id: str = "P001",
+        threshold: Optional[float] = None,
+        alert_operating_mode: Optional[str] = None,
     ) -> Tuple[PredictionResponse, List[SimulationBranchResult], str]:
         """Compute baseline forecast and compare all candidate in-silico branches."""
         # 1. Evaluate unmanaged baseline
-        baseline = self.engine.predict(features, decision_time=decision_time, person_id=person_id)
+        baseline = self.engine.predict(
+            features,
+            decision_time=decision_time,
+            person_id=person_id,
+            threshold=threshold,
+            alert_operating_mode=alert_operating_mode,
+        )
 
         branches: List[SimulationBranchResult] = []
         best_branch = None

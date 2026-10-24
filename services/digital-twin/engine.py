@@ -119,6 +119,8 @@ class DigitalTwinEngine:
         features: ClinicalFeatures,
         decision_time: str = "2026-10-10T12:45:00",
         person_id: Optional[str] = "P001",
+        threshold: Optional[float] = None,
+        alert_operating_mode: Optional[str] = None,
     ) -> PredictionResponse:
         """Execute instantaneous dual-head prediction and compute TreeSHAP drivers."""
         x_vec = self.features_to_vector(features)
@@ -127,19 +129,45 @@ class DigitalTwinEngine:
         raw_prob = float(self.classifier.predict_proba(x_vec)[0, 1])
         calibrated_prob = float(np.clip(self.calibrator.predict(np.array([raw_prob])), 0.0, 1.0)[0])
 
+        mode_thresholds = {
+            "high_sensitivity": 0.170,
+            "standard": self.optimal_threshold,
+            "high_specificity": 0.300,
+        }
+        if threshold is not None:
+            active_threshold = float(threshold)
+            mode_name = "custom"
+        elif alert_operating_mode in mode_thresholds:
+            active_threshold = mode_thresholds[alert_operating_mode]
+            mode_name = alert_operating_mode
+        else:
+            active_threshold = self.optimal_threshold
+            mode_name = "standard"
+
         # Risk tiering
         if calibrated_prob >= 0.45:
             tier = "HIGH"
-        elif calibrated_prob >= self.optimal_threshold:
+        elif calibrated_prob >= active_threshold:
             tier = "WATCH"
         else:
             tier = "CALM"
 
-        spike_pred = bool(calibrated_prob >= self.optimal_threshold)
+        spike_pred = bool(calibrated_prob >= active_threshold)
 
         # 2. Head 2: Multi-Horizon Continuous Glycemic Trajectory (8 Steps)
         future_curve = self.trajectory_regressor.predict(x_vec)[0]
         horizons = [15, 30, 45, 60, 75, 90, 105, 120]
+
+        # Dynamic Clarke Error Grid and hypoglycemia safety check
+        all_projected = [float(val) for val in future_curve] + [float(features.glucose_now)]
+        min_proj = min(all_projected)
+        hypo_warning = bool(min_proj < 70.0)
+        if min_proj < 54.0:
+            clarke_zone = "Zone C/D/E (Severe Hypoglycemia Warning)"
+        elif min_proj < 70.0:
+            clarke_zone = "Zone B (Borderline Hypoglycemia Dip)"
+        else:
+            clarke_zone = "Zone A (Clinically Safe Euglycemia)"
 
         trajectory_points: List[TrajectoryPoint] = []
         peak_val = -1.0
@@ -212,12 +240,15 @@ class DigitalTwinEngine:
             glucose_now_mg_dl=round(float(features.glucose_now), 1),
             calibrated_spike_probability=round(calibrated_prob, 3),
             risk_tier=tier,
-            optimal_decision_threshold=round(self.optimal_threshold, 3),
+            optimal_decision_threshold=round(active_threshold, 3),
             spike_predicted=spike_pred,
             predicted_peak_glucose_mg_dl=round(peak_val, 1),
             predicted_peak_time_minutes=peak_time,
             continuous_trajectory=trajectory_points,
             top_shap_drivers=shap_drivers,
+            hypoglycemia_risk_warning=hypo_warning,
+            clarke_safety_zone=clarke_zone,
+            alert_operating_mode=mode_name,
             event_status="ongoing_hyperglycemia" if features.glucose_now >= 180 else "incident_forecast",
             model_applicable=features.glucose_now < 180,
             features=features.model_dump(),

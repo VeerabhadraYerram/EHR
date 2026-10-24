@@ -11,6 +11,7 @@ import {
   FileText,
   FlaskConical,
   HeartPulse,
+  Plus,
   LayoutDashboard,
   RefreshCw,
   Users,
@@ -31,12 +32,12 @@ import {
   fetchPatientsList,
   requestJson,
 } from "./patientService";
-import { computeKineticTelemetry } from "./kineticEngine";
 import PatientRegistryPanel from "./PatientRegistryPanel";
 import GlucoseForecastPanel from "./GlucoseForecastPanel";
 import LiveWearablesPanel from "./LiveWearablesPanel";
-import AnatomyWorkspace from "./AnatomyWorkspace";
-import ForecastAnatomy from "./ForecastAnatomy";
+import { BodyStage } from "./BodyWorkstation";
+import BodyWorkstation from "./BodyWorkstation";
+import ReconstructionPanel from "./ReconstructionPanel";
 import ScenarioAssistant from "./ScenarioAssistant";
 import { authEnabled, currentIdentity, signOut } from "../auth";
 import ClinicalWorkflowPage from "./ClinicalWorkflowPage";
@@ -46,6 +47,7 @@ import "./diagnostics.css";
 import "./organ-twins.css";
 import "./patient-workstation.css";
 import "./clinical-app.css";
+import "./workstation-restored.css";
 
 const pages = [
   {
@@ -65,7 +67,7 @@ const pages = [
     label: "Forecast",
     icon: Activity,
     description:
-      "Glucose predictions, explanatory physiology and projected 3D states.",
+      "Glucose predictions, recorded sensor history and model explanations.",
   },
   {
     id: "scenarios",
@@ -75,9 +77,9 @@ const pages = [
   },
   {
     id: "anatomy",
-    label: "Anatomical twins",
+    label: "Body & imaging",
     icon: HeartPulse,
-    description: "Layered 3D anatomy and synthetic scan reconstruction.",
+    description: "Whole-body reference and synthetic imaging demonstration.",
   },
   {
     id: "review",
@@ -154,7 +156,9 @@ const DEFAULT_INTERVENTIONS: InterventionSpec[] = [
 
 export default function DiagnosticWorkstation() {
   const [page, setPage] = useState<Page>(currentPage);
-  const [forecastPane, setForecastPane] = useState<'recording' | 'model' | 'anatomy'>('model');
+  const [forecastPane, setForecastPane] = useState<"recording" | "model">(
+    "model",
+  );
   const [patients, setPatients] = useState<Patient[]>([]),
     [selectedId, setSelectedId] = useState("");
   const [dates, setDates] = useState<string[]>([]),
@@ -193,9 +197,6 @@ export default function DiagnosticWorkstation() {
     [scoringCohort, setScoringCohort] = useState(false),
     [cohortError, setCohortError] = useState(""),
     [cohortReload, setCohortReload] = useState(0);
-  const [alertAcknowledged, setAlertAcknowledged] = useState<
-    Record<string, boolean>
-  >({});
   const patient = patients.find((p) => p.person_id === selectedId);
   const reading = readings[index] || null;
   const shared =
@@ -203,11 +204,6 @@ export default function DiagnosticWorkstation() {
     simulation?.baseline.decision_time === reading?.reading_time
       ? simulation
       : null;
-  const prev = readings[Math.max(0, index - 2)];
-  const telemetry = useMemo(
-    () => computeKineticTelemetry(patient, reading || undefined, prev),
-    [patient, reading, prev],
-  );
   const historical = useMemo(
     () => readings.slice(0, index + 1),
     [readings, index],
@@ -473,9 +469,6 @@ export default function DiagnosticWorkstation() {
           : undefined,
     };
   });
-  const acknowledgementKey = shared
-    ? `${shared.person_id}:${shared.decision_time}`
-    : "";
   const snapshot = {
     report_type: "Digital Twin Clinical Dossier",
     generated_at: new Date().toISOString(),
@@ -558,33 +551,27 @@ export default function DiagnosticWorkstation() {
     loading: predicting,
   };
   return (
-    <div className="diagnostic-workstation clinical-app">
+    <div className="diagnostic-workstation clinical-app ot-workstation restored-workstation">
       <a className="skip-link" href="#main-content">
         Skip to content
       </a>
       <div className="app-main">
         <main id="main-content" className="page-content">
-          <div className="page-heading">
-            <div>
-              {page !== "overview" && (
-                <button
-                  type="button"
-                  className="back-to-overview-btn"
-                  onClick={() => navigate("overview")}
-                  title="Return to the main patient overview launchpad"
-                >
-                  <ArrowLeft size={14} /> Back to Patient Overview
-                </button>
-              )}
-              <span className="eyebrow">
-                Patient workspace / {pageInfo.label}
+          <header className="dx-header ws-header">
+            <div className="dx-brand">
+              <span className="dx-cross">
+                <Plus size={36} strokeWidth={1} />
               </span>
-              <h1>
-                {page === "overview" ? "Patient overview" : pageInfo.label}
-              </h1>
-              <p>{pageInfo.description}</p>
+              <div>
+                <p>MEDICAL INTELLIGENCE / DIAGNOSTIC WORKSTATION</p>
+                <h1>FULL BODY DIAGNOSTICS</h1>
+                <span>
+                  PATIENT RECORDS <i>/</i> DIGITAL TWIN <i>/</i> SCENARIO
+                  ANALYSIS
+                </span>
+              </div>
             </div>
-            <div className="heading-actions-bar">
+            <div className="ws-header-status">
               <span className={`connection-status ${error ? "offline" : ""}`}>
                 <i />
                 {error
@@ -597,20 +584,28 @@ export default function DiagnosticWorkstation() {
                         ? "Model connected"
                         : "Recorded data"}
               </span>
+              <small>RESEARCH WORKSPACE / 100-PATIENT COHORT</small>
+            </div>
+            <div className="heading-actions-bar">
               <button
                 className="icon-button"
                 aria-label="Refresh patient data"
                 onClick={refreshData}
-                title="Refresh patient data"
               >
-                <RefreshCw size={15} />
+                <RefreshCw size={16} />
+              </button>
+              <button
+                className="button secondary"
+                onClick={() => navigate("reports")}
+              >
+                <ArrowDownToLine size={14} /> Report
               </button>
               <button
                 className="user-avatar"
                 title={
                   authEnabled
                     ? `Signed in as ${currentIdentity()} · click to sign out`
-                    : "Synthetic demonstration · authentication not enabled"
+                    : "Demonstration mode"
                 }
                 onClick={() => authEnabled && signOut()}
               >
@@ -618,17 +613,32 @@ export default function DiagnosticWorkstation() {
                   ? currentIdentity().slice(0, 2).toUpperCase()
                   : "DEMO"}
               </button>
-              {page === "overview" && (
-                <button
-                  className="button secondary"
-                  onClick={() => navigate("reports")}
-                >
-                  <ArrowDownToLine size={15} />
-                  Patient report
-                </button>
-              )}
             </div>
-          </div>
+          </header>
+          <nav className="ws-navigation" aria-label="Workstation sections">
+            {pages.map((p) => (
+              <button
+                key={p.id}
+                aria-current={page === p.id ? "page" : undefined}
+                onClick={() => navigate(p.id)}
+              >
+                <p.icon size={14} />
+                {p.id === "overview" ? "Workstation" : p.label}
+              </button>
+            ))}
+          </nav>
+          {page !== "overview" && (
+            <div className="ws-page-heading">
+              <button
+                className="text-button"
+                onClick={() => navigate("overview")}
+              >
+                <ArrowLeft size={14} /> Back to body workstation
+              </button>
+              <h1>{pageInfo.label}</h1>
+              <p className="muted">{pageInfo.description}</p>
+            </div>
+          )}
           <section
             className="patient-context-bar"
             aria-label="Selected patient context"
@@ -663,7 +673,12 @@ export default function DiagnosticWorkstation() {
               className="context-fact"
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('patients'); } }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate("patients");
+                }
+              }}
               onClick={() => navigate("patients")}
               style={{ cursor: "pointer" }}
               title="Click to view full patient registry and profile"
@@ -703,7 +718,12 @@ export default function DiagnosticWorkstation() {
               className="context-risk"
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('scenarios'); } }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate("scenarios");
+                }
+              }}
               onClick={() => navigate("scenarios")}
               style={{ cursor: "pointer" }}
               title="Click to simulate what-if counterfactual scenarios for this forecast"
@@ -746,128 +766,15 @@ export default function DiagnosticWorkstation() {
           {!loading && patient && (
             <>
               {page === "overview" && (
-                <>
-                  <div className="overview-top">
-                    <section className="paper-card patient-summary">
-                      <div className="card-heading">
-                        <span className="eyebrow">Today’s focus</span>
-                        <span className="subtle-tag">Type 2 diabetes</span>
-                      </div>
-                      <h2>{patient.display_name}</h2>
-                      <p className="muted">
-                        {patient.person_id} · {patient.years_with_diabetes}{" "}
-                        years with diabetes · BMI {patient.bmi}
-                      </p>
-                      <div
-                        className="hero-reading"
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setForecastPane('recording'); navigate('forecast'); } }}
-                        onClick={() => { setForecastPane('recording'); navigate("forecast"); }}
-                        title="Click to view continuous sensor timeline & CGM dynamics"
-                      >
-                        <strong>
-                          {reading ? Math.round(reading.glucose_mg_dl) : "—"}
-                        </strong>
-                        <div>
-                          mg/dL
-                          <span>
-                            Recorded at {reading?.time || "—"} ·{" "}
-                            <span className="interactive-hint">
-                              View timeline ↗
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                      <div
-                        className="hero-risk"
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('scenarios'); } }}
-                        onClick={() => navigate("scenarios")}
-                        title="Click to explore and simulate counterfactual what-if scenarios"
-                      >
-                        <span>Two-hour incident forecast</span>
-                        <strong data-testid="overview-risk">
-                          {predicting ? "Updating…" : riskText(shared)}
-                          <span className="interactive-pill-tag">
-                            Simulate ⚡
-                          </span>
-                        </strong>
-                      </div>
-                      <p className="caption">
-                        Review the latest forecast, explore possible scenarios
-                        and keep a record of your decision.
-                      </p>
-                      <button
-                        className="text-button"
-                        onClick={() => navigate("patients")}
-                      >
-                        View clinical profile <ArrowRight size={15} />
-                      </button>
-                    </section>
-                    <GlucoseForecastPanel
-                      {...forecastProps}
-                      compact
-                      onNavigate={navigate}
-                    />
-                  </div>
-                  <div className="overview-bottom">
-                    <section className="paper-card">
-                      <div className="card-heading">
-                        <div>
-                          <span className="eyebrow">Review next</span>
-                          <h3>
-                            {shared?.baseline.model_applicable === false
-                              ? "Current high reading"
-                              : "Model-guided attention"}
-                          </h3>
-                        </div>
-                        <ClipboardCheck size={20} />
-                      </div>
-                      <p>
-                        {shared?.optimal_recommended_action ||
-                          "A recommendation appears after a model response is available."}
-                      </p>
-                      <p className="caption">
-                        What-if effects are assumption-based estimates. A
-                        clinician reviews any action.
-                      </p>
-                      <div className="button-row">
-                        <button
-                          className="button primary"
-                          onClick={() => navigate("scenarios")}
-                        >
-                          Explore what-if scenarios <ArrowRight size={14} />
-                        </button>
-                        {shared && (
-                          <button
-                            className="button secondary"
-                            disabled={alertAcknowledged[acknowledgementKey]}
-                            onClick={() => {
-                              setAlertAcknowledged((v) => ({
-                                ...v,
-                                [acknowledgementKey]: true,
-                              }));
-                              setToast(
-                                "Marked reviewed for this patient and reading in this session.",
-                              );
-                            }}
-                          >
-                            {alertAcknowledged[acknowledgementKey] ? (
-                              <>
-                                <Check size={14} />
-                                Reviewed
-                              </>
-                            ) : (
-                              "Mark reviewed"
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    </section>
-                  </div>
-                </>
+                <BodyWorkstation
+                  patient={patient}
+                  reading={reading}
+                  simulation={shared}
+                  historical={historical}
+                  future={readings.slice(index + 1)}
+                  predicting={predicting}
+                  navigate={navigate}
+                />
               )}
               {page === "patients" && (
                 <>
@@ -902,18 +809,30 @@ export default function DiagnosticWorkstation() {
               )}
               {page === "forecast" && (
                 <div className="page-stack">
-                  <div className="forecast-workspace-tabs" role="group" aria-label="Forecast workspace views">
-                    <button aria-pressed={forecastPane === 'recording'} onClick={() => setForecastPane('recording')}><Activity size={16} />Recorded timeline</button>
-                    <button aria-pressed={forecastPane === 'model'} onClick={() => setForecastPane('model')}><FlaskConical size={16} />Forecast & SHAP</button>
-                    <button aria-pressed={forecastPane === 'anatomy'} onClick={() => setForecastPane('anatomy')}><HeartPulse size={16} />3D glucose state</button>
+                  <div
+                    className="forecast-workspace-tabs"
+                    role="group"
+                    aria-label="Forecast workspace views"
+                  >
+                    <button
+                      aria-pressed={forecastPane === "recording"}
+                      onClick={() => setForecastPane("recording")}
+                    >
+                      <Activity size={16} />
+                      Recorded timeline
+                    </button>
+                    <button
+                      aria-pressed={forecastPane === "model"}
+                      onClick={() => setForecastPane("model")}
+                    >
+                      <FlaskConical size={16} />
+                      Forecast & SHAP
+                    </button>
                   </div>
-                  {forecastPane === 'recording' && wearable}
-                  {forecastPane === 'model' && <GlucoseForecastPanel {...forecastProps} />}
-                  {forecastPane === 'anatomy' && <ForecastAnatomy
-                    patient={patient}
-                    reading={reading}
-                    simulation={shared}
-                  />}
+                  {forecastPane === "recording" && wearable}
+                  {forecastPane === "model" && (
+                    <GlucoseForecastPanel {...forecastProps} />
+                  )}
                 </div>
               )}
               {page === "scenarios" && (
@@ -937,24 +856,18 @@ export default function DiagnosticWorkstation() {
                     onToast={setToast}
                   />
                   <GlucoseForecastPanel {...forecastProps} branch={branch} />
-                  <ForecastAnatomy
+                </div>
+              )}
+              {page === "anatomy" && (
+                <div className="ws-imaging-layout">
+                  <BodyStage patient={patient} reading={reading} />
+                  <ReconstructionPanel
+                    key={selectedId}
                     patient={patient}
                     reading={reading}
-                    simulation={shared}
-                    branch={branch}
                   />
                 </div>
               )}
-              <div hidden={page !== "anatomy"}>
-                <AnatomyWorkspace
-                  key={selectedId}
-                  patient={patient}
-                  reading={reading}
-                  telemetry={telemetry}
-                  simulation={shared}
-                  active={page === "anatomy"}
-                />
-              </div>
               {page === "review" && (
                 <ClinicalWorkflowPage patientId={selectedId} />
               )}
@@ -1120,7 +1033,7 @@ export default function DiagnosticWorkstation() {
           <footer className="app-footer">
             <p>
               Research-derived demonstration cohort · recorded sensor replay ·
-              organ estimates are illustrative
+              anatomy is an illustrative reference
             </p>
             <button
               className="text-button"
@@ -1699,8 +1612,8 @@ function EvidencePage() {
             treatment effects.
           </li>
           <li>
-            Organ views preserve atlas artwork; physiology is estimated. No
-            patient-specific scan reconstruction or live device pairing is
+            The body view uses reference atlas artwork. Imaging reconstruction
+            uses synthetic demonstration scans; live device pairing is not
             claimed.
           </li>
           <li>

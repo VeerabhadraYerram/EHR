@@ -1,5 +1,37 @@
 # Progress Log
 
+### [2026-10-24] Restore Body-Focused Diagnostic Workstation
+**Author:** Codex
+
+**Work Completed:**
+- Restored the pre-pull dark teal diagnostic visual language and unchanged original full-body atlas artwork as the primary overview, with a larger central body panel and expandable view.
+- Replaced separate organ viewers and physiological animations in the active UI with patient measurements, model explanations, forecast, what-if access, and a genomic explorer entry. Removed organ/3D forecast views and the reconstructed-organ viewer; retained synthetic CT slices, segmentation evidence, provenance, downloads, and backend services.
+- Preserved the pulled cohort APIs, patient/date selection, CGM replay, forecast and SHAP tools, scenario assistant and controls, clinical review, operations, genomics, reports/FHIR exports, evidence pages, and authentication. Added visible navigation matching the restored workstation.
+- Verified production build, lint, and diff whitespace checks. Browser-tested all workstation sections, patient switching, body expansion, and a 30-minute walking scenario returning HTTP 200. Checked desktop and 390px mobile layouts with no page errors or horizontal document overflow; corrected mobile artwork sizing.
+- Existing model-loading and scenario-model limitations identified by the audit are unchanged. No backend/model changes, commit, or GitHub push performed.
+
+### [2026-10-24] Pull Main and Start Updated Local Stack
+**Author:** Codex
+
+**Work Completed:**
+- Fast-forwarded main from `35775fe` to `dac5505` after fetching origin. Preserved the local teammate guide files and restored their uncommitted progress entry.
+- Installed the updated frontend lockfile and backend requirements in a workspace `.venv` using existing system packages.
+- Started Docker Desktop, PostgreSQL and private MinIO, the frontend on 5188, and the configured ingestion, identity, fusion, twin, workflows, imaging, genomics and audit services using `scripts/run_app.py`.
+- All configured HTTP health checks passed. Verified frontend HTML, anatomy manifest JSON and the frontend-proxied 100-patient registry.
+- Twin startup reported a portable-artifact fingerprint mismatch for `feature_names.json` and fell back to legacy model files with sklearn/XGBoost compatibility warnings. No model artifacts changed.
+- No commit or push performed.
+
+
+
+### [2026-10-23] Teammate Project Guide
+**Author:** Codex
+
+**Work Completed:**
+- Created `project_docs/EHR_Team_Guide.docx` and a maintainable Markdown counterpart covering project purpose, diabetes/CRM scope, organ roles, current UI, EHR reference architecture, experimental twin backend, data/model limitations, setup, repository ownership, API routes and next priorities.
+- Verified current local dataset counts and source contracts. Clearly distinguished fictional frontend data, historical cohort records, implemented research endpoints and unvalidated or planned capabilities; documented patient-feature mapping gaps and the earlier model reproducibility audit without claiming a new evaluation.
+- Based the guide on main commit `35775fe`. Rendered the Word document to eight pages using the bundled document runtime and visually reviewed every page for layout and readability.
+- No frontend/backend implementation changed. Documents remain local; no commit or GitHub push performed for this task.
+
 ## 2026-10-24 — Sourced synthetic genomics demonstration
 Added a read-only diabetes research panel with three verified GRCh38 reference loci (TCF7L2 rs7903146 C>T, SLC30A8 rs13266634 C>T, KCNJ11 rs5219 T>C). Queried Ensembl Variation and allele-specific VEP; pinned metadata in services/genomics/demo_loci.json. Generated deterministic synthetic GT/DP/AD/QUAL/FILTER examples with two PASS and one LowQual call, decoded-genotype cards, QC counts, linked evidence and direct inspector navigation. Preview loads automatically only when no saved import exists; a dedicated button opens it without overwriting existing samples. Original VCF import and format fixture remain available. Added reusable synthetic VCFs for P001/P002/P043 and docs/GENOMICS_DEMO_2026-10-24.md. Ten genomics tests passed (sandbox temp error resolved with workspace basetemp), build/lint passed; browser verified the three genotypes and low-quality evidence. Restarted only genomics to serve the new endpoint. No actual patient genomes, genetic risk scores or treatment classifications are generated; no glucose model changes. No commits/pushes by this session.
 

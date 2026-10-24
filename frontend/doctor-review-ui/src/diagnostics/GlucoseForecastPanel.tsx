@@ -450,10 +450,10 @@ export default function GlucoseForecastPanel({
             type="button"
             className="graph-nav-pill-btn"
             onClick={() => onNavigate("anatomy")}
-            title="Explore 3D anatomical digital twins"
+            title="Explore the body reference and imaging evidence"
           >
             <HeartPulse size={14} />
-            <span>Anatomical twins<small>Organs & patient context</small></span>
+            <span>Body & imaging<small>Atlas & scan evidence</small></span>
           </button>
           <button
             type="button"

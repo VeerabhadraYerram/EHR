@@ -1,0 +1,932 @@
+/* Original diagnostic palette and body atlas, with connected patient tools. */
+body:has(.restored-workstation) {
+  background: #050e18;
+}
+.clinical-app.restored-workstation {
+  --ink: #d1e4e7;
+  --muted: #92adb9;
+  --line: #25434f;
+  --green: #88d7cd;
+  --green-hover: #b0eee3;
+  --green-light: #102e38;
+  --green-border: #386b70;
+  --surface: #0a1a26;
+  display: block;
+  min-height: 100svh;
+  height: auto;
+  overflow: visible;
+  background:
+    radial-gradient(ellipse at 45% 35%, #0b243251, transparent 56%), #050e18;
+  color: var(--ink);
+  font-size: 12px;
+}
+.restored-workstation .page-content {
+  max-width: 1920px;
+  padding: 24px 26px 16px;
+}
+.restored-workstation .app-main {
+  padding: 0;
+}
+.restored-workstation .ws-header {
+  grid-template-columns: 1.5fr 1fr auto;
+  gap: 24px;
+  padding: 9px 0 23px;
+}
+.restored-workstation .dx-brand h1 {
+  font-size: clamp(21px, 2vw, 29px);
+  color: #dcf0ee;
+  letter-spacing: 2px;
+}
+.restored-workstation .dx-brand p {
+  font-size: 8px;
+  line-height: 1.5;
+}
+.restored-workstation .ws-header-status {
+  display: grid;
+  gap: 9px;
+  padding-left: 22px;
+  border-left: 1px solid var(--line);
+}
+.restored-workstation .ws-header-status small {
+  font: 8px var(--dx-mono);
+  letter-spacing: 1px;
+  color: var(--muted);
+}
+.restored-workstation .connection-status {
+  background: transparent;
+  color: #8ed1c8;
+  font: 10px var(--dx-mono);
+}
+.restored-workstation .connection-status.offline {
+  color: #efab9c;
+}
+.restored-workstation .connection-status i {
+  background: currentColor;
+  box-shadow: 0 0 8px #73c8ba40;
+}
+.restored-workstation .ws-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 17px 0;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.restored-workstation .ws-navigation button {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 12px;
+  border: 1px solid #203b48;
+  border-radius: 3px;
+  background: #091924;
+  font: 10px var(--dx-mono);
+  color: #91abb7;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+.restored-workstation .ws-navigation button:hover,
+.restored-workstation .ws-navigation button[aria-current="page"] {
+  color: #9be2da;
+  border-color: #417982;
+  background: #10303d;
+}
+.restored-workstation .patient-context-bar {
+  background: #0a1b27;
+  border: 1px solid var(--line);
+  box-shadow: none;
+  border-radius: 3px;
+  padding: 14px 18px;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+.restored-workstation .patient-context-bar:hover {
+  box-shadow: none;
+  border-color: #3a626b;
+}
+.restored-workstation .patient-context-bar select {
+  background: #0b2230;
+  border: 1px solid #30535f;
+  color: #d4e7e9;
+  border-radius: 3px;
+}
+.restored-workstation .patient-avatar,
+.restored-workstation .user-avatar {
+  background: #102e38;
+  color: #a2ddd7;
+  border: 1px solid #2f535e;
+  border-radius: 4px;
+}
+.restored-workstation .context-fact,
+.restored-workstation .context-risk {
+  border-color: var(--line);
+}
+.restored-workstation .context-risk {
+  background: transparent;
+  color: #a5ddd4;
+}
+.restored-workstation .context-risk strong,
+.restored-workstation .context-fact strong {
+  color: var(--ink);
+}
+.restored-workstation .ws-page-heading {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0;
+}
+.restored-workstation .ws-page-heading h1 {
+  font-size: 25px;
+}
+.restored-workstation h1,
+.restored-workstation h2,
+.restored-workstation h3 {
+  color: var(--ink);
+}
+.restored-workstation .eyebrow {
+  color: #81babf;
+  font: 9px var(--dx-mono);
+  letter-spacing: 1px;
+}
+.restored-workstation .muted,
+.restored-workstation .caption,
+.restored-workstation .context-fact span,
+.restored-workstation .patient-context-bar label {
+  color: var(--muted);
+}
+.restored-workstation .paper-card {
+  background: linear-gradient(135deg, #0b1f2c, #081822);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: none;
+  padding: 22px;
+  min-width: 0;
+}
+.restored-workstation .paper-card:hover {
+  box-shadow: none;
+}
+.restored-workstation .button,
+.restored-workstation a.button {
+  border-radius: 3px;
+  padding: 10px 14px;
+  font-size: 11px;
+  box-shadow: none;
+  gap: 8px;
+}
+.restored-workstation .button.primary {
+  background: #173d47;
+  border: 1px solid #4a8386;
+  color: #b2ece3;
+}
+.restored-workstation .button.primary:hover {
+  background: #23525b;
+}
+.restored-workstation .button.secondary,
+.restored-workstation .icon-button {
+  background: #0d2430;
+  border: 1px solid #31505d;
+  color: #acc7cf;
+}
+.restored-workstation .button.secondary:hover,
+.restored-workstation .icon-button:hover {
+  background: #173845;
+}
+.restored-workstation .text-button {
+  color: #94d7d1;
+  gap: 8px;
+  font-size: 11px;
+}
+.restored-workstation input:not([type="range"]):not([type="checkbox"]),
+.restored-workstation select,
+.restored-workstation textarea {
+  background: #081923;
+  color: #cce2e5;
+  border-color: #34535e;
+  color-scheme: dark;
+}
+.restored-workstation input[type="range"],
+.restored-workstation input[type="checkbox"] {
+  accent-color: #8ad4cb;
+}
+.restored-workstation .facts-list > div {
+  border-color: #203c48;
+  gap: 12px;
+}
+.restored-workstation .facts-list dt {
+  color: #90adb9;
+}
+.restored-workstation .facts-list dd {
+  color: #cee4e5;
+}
+.restored-workstation .subtle-tag,
+.restored-workstation .risk-pill {
+  background: #153c3c;
+  color: #a8dfcd;
+  border: 1px solid #355d5a;
+  border-radius: 3px;
+}
+.restored-workstation .risk-pill.high,
+.restored-workstation .notice.error {
+  background: #342127;
+  color: #f1b3a6;
+  border-color: #75434b;
+}
+.restored-workstation .risk-pill.watch,
+.restored-workstation .notice.warning {
+  background: #302b20;
+  color: #e2c89d;
+  border-color: #68573e;
+}
+.restored-workstation .notice {
+  background: #122b37;
+  border-color: #35525f;
+  color: #c5dce1;
+}
+.restored-workstation .ws-diagnostic-grid {
+  display: grid;
+  grid-template-columns: minmax(230px, 0.82fr) minmax(390px, 1.65fr) minmax(
+      300px,
+      1.1fr
+    );
+  gap: 14px;
+  align-items: stretch;
+}
+.restored-workstation .ws-left-stack,
+.restored-workstation .ws-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.restored-workstation .ws-panel {
+  background: linear-gradient(135deg, #0b202c, #071720);
+  border: 1px solid #284653;
+  clip-path: polygon(
+    10px 0,
+    calc(100% - 10px) 0,
+    100% 10px,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    10px 100%,
+    0 calc(100% - 10px),
+    0 10px
+  );
+  padding: 0;
+  position: relative;
+}
+.restored-workstation .ws-panel .dx-panel-heading {
+  margin: 0 14px;
+  padding: 14px 0 12px;
+  min-height: 43px;
+  border-bottom: 1px solid #1e3945;
+}
+.restored-workstation .ws-panel .dx-panel-heading h2 {
+  font:
+    600 10px "DM Sans",
+    sans-serif;
+  letter-spacing: 1px;
+}
+.restored-workstation .ws-panel .dx-panel-tag {
+  color: #78bfb8;
+  font: 8px var(--dx-mono);
+}
+.restored-workstation .ws-panel-content {
+  padding: 19px 17px;
+  display: grid;
+  gap: 14px;
+}
+.restored-workstation .ws-panel-content h3 {
+  font-size: 17px;
+}
+.restored-workstation .ws-patient-name {
+  font-size: 22px;
+  margin-top: 3px;
+}
+.restored-workstation .ws-glucose {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+}
+.restored-workstation .ws-glucose > strong {
+  font-size: 49px;
+  line-height: 1;
+  font-weight: 400;
+  letter-spacing: -2px;
+  color: #a7e4da;
+}
+.restored-workstation .ws-glucose > span {
+  color: #a4c9ce;
+  font-size: 12px;
+}
+.restored-workstation .ws-glucose small {
+  display: block;
+  color: #819da9;
+  font: 9px var(--dx-mono);
+  margin-top: 6px;
+}
+.restored-workstation .ws-body-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 800px;
+  background: radial-gradient(
+    ellipse at 50% 45%,
+    #0b303d 0,
+    #081c28 50%,
+    #071721 85%
+  );
+}
+.restored-workstation .ws-body-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 14px 17px 0;
+  color: #809da9;
+  font: 8px var(--dx-mono);
+  letter-spacing: 0.5px;
+}
+.restored-workstation .ws-body-stage {
+  flex: 1;
+  min-height: 600px;
+  margin: 0;
+}
+.restored-workstation .ws-body-stage .ot-body-registration {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  transform: none;
+}
+.restored-workstation .ws-body-stage .ot-body-art > img {
+  filter: brightness(0.9) saturate(0.65);
+}
+.restored-workstation .ws-body-side {
+  position: absolute;
+  top: 42%;
+  font: 8px/1.9 var(--dx-mono);
+  color: #72a5af;
+  letter-spacing: 0.6px;
+}
+.restored-workstation .ws-body-side.left {
+  left: 16px;
+}
+.restored-workstation .ws-body-side.right {
+  right: 16px;
+  text-align: right;
+  top: 62%;
+}
+.restored-workstation .ws-body-readouts {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr 1fr;
+  margin: 0 18px;
+  padding: 17px 0;
+  border-top: 1px solid #2b525d;
+  gap: 12px;
+}
+.restored-workstation .ws-body-readouts > div {
+  display: grid;
+  gap: 7px;
+}
+.restored-workstation .ws-body-readouts span {
+  font: 8px var(--dx-mono);
+  letter-spacing: 0.6px;
+  color: #85a5af;
+}
+.restored-workstation .ws-body-readouts strong {
+  font-size: 22px;
+  font-weight: 400;
+  color: #a2ded4;
+}
+.restored-workstation .ws-body-readouts small {
+  font-size: 8px;
+  color: #8eafb7;
+}
+.restored-workstation .ws-body-source {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 7px;
+  border-top: 1px solid #1c3743;
+  padding: 12px 18px;
+  color: #83b7b8;
+  font: 7px var(--dx-mono);
+}
+.restored-workstation .ws-body-source i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #85ccbf;
+}
+.restored-workstation .ws-body-source span {
+  margin-left: auto;
+  color: #758f9c;
+}
+.restored-workstation .ws-body-expanded {
+  position: fixed;
+  z-index: 100;
+  inset: 18px;
+  min-height: 0;
+}
+.restored-workstation .ws-body-expanded .ws-body-stage {
+  min-height: 0;
+}
+.restored-workstation .ws-overview-forecast {
+  position: relative;
+  background: #0b1e2b;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding-bottom: 12px;
+}
+.restored-workstation .ws-overview-forecast .paper-card {
+  border: 0;
+  padding: 18px;
+  background: transparent;
+}
+.restored-workstation .ws-overview-forecast h2 {
+  font-size: 17px;
+}
+.restored-workstation .ws-overview-forecast .chart-wrap {
+  margin-top: 16px;
+}
+.restored-workstation .ws-open-forecast {
+  margin: 0 18px;
+}
+.restored-workstation .ws-scenario-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.restored-workstation .ws-scenario-tags span {
+  font: 9px var(--dx-mono);
+  color: #8dc2c4;
+  background: #102b36;
+  border: 1px solid #244b56;
+  padding: 6px 7px;
+  border-radius: 2px;
+}
+.restored-workstation .ws-small-note {
+  font: 9px/1.6 var(--dx-mono);
+  color: #8ca4ae;
+}
+.restored-workstation .ws-genomic-link {
+  display: grid;
+  grid-template-columns: 85px 1fr;
+  gap: 18px;
+  padding: 16px;
+  text-align: left;
+  width: 100%;
+}
+.restored-workstation .ws-genomic-link > div:last-child {
+  display: grid;
+  gap: 10px;
+}
+.restored-workstation .ws-genomic-link h3 {
+  font-size: 17px;
+}
+.restored-workstation .ws-dna {
+  height: 160px;
+}
+.restored-workstation .ws-dna svg {
+  width: 100%;
+  height: 100%;
+}
+.restored-workstation .ws-drivers {
+  display: grid;
+  gap: 16px;
+}
+.restored-workstation .ws-drivers > div {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  color: #a2bfc7;
+  font-size: 10px;
+}
+.restored-workstation .ws-drivers strong {
+  color: #9bded2;
+  font: 10px var(--dx-mono);
+}
+.restored-workstation .ws-drivers .ws-warm {
+  color: #deaf8f;
+}
+.restored-workstation .ws-driver-track {
+  grid-column: 1/-1;
+  height: 3px;
+  background: #1b3441;
+}
+.restored-workstation .ws-driver-track i {
+  display: block;
+  height: 100%;
+  background: #65bcb7;
+}
+.restored-workstation .chart-wrap {
+  background: #081a24;
+  border-color: #284652;
+}
+.restored-workstation .chart-grid {
+  stroke: #25404c;
+}
+.restored-workstation .chart-axis,
+.restored-workstation .chart-label {
+  fill: #91afb9;
+}
+.restored-workstation .chart-legend,
+.restored-workstation .chart-toggle,
+.restored-workstation .graph-toggle-btn {
+  background: transparent;
+  color: #a6c6cc;
+  border-color: #34535e;
+}
+.restored-workstation .forecast-summary,
+.restored-workstation .forecast-summary > div,
+.restored-workstation .forecast-workspace-tabs {
+  background: #0a202c;
+  border-color: #2a4854;
+}
+.restored-workstation .forecast-workspace-tabs button {
+  color: #9bbbc3;
+}
+.restored-workstation .forecast-workspace-tabs button[aria-pressed="true"] {
+  background: #18404b;
+  color: #b9ece3;
+  box-shadow: none;
+}
+.restored-workstation .forecast-summary strong {
+  color: #b7e4dc;
+}
+.restored-workstation .graph-nav-pill-btn,
+.restored-workstation .graph-nav-pill-btn.primary {
+  background: #102b37;
+  border-color: #315864;
+  color: #a6d7d5;
+}
+.restored-workstation .graph-nav-pill-btn:hover {
+  background: #163d46;
+  color: #c4efe7;
+}
+.restored-workstation .shap-explorer,
+.restored-workstation .shap-factor-detail,
+.restored-workstation .technical-details,
+.restored-workstation .snapshot-preview {
+  background: #0a1c27;
+  border-color: #2b4a56;
+  color: #bad2d8;
+}
+.restored-workstation .shap-contribution {
+  color: #b9d2d7;
+  border-color: #274450;
+}
+.restored-workstation .shap-contribution:hover,
+.restored-workstation .shap-contribution[aria-pressed="true"] {
+  background: #153540;
+}
+.restored-workstation .shap-factor-name small,
+.restored-workstation .shap-factor-detail small,
+.restored-workstation .shap-axis,
+.restored-workstation .shap-explorer-toolbar {
+  color: #90aeb8;
+}
+.restored-workstation .assistant-empty,
+.restored-workstation .assistant-message,
+.restored-workstation .assistant-evidence,
+.restored-workstation .assistant-form {
+  background: #0a1d28;
+  color: #bed6dc;
+  border-color: #2a4955;
+}
+.restored-workstation .assistant-message.user {
+  background: #143843;
+}
+.restored-workstation .assistant-message > strong,
+.restored-workstation .assistant-evidence b {
+  color: #9bdbd0;
+}
+.restored-workstation .control-slider-cell,
+.restored-workstation .scenario-branch,
+.restored-workstation .scenario-comparison-drawer,
+.restored-workstation .metric-pill,
+.restored-workstation .scenario-preset-btn {
+  background: #0d2531;
+  border-color: #31515e;
+  color: #b9d3d8;
+  box-shadow: none;
+}
+.restored-workstation .scenario-branch.selected,
+.restored-workstation .scenario-preset-btn.active {
+  background: #16404a;
+  border-color: #79bcb7;
+}
+.restored-workstation .slider-intensity-badge,
+.restored-workstation .branch-reduction-pill,
+.restored-workstation .active-tag {
+  background: #173c3c;
+  color: #a6dacf;
+}
+.restored-workstation .branch-peak,
+.restored-workstation .slider-header strong,
+.restored-workstation .text-emerald {
+  color: #a3dfd2;
+}
+.restored-workstation .data-table {
+  color: #bfd6dc;
+}
+.restored-workstation .data-table th {
+  background: #102a36;
+  color: #a6c7ce;
+}
+.restored-workstation .data-table td,
+.restored-workstation .data-table th {
+  border-color: #294652;
+}
+.restored-workstation .data-table tr:hover td {
+  background: #15333e;
+}
+.restored-workstation .app-footer {
+  margin-top: 25px;
+  border-color: #2b4855;
+  color: #7d9da9;
+  font: 9px var(--dx-mono);
+}
+.restored-workstation .app-toast {
+  background: #15323e;
+  color: #c0e2df;
+  border: 1px solid #47757b;
+}
+.restored-workstation .ws-imaging-layout {
+  display: grid;
+  grid-template-columns: minmax(350px, 1.2fr) minmax(300px, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+@media (min-width: 1600px) {
+  .restored-workstation .ws-body-panel {
+    min-height: 870px;
+  }
+}
+@media (max-width: 1150px) {
+  .restored-workstation .ws-diagnostic-grid {
+    grid-template-columns: minmax(210px, 0.75fr) minmax(350px, 1.4fr);
+  }
+  .restored-workstation .ws-right-stack {
+    grid-column: 1/-1;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr 1fr;
+  }
+  .restored-workstation .ws-header {
+    grid-template-columns: 1fr auto;
+  }
+  .restored-workstation .ws-header-status {
+    display: none;
+  }
+}
+@media (max-width: 750px) {
+  .restored-workstation .page-content {
+    padding: 16px 12px;
+  }
+  .restored-workstation .ws-header {
+    gap: 10px;
+  }
+  .restored-workstation .dx-brand {
+    gap: 8px;
+  }
+  .restored-workstation .dx-brand h1 {
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+  .restored-workstation .dx-brand p {
+    font-size: 6px;
+    letter-spacing: 0.6px;
+  }
+  .restored-workstation .dx-brand > div > span {
+    font-size: 6px;
+  }
+  .restored-workstation .ws-header .user-avatar,
+  .restored-workstation .ws-header .icon-button,
+  .restored-workstation .dx-cross {
+    display: none;
+  }
+  .restored-workstation .ws-navigation {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 12px 0;
+  }
+  .restored-workstation .ws-navigation button {
+    white-space: nowrap;
+  }
+  .restored-workstation .patient-context-bar {
+    flex-wrap: wrap;
+    display: flex;
+    gap: 14px;
+    padding: 12px;
+  }
+  .restored-workstation .context-identity {
+    flex: 1 1 100%;
+  }
+  .restored-workstation .ws-diagnostic-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .restored-workstation .ws-body-panel {
+    order: -1;
+    min-height: 680px;
+  }
+  .restored-workstation .ws-body-stage {
+    min-height: 470px;
+  }
+  .restored-workstation .ws-right-stack {
+    display: flex;
+  }
+  .restored-workstation .ws-left-stack {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+  .restored-workstation .ws-imaging-layout {
+    grid-template-columns: 1fr;
+  }
+  .restored-workstation .ws-body-readouts strong {
+    font-size: 19px;
+  }
+  .restored-workstation .ws-body-side {
+    font-size: 7px;
+  }
+  .restored-workstation .ws-body-source span {
+    width: 100%;
+    margin-left: 0;
+  }
+  .restored-workstation .ws-body-expanded {
+    inset: 8px;
+    min-height: 0;
+  }
+  .restored-workstation .ws-body-expanded .ws-body-stage {
+    min-height: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .restored-workstation *,
+  .restored-workstation *::before,
+  .restored-workstation *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* Keep inherited clinical-page rules from washing out the restored frame. */
+.clinical-app.restored-workstation {
+  height: auto !important;
+  overflow: visible !important;
+  padding-bottom: 0 !important;
+}
+.restored-workstation .heading-actions-bar {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0;
+}
+.restored-workstation .ws-panel {
+  border-radius: 0;
+  box-shadow: none;
+}
+.restored-workstation .ws-panel:hover {
+  border-color: #3e6671;
+  box-shadow: none;
+}
+.restored-workstation .ws-panel .dx-panel-heading h2 {
+  color: #c9e4e7;
+}
+.restored-workstation .ws-panel .dx-panel-heading .dx-panel-tag {
+  color: #85c9c2;
+}
+.restored-workstation .ws-panel-content {
+  padding: 15px 16px;
+  gap: 11px;
+}
+.restored-workstation .ws-panel .facts-list {
+  margin: 4px 0;
+}
+.restored-workstation .ws-panel .facts-list > div {
+  padding: 9px 0;
+}
+.restored-workstation .ws-glucose {
+  padding: 9px 0;
+}
+.restored-workstation .ws-glucose > strong {
+  font-size: 43px;
+}
+.restored-workstation .ws-overview-forecast .chart-wrap svg {
+  min-height: 125px;
+  height: 145px;
+}
+.restored-workstation .ws-overview-forecast .paper-card {
+  padding: 16px;
+}
+.restored-workstation .ws-overview-forecast .card-heading {
+  margin-bottom: 10px;
+}
+.restored-workstation .ws-body-panel {
+  min-height: 750px;
+}
+.restored-workstation .ws-body-stage {
+  min-height: 550px;
+}
+.restored-workstation .ws-page-heading > .text-button {
+  justify-self: start;
+}
+.restored-workstation .context-risk > span {
+  color: #92adb9;
+}
+@media (max-width: 750px) {
+  .restored-workstation .ws-body-panel {
+    min-height: 650px;
+  }
+  .restored-workstation .ws-body-stage {
+    min-height: 460px;
+  }
+  .restored-workstation .ws-body-expanded {
+    min-height: 0;
+  }
+  .restored-workstation .ws-body-expanded .ws-body-stage {
+    min-height: 0;
+  }
+}
+
+/* Match the retained clinical tools to the workstation palette. */
+.restored-workstation .workflow-page {
+  --wf-line: #294854;
+  --wf-ink: #c7dfe3;
+  --wf-muted: #91adb8;
+  padding: 0;
+}
+.restored-workstation .workflow-page button,
+.restored-workstation .wf-context,
+.restored-workstation .wf-stats > div,
+.restored-workstation .wf-card,
+.restored-workstation .wf-entity,
+.restored-workstation .wf-source,
+.restored-workstation .wf-json,
+.restored-workstation .wf-recommendation,
+.restored-workstation .wf-document-preview,
+.restored-workstation .operations-tabs button,
+.restored-workstation .operation-alert,
+.restored-workstation .case-grid button,
+.restored-workstation .chromosome-track button,
+.restored-workstation .genome-provenance,
+.restored-workstation .genome-detail-grid pre {
+  background: #0c2330;
+  color: #bfd8de;
+  border-color: #31515e;
+  border-radius: 4px;
+}
+.restored-workstation .workflow-page button:hover:not(:disabled),
+.restored-workstation .workflow-tabs button.selected,
+.restored-workstation .operations-tabs button[aria-pressed="true"],
+.restored-workstation .case-grid button.selected,
+.restored-workstation .chromosome-track button.selected {
+  background: #1a424b;
+  color: #b4e8df;
+  border-color: #5e9495;
+}
+.restored-workstation .wf-badge,
+.restored-workstation .wf-notice,
+.restored-workstation .wf-saved,
+.restored-workstation .wf-conflict {
+  background: #18383d;
+  color: #b5dfd3;
+  border-color: #3b6265;
+}
+.restored-workstation .operations-empty,
+.restored-workstation .operation-note,
+.restored-workstation .case-grid small,
+.restored-workstation .operation-status dt,
+.restored-workstation .genome-facts dt,
+.restored-workstation .genome-consent {
+  color: #93b1bc;
+  border-color: #30505d;
+}
+@media print {
+  .clinical-app.restored-workstation {
+    background: white;
+    color: #172c32;
+  }
+  .restored-workstation .ws-navigation,
+  .restored-workstation .patient-context-bar,
+  .restored-workstation .heading-actions-bar,
+  .restored-workstation .ws-page-heading > .text-button {
+    display: none;
+  }
+  .restored-workstation .paper-card,
+  .restored-workstation .snapshot-preview {
+    background: white;
+    color: #172c32;
+    border-color: #cbd5d8;
+  }
+  .restored-workstation h1,
+  .restored-workstation h2,
+  .restored-workstation h3,
+  .restored-workstation .dx-brand h1,
+  .restored-workstation .facts-list dt,
+  .restored-workstation .facts-list dd {
+    color: #172c32;
+  }
+}

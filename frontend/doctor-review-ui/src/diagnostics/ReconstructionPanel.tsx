@@ -1,9 +1,8 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import AuthorizedImage from "./AuthorizedImage";
 import { authEnabled, downloadProtectedResource } from "../auth";
 import type { Patient, Reading } from "./types";
 import { requestJson, downloadJson } from "./patientService";
-const Anatomy3DViewer = lazy(() => import("./Anatomy3DViewer"));
 interface Study {
   patient_id: string;
   synthetic: boolean;
@@ -32,7 +31,6 @@ interface Job {
 }
 export default function ReconstructionPanel({
   patient,
-  reading,
 }: {
   patient: Patient;
   reading: Reading | null;
@@ -41,14 +39,12 @@ export default function ReconstructionPanel({
     [job, setJob] = useState<Job | null>(null),
     [error, setError] = useState(""),
     [slice, setSlice] = useState(75),
-    [overlay, setOverlay] = useState(true),
-    [render3d, setRender3d] = useState(false);
+    [overlay, setOverlay] = useState(true);
   useEffect(() => {
     const c = new AbortController();
     setStudy(null);
     setJob(null);
     setError("");
-    setRender3d(false);
     requestJson<Study>(`/api/v1/imaging/studies/${patient.person_id}`, {
       signal: c.signal,
     })
@@ -81,7 +77,6 @@ export default function ReconstructionPanel({
   }, [job]);
   async function generate() {
     setError("");
-    setRender3d(false);
     try {
       setJob(
         await requestJson<Job>(
@@ -93,11 +88,6 @@ export default function ReconstructionPanel({
       setError((e as Error).message);
     }
   }
-  const overrides = useMemo(
-    () =>
-      study?.meshes.map((m) => ({ id: m.id, url: `${m.url}?sha=${m.sha256}` })),
-    [study],
-  );
   const busy = job && ["queued", "running"].includes(job.status),
     index = String(slice).padStart(3, "0");
   return (
@@ -108,15 +98,15 @@ export default function ReconstructionPanel({
             <span className="eyebrow">
               Checkpoint 2 · actual volume processing
             </span>
-            <h2>From a synthetic CT to reconstructed organs.</h2>
+            <h2>Synthetic CT & segmentation evidence.</h2>
           </div>
           <span className="subtle-tag">Synthetic · {patient.person_id}</span>
         </div>
         <p className="muted">
           A profile-linked, deterministically varied phantom is encoded as a CT
           volume and DICOM series, segmented with a known-phantom protocol, then
-          reconstructed with marching cubes. Every displayed surface is
-          generated from the resulting voxels.
+          reconstructed with marching cubes. Slice previews and measurements
+          come from the resulting voxels.
         </p>
         <div className="button-row">
           <button
@@ -247,33 +237,8 @@ export default function ReconstructionPanel({
                   </a>
                 ))}
               </div>
-              <button
-                className="button primary"
-                style={{ marginTop: 20 }}
-                onClick={() => setRender3d(!render3d)}
-              >
-                {render3d
-                  ? "Hide reconstructed surfaces"
-                  : "Inspect reconstructed 3D organs"}
-              </button>
             </section>
           </div>
-          {render3d && overrides && (
-            <Suspense
-              fallback={
-                <div className="paper-card">
-                  Loading reconstructed surfaces…
-                </div>
-              }
-            >
-              <Anatomy3DViewer
-                patient={patient}
-                reading={reading}
-                reconstructedMeshes={overrides}
-                title="Reconstructed synthetic organs"
-              />
-            </Suspense>
-          )}
         </>
       )}
     </section>

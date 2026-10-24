@@ -33,7 +33,7 @@
 
 | Deliverable | Description | Format & Link |
 |---|---|---|
-| 🎥 **Prototype Video (20+ min)** | End-to-end clinical workflow walkthrough, model evaluation, and live UI demo | [Video Demonstration & Agenda](#-prototype-video-demonstration-20-minutes) |
+| 🎥 **Prototype Video (20+ min)** | End-to-end clinical workflow walkthrough, model evaluation, and live UI demo | [Watch on YouTube](https://youtu.be/D5L-0IEVBPA) · [Agenda](#-prototype-video-demonstration-20-minutes) |
 | 🏗️ **Architecture Diagram** | AURA-Twin system architecture diagram | [View Architecture Diagram (PDF)](docs/architecture/AURA-Twin_Architecture_Diagram.pdf) |
 | 📊 **Project Pitch Deck** | AURA-Twin Sankalp presentation deck | [View Presentation Deck (PDF)](docs/presentation/AURA-Twin_Sankalp_Deck.pdf) |
 | 📜 **Open-Source License** | Official MIT License terms | [LICENSE](file:///c:/Users/saiko/OneDrive/Desktop/EHR/EHR/LICENSE) |
@@ -184,8 +184,10 @@ To eliminate nurse alert fatigue while protecting outpatient safety, AURA-Twin p
 
 ## 🎥 Prototype Video Demonstration (20+ Minutes)
 
-> **Link to Unlisted Demonstration Video**: `[Insert Unlisted YouTube / Video URL Here]`  
-> *(Prepared and recorded by Team saikoushikpallapolu)*
+[![Sankalp | Explainable Diabetes Digital Twin & EHR | Happiest Health Challenge 2026](https://img.youtube.com/vi/D5L-0IEVBPA/maxresdefault.jpg)](https://youtu.be/D5L-0IEVBPA "Click to watch full clinical demonstration video on YouTube")
+
+> 📺 **Watch Full Video Demonstration on YouTube**: [https://youtu.be/D5L-0IEVBPA](https://youtu.be/D5L-0IEVBPA)  
+> *(Prepared and recorded by Team saikoushikpallapolu for Sankalp: A Platform for Change)*
 
 ### Timestamped Video Demonstration Agenda
 * **00:00 – 02:30**: Introduction to Sankalp Challenge, Team Members, and Type 2 Diabetes Crisis in India.

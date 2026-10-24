@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import "./clinical-workflow.css";
+import {
+  authEnabled,
+  currentIdentity,
+  downloadProtectedResource,
+} from "../auth";
 
 type Entity = {
   id: string;
@@ -100,7 +105,9 @@ export default function ClinicalWorkflowPage({
 }) {
   const [workspace, setWorkspace] = useState<Workspace | null>(null);
   const [audit, setAudit] = useState<AuditEvent[]>([]);
-  const [actor, setActor] = useState("Demo clinician");
+  const [actor, setActor] = useState(
+    authEnabled ? currentIdentity() : "Demo clinician",
+  );
   const [section, setSection] = useState("review");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -164,7 +171,10 @@ export default function ClinicalWorkflowPage({
     setError("");
     setNotice("");
     try {
-      const result = await api<ClinicalDocument>(url + path, payload);
+      const result = await api<ClinicalDocument>(url + path, {
+        ...(payload as Record<string, unknown>),
+        expected_version: workspace?.version,
+      });
       const fresh = await api<Workspace>(url);
       if (activeGeneration !== generation.current) return;
       setWorkspace(fresh);
@@ -216,14 +226,17 @@ export default function ClinicalWorkflowPage({
           <input
             value={actor}
             maxLength={100}
+            disabled={authEnabled}
             onChange={(e) => setActor(e.target.value)}
           />
         </label>
       </header>
       <p className="wf-context">
-        Local persistent demonstration. Reviewer labels are not authenticated
-        identities. Changes here do not change the twin’s original research data
-        or a hospital EHR.
+        {authEnabled
+          ? "Authenticated review; the backend derives the reviewer identity from the verified token."
+          : "Local synthetic demonstration; reviewer labels are not authenticated identities."}{" "}
+        Changes here do not change the twin’s original research data. Hospital
+        delivery is a separate operation in Care operations.
       </p>
       <nav className="workflow-tabs" aria-label="Clinical workflow sections">
         {[
@@ -598,6 +611,15 @@ export default function ClinicalWorkflowPage({
                 </button>
                 <a
                   href={`${url}/documents/${doc.id}/print`}
+                  onClick={(e) => {
+                    if (authEnabled) {
+                      e.preventDefault();
+                      downloadProtectedResource(
+                        `${url}/documents/${doc.id}/print`,
+                        `${doc.kind}-${patientId}.html`,
+                      ).catch((e) => setError(e.message));
+                    }
+                  }}
                   target="_blank"
                   rel="noreferrer"
                 >

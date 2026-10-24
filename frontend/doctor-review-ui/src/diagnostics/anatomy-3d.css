@@ -1,0 +1,223 @@
+.atlas3d-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 245px;
+  gap: 20px;
+}
+.atlas3d-stage {
+  position: relative;
+  min-width: 0;
+  height: 700px;
+  background: #ecece4;
+  border: 1px solid #dddcd0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.atlas3d-canvas {
+  position: absolute;
+  inset: 0;
+}
+.atlas3d-canvas canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+.atlas3d-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.atlas3d-toggle {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #eaebdf;
+  font-size: 12px;
+  color: #65725b;
+}
+.atlas3d-toggle input {
+  accent-color: #576e48;
+}
+.atlas3d-organ-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.clinical-app .atlas3d-organ-list button {
+  padding: 8px 10px;
+  background: #f2f3e9;
+  border: 1px solid #e0e4d3;
+  border-radius: 6px;
+  color: #687b55;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.clinical-app .atlas3d-organ-list button.selected {
+  background: #526c45;
+  color: white;
+  border-color: #526c45;
+}
+.atlas3d-state {
+  padding: 16px;
+  border-radius: 9px;
+  background: #f5f5ed;
+}
+.atlas3d-state > strong {
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: -0.7px;
+}
+.atlas3d-state > strong small {
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.atlas3d-state p {
+  font-size: 11px;
+  color: #728064;
+  margin-top: 8px;
+}
+.atlas3d-state dl {
+  font-size: 11px;
+}
+.atlas3d-state dl > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 5px 0;
+}
+.atlas3d-state dd {
+  margin: 0;
+}
+.atlas3d-help {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  font-size: 10px;
+  color: #5d6a55;
+  padding: 6px 10px;
+  background: #fffdf0c9;
+  border-radius: 6px;
+  pointer-events: none;
+}
+.atlas3d-tools {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 5px;
+  background: #fffef4d9;
+  border: 1px solid #d9ddcc;
+  border-radius: 7px;
+}
+.atlas3d-loading {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  background: #fffff1ed;
+  padding: 14px;
+  font-size: 12px;
+  border-radius: 8px;
+  max-width: 80%;
+}
+.atlas3d.compact .atlas3d-stage {
+  height: 480px;
+}
+.atlas3d .eyebrow svg {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.atlas3d-stage:fullscreen {
+  height: 100vh;
+  width: 100vw;
+}
+.forecast-anatomy-time {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  margin: 18px 0;
+}
+.forecast-anatomy-time input {
+  flex: 1;
+}
+.forecast-anatomy-time strong {
+  min-width: 90px;
+  font-size: 13px;
+}
+.atlas-reconstruction-section {
+  margin-top: 22px;
+}
+@media (max-width: 900px) {
+  .atlas3d-layout {
+    grid-template-columns: 1fr;
+  }
+  .atlas3d-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .atlas3d-state {
+    grid-column: 1/-1;
+  }
+  .atlas3d-stage {
+    height: 650px;
+  }
+}
+@media (max-width: 520px) {
+  .atlas3d-stage {
+    height: 520px;
+  }
+  .atlas3d-controls {
+    grid-template-columns: 1fr;
+  }
+  .atlas3d.compact .atlas3d-stage {
+    height: 430px;
+  }
+  .atlas3d-help {
+    font-size: 9px;
+    bottom: 10px;
+    left: 8px;
+  }
+}
+.scan-study-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+}
+.scan-slice-stage {
+  position: relative;
+  aspect-ratio: 1;
+  max-height: 500px;
+  background: #050505;
+  border-radius: 9px;
+  overflow: hidden;
+  margin: 15px 0;
+}
+.scan-slice-stage > img {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.scan-slice-stage > span {
+  position: absolute;
+  bottom: 12px;
+  left: 12px;
+  color: #bbb;
+  font: 9px monospace;
+  background: #0008;
+  padding: 5px;
+}
+.scan-mask-overlay {
+  pointer-events: none;
+}
+.scan-study-grid a {
+  overflow-wrap: anywhere;
+  font-size: 10px !important;
+}
+@media (max-width: 800px) {
+  .scan-study-grid {
+    grid-template-columns: 1fr;
+  }
+}

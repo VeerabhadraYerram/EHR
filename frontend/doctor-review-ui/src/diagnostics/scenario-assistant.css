@@ -1,0 +1,87 @@
+.assistant-suggestions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.assistant-suggestions .button {
+  font-size: 12px;
+}
+.assistant-conversation {
+  max-height: 550px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  margin: 20px 0;
+}
+.assistant-empty {
+  padding: 24px;
+  text-align: center;
+  border: 1px dashed #d8ddcf;
+  border-radius: 12px;
+  color: #717868;
+}
+.assistant-message {
+  padding: 20px;
+  border-radius: 14px;
+  margin: 12px 0;
+  background: #f3f4ec;
+  max-width: 94%;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.assistant-message.user {
+  background: #e4ebdb;
+  margin-left: auto;
+  max-width: 80%;
+}
+.assistant-message > strong {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #61704d;
+}
+.assistant-message p {
+  white-space: pre-line;
+}
+.assistant-form {
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #d8ddcf;
+  padding-top: 20px;
+}
+.assistant-form input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid #d8ddcf;
+  border-radius: 9px;
+  background: #fafaf5;
+  padding: 14px;
+  font: inherit;
+}
+.assistant-evidence {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  border-top: 1px solid #d8ddcf;
+  padding: 16px 0;
+}
+.assistant-evidence span {
+  display: grid;
+  gap: 5px;
+  font-size: 11px;
+}
+.assistant-evidence b {
+  font-size: 18px;
+  color: #566541;
+}
+@media (max-width: 600px) {
+  .assistant-form {
+    flex-wrap: wrap;
+  }
+  .assistant-form input {
+    flex-basis: 100%;
+  }
+  .assistant-message {
+    max-width: 100%;
+  }
+}

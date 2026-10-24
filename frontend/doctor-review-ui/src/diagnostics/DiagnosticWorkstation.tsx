@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   ArrowDownToLine,
@@ -36,8 +36,12 @@ import PatientRegistryPanel from "./PatientRegistryPanel";
 import GlucoseForecastPanel from "./GlucoseForecastPanel";
 import LiveWearablesPanel from "./LiveWearablesPanel";
 import AnatomyWorkspace from "./AnatomyWorkspace";
+import ForecastAnatomy from "./ForecastAnatomy";
+import ScenarioAssistant from "./ScenarioAssistant";
+import { authEnabled, currentIdentity, signOut } from "../auth";
 import ClinicalWorkflowPage from "./ClinicalWorkflowPage";
-import { DnaHelix } from "./MedicalVisuals";
+import OperationsWorkspace from "./OperationsWorkspace";
+import GenomicsWorkspace from "./GenomicsWorkspace";
 import "./diagnostics.css";
 import "./organ-twins.css";
 import "./patient-workstation.css";
@@ -58,9 +62,10 @@ const pages = [
   },
   {
     id: "forecast",
-    label: "Glucose forecast",
+    label: "Forecast",
     icon: Activity,
-    description: "One patient. One timestamp. One model prediction.",
+    description:
+      "Glucose predictions, explanatory physiology and projected 3D states.",
   },
   {
     id: "scenarios",
@@ -72,7 +77,7 @@ const pages = [
     id: "anatomy",
     label: "Anatomical twins",
     icon: HeartPulse,
-    description: "Explore the existing body and organ atlas.",
+    description: "Layered 3D anatomy and synthetic scan reconstruction.",
   },
   {
     id: "review",
@@ -81,10 +86,17 @@ const pages = [
     description: "Review source facts, reconcile conflicts and approve care.",
   },
   {
+    id: "operations",
+    label: "Care operations",
+    icon: ClipboardCheck,
+    description:
+      "Replay alerts, similar profiles, delivery receipts and access audit.",
+  },
+  {
     id: "genomics",
     label: "Genomics explorer",
     icon: Dna,
-    description: "An interactive educational sequence explorer.",
+    description: "Patient-linked variants, genotypes and annotation evidence.",
   },
   {
     id: "reports",
@@ -167,8 +179,12 @@ export default function DiagnosticWorkstation() {
     const t = setTimeout(() => setToast(""), 3500);
     return () => clearTimeout(t);
   }, [toast]);
-  const requestedDate = useRef(new URLSearchParams(window.location.search).get("date"));
-  const requestedTime = useRef(new URLSearchParams(window.location.search).get("time"));
+  const requestedDate = useRef(
+    new URLSearchParams(window.location.search).get("date"),
+  );
+  const requestedTime = useRef(
+    new URLSearchParams(window.location.search).get("time"),
+  );
   const [exporting, setExporting] = useState(false);
   const [cohortRisks, setCohortRisks] = useState<Record<string, CohortRisk>>(
       {},
@@ -434,7 +450,12 @@ export default function DiagnosticWorkstation() {
     setReload((v) => v + 1);
   }
   const displayPatients = patients.map((p) => {
-    const s = p.person_id === selectedId ? shared : (cohortRisks[p.person_id] ? null : snapshots[p.person_id]);
+    const s =
+      p.person_id === selectedId
+        ? shared
+        : cohortRisks[p.person_id]
+          ? null
+          : snapshots[p.person_id];
     const c = p.person_id !== selectedId ? cohortRisks[p.person_id] : undefined;
     const b = s?.baseline || (c?.model_applicable ? c : null);
     return {
@@ -486,13 +507,14 @@ export default function DiagnosticWorkstation() {
         }
       : null,
     recommended_action: shared?.optimal_recommended_action || null,
-    what_if_scenarios: shared?.counterfactual_branches.map((b) => ({
-      intervention: b.intervention_type,
-      label: b.intervention_label,
-      simulated_peak_mg_dl: b.simulated_peak_mg_dl,
-      peak_reduction_mg_dl: b.peak_reduction_mg_dl,
-      hypoglycemia_risk: b.hypoglycemia_risk_warning ?? false,
-    })) || [],
+    what_if_scenarios:
+      shared?.counterfactual_branches.map((b) => ({
+        intervention: b.intervention_type,
+        label: b.intervention_label,
+        simulated_peak_mg_dl: b.simulated_peak_mg_dl,
+        peak_reduction_mg_dl: b.peak_reduction_mg_dl,
+        hypoglycemia_risk: b.hypoglycemia_risk_warning ?? false,
+      })) || [],
     note: "Research-derived demonstration cohort. Not for clinical use.",
   };
   async function exportFhir() {
@@ -582,9 +604,19 @@ export default function DiagnosticWorkstation() {
               >
                 <RefreshCw size={15} />
               </button>
-              <span className="user-avatar" title="Local research session">
-                DR
-              </span>
+              <button
+                className="user-avatar"
+                title={
+                  authEnabled
+                    ? `Signed in as ${currentIdentity()} · click to sign out`
+                    : "Synthetic demonstration · authentication not enabled"
+                }
+                onClick={() => authEnabled && signOut()}
+              >
+                {authEnabled
+                  ? currentIdentity().slice(0, 2).toUpperCase()
+                  : "DEMO"}
+              </button>
               {page === "overview" && (
                 <button
                   className="button secondary"
@@ -679,10 +711,7 @@ export default function DiagnosticWorkstation() {
             <div className="notice error" role="alert">
               <strong>Data could not be loaded.</strong>
               <p>{error}</p>
-              <button
-                className="button secondary"
-                onClick={refreshData}
-              >
+              <button className="button secondary" onClick={refreshData}>
                 Try again
               </button>
             </div>
@@ -695,10 +724,7 @@ export default function DiagnosticWorkstation() {
                 Recorded measurements remain available. Choose a later reading
                 or retry.
               </small>
-              <button
-                className="text-button"
-                onClick={refreshData}
-              >
+              <button className="text-button" onClick={refreshData}>
                 Retry forecast
               </button>
             </div>
@@ -737,7 +763,9 @@ export default function DiagnosticWorkstation() {
                           mg/dL
                           <span>
                             Recorded at {reading?.time || "—"} ·{" "}
-                            <span className="interactive-hint">View timeline ↗</span>
+                            <span className="interactive-hint">
+                              View timeline ↗
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -749,7 +777,9 @@ export default function DiagnosticWorkstation() {
                         <span>Two-hour incident forecast</span>
                         <strong data-testid="overview-risk">
                           {predicting ? "Updating…" : riskText(shared)}
-                          <span className="interactive-pill-tag">Simulate ⚡</span>
+                          <span className="interactive-pill-tag">
+                            Simulate ⚡
+                          </span>
                         </strong>
                       </div>
                       <p className="caption">
@@ -763,7 +793,11 @@ export default function DiagnosticWorkstation() {
                         View clinical profile <ArrowRight size={15} />
                       </button>
                     </section>
-                    <GlucoseForecastPanel {...forecastProps} compact onNavigate={navigate} />
+                    <GlucoseForecastPanel
+                      {...forecastProps}
+                      compact
+                      onNavigate={navigate}
+                    />
                   </div>
                   <div className="overview-bottom">
                     <section className="paper-card">
@@ -857,10 +891,24 @@ export default function DiagnosticWorkstation() {
                 <div className="page-stack">
                   {wearable}
                   <GlucoseForecastPanel {...forecastProps} />
+                  <ForecastAnatomy
+                    patient={patient}
+                    reading={reading}
+                    simulation={shared}
+                  />
                 </div>
               )}
               {page === "scenarios" && (
                 <div className="page-stack">
+                  <ScenarioAssistant
+                    patientId={selectedId}
+                    decisionTime={reading?.reading_time || ""}
+                    simulation={shared}
+                    busy={predicting}
+                    error={predictionError}
+                    onRun={setInterventions}
+                    onSelect={setBranchId}
+                  />
                   <ScenarioControls
                     appliedSpecs={interventions}
                     simulation={shared}
@@ -871,6 +919,12 @@ export default function DiagnosticWorkstation() {
                     onToast={setToast}
                   />
                   <GlucoseForecastPanel {...forecastProps} branch={branch} />
+                  <ForecastAnatomy
+                    patient={patient}
+                    reading={reading}
+                    simulation={shared}
+                    branch={branch}
+                  />
                 </div>
               )}
               <div hidden={page !== "anatomy"}>
@@ -879,12 +933,23 @@ export default function DiagnosticWorkstation() {
                   patient={patient}
                   reading={reading}
                   telemetry={telemetry}
+                  simulation={shared}
+                  active={page === "anatomy"}
                 />
               </div>
               {page === "review" && (
                 <ClinicalWorkflowPage patientId={selectedId} />
               )}
-              {page === "genomics" && <GenomicsPage />}
+              {page === "operations" && (
+                <OperationsWorkspace
+                  key={selectedId}
+                  patientId={selectedId}
+                  decisionTime={reading?.reading_time || ""}
+                />
+              )}
+              {page === "genomics" && (
+                <GenomicsWorkspace key={selectedId} patient={patient} />
+              )}
               {page === "reports" && (
                 <div className="reports-grid">
                   <section className="paper-card">
@@ -928,7 +993,9 @@ export default function DiagnosticWorkstation() {
                       <div>
                         <dt>Current glucose</dt>
                         <dd>
-                          {reading ? `${Math.round(reading.glucose_mg_dl)} mg/dL` : "—"}
+                          {reading
+                            ? `${Math.round(reading.glucose_mg_dl)} mg/dL`
+                            : "—"}
                         </dd>
                       </div>
                       <div>
@@ -970,7 +1037,12 @@ export default function DiagnosticWorkstation() {
                                     −{b.peak_reduction_mg_dl.toFixed(1)} mg/dL
                                   </span>
                                   {b.hypoglycemia_risk_warning && (
-                                    <span style={{ color: "#9a4e3e", marginLeft: 8 }}>
+                                    <span
+                                      style={{
+                                        color: "#9a4e3e",
+                                        marginLeft: 8,
+                                      }}
+                                    >
                                       ⚠ low-glucose risk
                                     </span>
                                   )}
@@ -1098,34 +1170,37 @@ function ScenarioControls({
   const dirty =
     walk !== applied.walk || carbs !== applied.carbs || delay !== applied.delay;
 
-  function runSimulation(w = walk, c = carbs, d = delay) {
-    setApplied({ walk: w, carbs: c, delay: d });
-    onRun([
-      {
-        intervention_type: "postprandial_walk",
-        parameters: { duration_minutes: w, intensity: "brisk" },
-      },
-      {
-        intervention_type: "carb_reduction",
-        parameters: { carb_reduction_g: c },
-      },
-      {
-        intervention_type: "food_sequencing",
-        parameters: {
-          delay_carbs_minutes: d,
-          preload_type: "fiber_protein",
+  const runSimulation = useCallback(
+    (w = walk, c = carbs, d = delay) => {
+      setApplied({ walk: w, carbs: c, delay: d });
+      onRun([
+        {
+          intervention_type: "postprandial_walk",
+          parameters: { duration_minutes: w, intensity: "brisk" },
         },
-      },
-      {
-        intervention_type: "compound_lifestyle",
-        parameters: { duration_minutes: w, carb_reduction_g: c },
-      },
-      {
-        intervention_type: "confirm_medication",
-        parameters: { drug: "metformin", dose_mg: 500 },
-      },
-    ]);
-  }
+        {
+          intervention_type: "carb_reduction",
+          parameters: { carb_reduction_g: c },
+        },
+        {
+          intervention_type: "food_sequencing",
+          parameters: {
+            delay_carbs_minutes: d,
+            preload_type: "fiber_protein",
+          },
+        },
+        {
+          intervention_type: "compound_lifestyle",
+          parameters: { duration_minutes: w, carb_reduction_g: c },
+        },
+        {
+          intervention_type: "confirm_medication",
+          parameters: { drug: "metformin", dose_mg: 500 },
+        },
+      ]);
+    },
+    [walk, carbs, delay, onRun],
+  );
 
   // Live auto-recalculate when sliders change (debounced 350ms)
   useEffect(() => {
@@ -1134,7 +1209,7 @@ function ScenarioControls({
       runSimulation(walk, carbs, delay);
     }, 350);
     return () => clearTimeout(timer);
-  }, [walk, carbs, delay, autoSimulate, dirty]);
+  }, [walk, carbs, delay, autoSimulate, dirty, runSimulation]);
 
   const presets = [
     { label: "🚶 Postprandial Walk (30m)", w: 30, c: 0, d: 0 },
@@ -1164,7 +1239,10 @@ function ScenarioControls({
           <h2>Physiological Sensitivity & Counterfactuals</h2>
         </div>
         <div className="heading-actions">
-          <label className="toggle-chip" title="Recalculate counterfactuals in real-time as you drag sliders">
+          <label
+            className="toggle-chip"
+            title="Recalculate counterfactuals in real-time as you drag sliders"
+          >
             <input
               type="checkbox"
               checked={autoSimulate}
@@ -1177,7 +1255,8 @@ function ScenarioControls({
       </div>
 
       <p className="muted">
-        Adjust lifestyle parameters below or click a clinical preset to simulate patient-specific glucose trajectories in real-time.
+        Adjust lifestyle parameters below or click a clinical preset to simulate
+        patient-specific glucose trajectories in real-time.
       </p>
 
       {/* Quick Clinical Presets */}
@@ -1235,7 +1314,11 @@ function ScenarioControls({
             </button>
           </div>
           <span className="slider-intensity-badge">
-            {walk <= 15 ? "Light Walking (Mild glucose uptake)" : walk <= 35 ? "Brisk Postprandial (Optimal uptake)" : "Intensive Exercise (High muscle clearance)"}
+            {walk <= 15
+              ? "Light Walking (Mild glucose uptake)"
+              : walk <= 35
+                ? "Brisk Postprandial (Optimal uptake)"
+                : "Intensive Exercise (High muscle clearance)"}
           </span>
         </div>
 
@@ -1274,7 +1357,13 @@ function ScenarioControls({
             </button>
           </div>
           <span className="slider-intensity-badge">
-            {carbs === 0 ? "No modification" : carbs <= 20 ? "Modest portion reduction" : carbs <= 45 ? "Targeted low-GI substitution" : "Aggressive carb restriction"}
+            {carbs === 0
+              ? "No modification"
+              : carbs <= 20
+                ? "Modest portion reduction"
+                : carbs <= 45
+                  ? "Targeted low-GI substitution"
+                  : "Aggressive carb restriction"}
           </span>
         </div>
 
@@ -1313,18 +1402,30 @@ function ScenarioControls({
             </button>
           </div>
           <span className="slider-intensity-badge">
-            {delay === 0 ? "Concurrent meal intake" : delay <= 20 ? "Standard protein/fiber preload" : "Extended digestion staggering"}
+            {delay === 0
+              ? "Concurrent meal intake"
+              : delay <= 20
+                ? "Standard protein/fiber preload"
+                : "Extended digestion staggering"}
           </span>
         </div>
       </div>
 
       <div className="button-row scenario-action-bar">
         {!autoSimulate && (
-          <button className="button primary" disabled={busy} onClick={() => runSimulation()}>
+          <button
+            className="button primary"
+            disabled={busy}
+            onClick={() => runSimulation()}
+          >
             {busy ? "Calculating…" : "Calculate scenarios"}
           </button>
         )}
-        {busy && <span className="simulating-indicator"><i className="pulse-dot" /> Simulating physiological trajectory…</span>}
+        {busy && (
+          <span className="simulating-indicator">
+            <i className="pulse-dot" /> Simulating physiological trajectory…
+          </span>
+        )}
         {dirty && !autoSimulate && (
           <span className="caption">
             Parameters modified. Recalculate to update results.
@@ -1334,7 +1435,11 @@ function ScenarioControls({
 
       {/* Selected Branch Active Comparison Drawer */}
       {selectedBranch && (
-        <div className="scenario-comparison-drawer" role="region" aria-label="Branch comparison summary">
+        <div
+          className="scenario-comparison-drawer"
+          role="region"
+          aria-label="Branch comparison summary"
+        >
           <div className="drawer-header">
             <div>
               <span className="eyebrow">Active Simulation Comparison</span>
@@ -1346,9 +1451,10 @@ function ScenarioControls({
                 className="button secondary"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    `Clinical What-If: ${selectedBranch.intervention_label} | Peak: ${selectedBranch.simulated_peak_mg_dl.toFixed(1)} mg/dL (Estimated reduction: -${selectedBranch.peak_reduction_mg_dl.toFixed(1)} mg/dL) | Mechanism: ${selectedBranch.biophysical_mechanism}`
+                    `Clinical What-If: ${selectedBranch.intervention_label} | Peak: ${selectedBranch.simulated_peak_mg_dl.toFixed(1)} mg/dL (Estimated reduction: -${selectedBranch.peak_reduction_mg_dl.toFixed(1)} mg/dL) | Mechanism: ${selectedBranch.biophysical_mechanism}`,
                   );
-                  if (onToast) onToast("Scenario recommendation copied to clipboard.");
+                  if (onToast)
+                    onToast("Scenario recommendation copied to clipboard.");
                 }}
               >
                 📋 Copy recommendation
@@ -1365,16 +1471,23 @@ function ScenarioControls({
           <div className="comparison-metric-cards">
             <div className="metric-pill">
               <span>Baseline projected peak</span>
-              <strong>{simulation?.baseline.predicted_peak_glucose_mg_dl.toFixed(1)} mg/dL</strong>
+              <strong>
+                {simulation?.baseline.predicted_peak_glucose_mg_dl.toFixed(1)}{" "}
+                mg/dL
+              </strong>
             </div>
             <div className="metric-pill-divider">→</div>
             <div className="metric-pill highlight">
               <span>Simulated branch peak</span>
-              <strong>{selectedBranch.simulated_peak_mg_dl.toFixed(1)} mg/dL</strong>
+              <strong>
+                {selectedBranch.simulated_peak_mg_dl.toFixed(1)} mg/dL
+              </strong>
             </div>
             <div className="metric-pill delta">
               <span>Estimated reduction</span>
-              <strong className="text-emerald">▼ -{selectedBranch.peak_reduction_mg_dl.toFixed(1)} mg/dL</strong>
+              <strong className="text-emerald">
+                ▼ -{selectedBranch.peak_reduction_mg_dl.toFixed(1)} mg/dL
+              </strong>
             </div>
           </div>
           <p className="mechanism-text">
@@ -1385,8 +1498,13 @@ function ScenarioControls({
 
       {/* Interactive Branch Selection Cards */}
       <div className="scenario-branches-header">
-        <span className="eyebrow">Simulated Physiological Branches ({simulation?.counterfactual_branches.length || 0})</span>
-        <small>Click any branch to project its curve on the forecast graph below</small>
+        <span className="eyebrow">
+          Simulated Physiological Branches (
+          {simulation?.counterfactual_branches.length || 0})
+        </span>
+        <small>
+          Click any branch to project its curve on the forecast graph below
+        </small>
       </div>
 
       <div className="scenario-branches">
@@ -1401,7 +1519,9 @@ function ScenarioControls({
             >
               <div className="branch-top-row">
                 <span className="branch-title">{b.intervention_label}</span>
-                {isSelected && <span className="active-tag">Active on chart</span>}
+                {isSelected && (
+                  <span className="active-tag">Active on chart</span>
+                )}
               </div>
               <strong className="branch-peak">
                 {b.simulated_peak_mg_dl.toFixed(1)} <small>mg/dL peak</small>
@@ -1419,91 +1539,6 @@ function ScenarioControls({
         })}
       </div>
     </section>
-  );
-}
-function GenomicsPage() {
-  const bases = "ATCGGATCGAGCTAGCATCGTAGCATGCGATC".split("");
-  const [base, setBase] = useState(0),
-    [animate, setAnimate] = useState(true),
-    [tick, setTick] = useState(0);
-  useEffect(() => {
-    if (!animate) return;
-    const timer = setInterval(() => setTick((t) => t + 1), 850);
-    return () => clearInterval(timer);
-  }, [animate]);
-  return (
-    <div className="genomics-grid">
-      <section className="paper-card">
-        <span className="eyebrow">Educational visualization</span>
-        <h2>A closer look at the double helix.</h2>
-        <p className="muted">
-          This fixed sample sequence explains nucleotide pairing. It is not a
-          patient genome and does not influence the glucose model.
-        </p>
-        <div className="genomics-visual">
-          <DnaHelix active={tick % 30} />
-        </div>
-        <button
-          className="button secondary"
-          onClick={() => setAnimate(!animate)}
-        >
-          {animate ? "Pause helix" : "Animate helix"}
-        </button>
-      </section>
-      <section className="paper-card">
-        <span className="eyebrow">Sequence explorer</span>
-        <h2>Select a nucleotide</h2>
-        <div className="base-grid">
-          {bases.map((b, i) => (
-            <button
-              key={i}
-              aria-label={`Select base ${i + 1}: ${b}`}
-              aria-pressed={base === i}
-              className={base === i ? "active" : ""}
-              onClick={() => setBase(i)}
-            >
-              {b}
-            </button>
-          ))}
-        </div>
-        <div className="base-inspector">
-          <span>
-            Position {base + 1} of {bases.length}
-          </span>
-          <strong>
-            {bases[base]}
-            <span>↔</span>
-            {{ A: "T", T: "A", C: "G", G: "C" }[bases[base]]}
-          </strong>
-          <p>
-            {
-              {
-                A: "Adenine pairs with thymine.",
-                T: "Thymine pairs with adenine.",
-                C: "Cytosine pairs with guanine.",
-                G: "Guanine pairs with cytosine.",
-              }[bases[base]]
-            }
-          </p>
-        </div>
-        <div className="button-row">
-          <button
-            className="button secondary"
-            onClick={() =>
-              setBase((i) => (i - 1 + bases.length) % bases.length)
-            }
-          >
-            Previous base
-          </button>
-          <button
-            className="button secondary"
-            onClick={() => setBase((i) => (i + 1) % bases.length)}
-          >
-            Next base
-          </button>
-        </div>
-      </section>
-    </div>
   );
 }
 function EvidencePage() {

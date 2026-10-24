@@ -1,0 +1,154 @@
+.genome-import-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  margin: 20px 0;
+}
+.genome-import-grid label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.genome-import-grid input,
+.genome-import-grid select,
+.genome-filters input:not([type="checkbox"]) {
+  border: 1px solid var(--line, #deded4);
+  border-radius: 8px;
+  padding: 11px;
+  background: #fafaf5;
+  min-width: 0;
+  width: 100%;
+}
+.genome-vcf {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  border: 1px solid #deded4;
+  border-radius: 9px;
+  padding: 12px;
+  background: #f6f6ef;
+  font: 11px/1.6 monospace;
+}
+.genome-consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 15px 0;
+  font-size: 13px;
+}
+.chromosome-map {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px 25px;
+  margin: 28px 0;
+}
+.chromosome-track {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chromosome-track button {
+  border: 1px solid #deded4;
+  background: #f5f5ee;
+  border-radius: 7px;
+  min-width: 32px;
+  height: 29px;
+  cursor: pointer;
+  font: 12px monospace;
+}
+.chromosome-track button.selected {
+  background: #62734b;
+  color: white;
+}
+.chromosome-track svg {
+  width: 100%;
+  overflow: visible;
+}
+.chromosome-track g {
+  cursor: pointer;
+  outline-offset: 4px;
+}
+.genome-provenance {
+  display: flex;
+  gap: 22px;
+  flex-wrap: wrap;
+  border-top: 1px solid #deded4;
+  padding-top: 18px;
+  font-size: 12px;
+  color: #687064;
+}
+.genome-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(280px, 1fr);
+  gap: 22px;
+}
+.genome-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0;
+}
+.genome-filters label {
+  white-space: nowrap;
+  font-size: 12px;
+}
+.genome-table-scroll {
+  overflow: auto;
+  max-height: 480px;
+}
+.genome-facts {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 12px;
+  font-size: 13px;
+}
+.genome-facts dt {
+  color: #72776c;
+}
+.genome-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.allele-change {
+  display: flex;
+  gap: 22px;
+  font: 40px/2 monospace;
+  color: #62734b;
+  overflow-wrap: anywhere;
+}
+.genome-detail-grid pre {
+  overflow: auto;
+  max-width: 100%;
+  font-size: 11px;
+}
+.text-button {
+  background: none;
+  border: none;
+  color: #52613e;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px 0;
+  font: inherit;
+}
+.genome-detail-grid .data-table td {
+  font-size: 12px;
+}
+@media (max-width: 850px) {
+  .genome-detail-grid {
+    grid-template-columns: 1fr;
+  }
+  .chromosome-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .genome-import-grid {
+    grid-template-columns: 1fr;
+  }
+  .genome-filters {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 450px) {
+  .chromosome-map {
+    grid-template-columns: 1fr;
+  }
+}

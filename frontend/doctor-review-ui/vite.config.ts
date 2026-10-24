@@ -9,6 +9,9 @@ export default defineConfig({
     strictPort: true,
     host: true,
     proxy: {
+      "/api/v1/audit": { target: "http://127.0.0.1:8008", changeOrigin: true },
+      "/api/v1/genomics": { target: "http://127.0.0.1:8007", changeOrigin: true },
+      "/api/v1/imaging": { target: "http://127.0.0.1:8006", changeOrigin: true },
       "/api/v1/twin": { target: "http://127.0.0.1:8004", changeOrigin: true },
       "/api/v1/workflows": {
         target: "http://127.0.0.1:8005",

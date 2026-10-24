@@ -1,0 +1,340 @@
+{
+  "assets": [
+    {
+      "destination": "makehuman/african-female-old.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/african-female-old.target",
+      "sha256": "c165e7caf01aaf45511ebc78a441c8c73ead13231af1a8c6666941345f088b61",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/african-female-old.target"
+    },
+    {
+      "destination": "makehuman/african-female-young.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/african-female-young.target",
+      "sha256": "92d61eeb3c164b421fd5a7c3537ee45e7e1a51de4d49bf312e19c3df2be1d8fc",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/african-female-young.target"
+    },
+    {
+      "destination": "makehuman/african-male-old.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/african-male-old.target",
+      "sha256": "59ec94956b3525dbb30238d1239b2bce52adc3bfae091f12cd85d2570aa1933c",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/african-male-old.target"
+    },
+    {
+      "destination": "makehuman/african-male-young.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/african-male-young.target",
+      "sha256": "894abc1fbb3d28543a51fef16f89d5d4bdf9aa2e1534413339811a3d47818b7d",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/african-male-young.target"
+    },
+    {
+      "destination": "makehuman/asian-female-old.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/asian-female-old.target",
+      "sha256": "1a90cb281df640df55fbce3acd6588f27b28affeb96a7f693f6f038aefc204d8",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/asian-female-old.target"
+    },
+    {
+      "destination": "makehuman/asian-female-young.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/asian-female-young.target",
+      "sha256": "095fe79694fa19e1fe98d93009ec116199bd524e081c640351a10eccf2cca1eb",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/asian-female-young.target"
+    },
+    {
+      "destination": "makehuman/asian-male-old.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/asian-male-old.target",
+      "sha256": "36dc5a3a135ded33885e814806b0e3668ca5bf44bddcebdee48ae75ae68bc3d3",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/asian-male-old.target"
+    },
+    {
+      "destination": "makehuman/asian-male-young.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/asian-male-young.target",
+      "sha256": "ed2e8c191cb6b87b4a2d97c80486acb2604fa549316c7aa2a738a5d5a14334dc",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/asian-male-young.target"
+    },
+    {
+      "destination": "makehuman/base.obj",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/3dobjs/base.obj",
+      "sha256": "8e761e6624b8f54536409135d1636da63b32486a90d4897f84e121d144f6fb4c",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/3dobjs/base.obj"
+    },
+    {
+      "destination": "makehuman/caucasian-female-old.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/caucasian-female-old.target",
+      "sha256": "6560982486c4b1a7a0b1d82b0ad3f09770c16b4f87c8f949537dc9cfc941a0b0",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/caucasian-female-old.target"
+    },
+    {
+      "destination": "makehuman/caucasian-female-young.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/caucasian-female-young.target",
+      "sha256": "118379f6e8ba9266247fdb8788a20e1df40a239f97ced0b9905bcbcc74f6e820",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/caucasian-female-young.target"
+    },
+    {
+      "destination": "makehuman/caucasian-male-old.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/caucasian-male-old.target",
+      "sha256": "b0d2b1d58cba0358af59833740e70229265f7da1c20a11240f4123b7192cfd6d",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/caucasian-male-old.target"
+    },
+    {
+      "destination": "makehuman/caucasian-male-young.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/caucasian-male-young.target",
+      "sha256": "70e228ba7164737dae664454394536fc5935fa48d333c1a97d77e2dc6eacc5f5",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/caucasian-male-young.target"
+    },
+    {
+      "destination": "makehuman/LICENSE.md",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/LICENSE.md",
+      "sha256": "edd99571ca62698f78c943fd4fffb159a413c315fa0d4819d3cec5cadaf8b4f1",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "LICENSE.md"
+    },
+    {
+      "destination": "makehuman/universal-female-old-averagemuscle-averageweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-female-old-averagemuscle-averageweight.target",
+      "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-female-old-averagemuscle-averageweight.target"
+    },
+    {
+      "destination": "makehuman/universal-female-old-averagemuscle-maxweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-female-old-averagemuscle-maxweight.target",
+      "sha256": "c7ff884ece15a4ea161bf9843c9668261e486135aa4c408ecc88dd7e5bc366b2",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-female-old-averagemuscle-maxweight.target"
+    },
+    {
+      "destination": "makehuman/universal-female-old-averagemuscle-minweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-female-old-averagemuscle-minweight.target",
+      "sha256": "ebb291456482aab827ca0d0bb3928553b422ee0fc6900ae9c9d5fa75195dc23a",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-female-old-averagemuscle-minweight.target"
+    },
+    {
+      "destination": "makehuman/universal-female-young-averagemuscle-averageweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-female-young-averagemuscle-averageweight.target",
+      "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-female-young-averagemuscle-averageweight.target"
+    },
+    {
+      "destination": "makehuman/universal-female-young-averagemuscle-maxweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-female-young-averagemuscle-maxweight.target",
+      "sha256": "3648e7f9b34d947726161b563b90ba92b29860bac4c4f82aea3cec37bad2bb4e",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-female-young-averagemuscle-maxweight.target"
+    },
+    {
+      "destination": "makehuman/universal-female-young-averagemuscle-minweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-female-young-averagemuscle-minweight.target",
+      "sha256": "e53a4afc87ac2703460a59e8290b1111478aeee5c02ece6735328c1f8c62eb63",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-female-young-averagemuscle-minweight.target"
+    },
+    {
+      "destination": "makehuman/universal-male-old-averagemuscle-averageweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-old-averagemuscle-averageweight.target",
+      "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-male-old-averagemuscle-averageweight.target"
+    },
+    {
+      "destination": "makehuman/universal-male-old-averagemuscle-maxweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-old-averagemuscle-maxweight.target",
+      "sha256": "ac49086cf6a33f38fa3e0208c3036d335a70529e22f15f0836244b7c7448c10b",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-male-old-averagemuscle-maxweight.target"
+    },
+    {
+      "destination": "makehuman/universal-male-old-averagemuscle-minweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-old-averagemuscle-minweight.target",
+      "sha256": "dd7cae80610fc806b424f0b26d43994060053c9dd15f141001ca4e60479ddd5e",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-male-old-averagemuscle-minweight.target"
+    },
+    {
+      "destination": "makehuman/universal-male-young-averagemuscle-averageweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-young-averagemuscle-averageweight.target",
+      "sha256": "4ba5396ddabda448ece15650a566fbebfbb10239256ccb201e8f883429e12249",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-male-young-averagemuscle-averageweight.target"
+    },
+    {
+      "destination": "makehuman/universal-male-young-averagemuscle-maxweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-young-averagemuscle-maxweight.target",
+      "sha256": "3e77ff5a07a9b870db5226507e1cf8a295f0e09c109fb72142770f5f50427b5e",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-male-young-averagemuscle-maxweight.target"
+    },
+    {
+      "destination": "makehuman/universal-male-young-averagemuscle-minweight.target",
+      "url": "https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/targets/macrodetails/universal-male-young-averagemuscle-minweight.target",
+      "sha256": "fac0d53b7051f4d1f06230d0b419e916eb5bae5ce67c031a9998fdde05229755",
+      "repository_revision": "a8bc2d54ff0ac92e78ff71431b1023eda42bf482",
+      "source_path": "makehuman/data/targets/macrodetails/universal-male-young-averagemuscle-minweight.target"
+    },
+    {
+      "destination": "hra/VH_F_Blood_Vasculature_Heart.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Blood_Vasculature_Heart.glb",
+      "sha256": "c7f196de2d36a354bf740176d3886c95a17da6b74d744423f2f82b61cf36af24",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Blood_Vasculature_Heart.glb"
+    },
+    {
+      "destination": "hra/VH_F_Blood_Vasculature_Kidney.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Blood_Vasculature_Kidney.glb",
+      "sha256": "05739c82548cc4bf1a3e432583d556bd206892d4b97a4265afd0472540c0e0ac",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Blood_Vasculature_Kidney.glb"
+    },
+    {
+      "destination": "hra/VH_F_Blood_Vasculature_Liver.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Blood_Vasculature_Liver.glb",
+      "sha256": "007616bd5472e36664ac2b9be5163e36df35bf5b76bcee9acefe7f2a9e341e61",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Blood_Vasculature_Liver.glb"
+    },
+    {
+      "destination": "hra/VH_F_Ducts_of_Liver.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Ducts_of_Liver.glb",
+      "sha256": "4dbc50d71da7be062cd45ac51f3ffcbc8c8a2941c927d4f42f05059e5368d710",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Ducts_of_Liver.glb"
+    },
+    {
+      "destination": "hra/VH_F_Ducts_of_Pancreas.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Ducts_of_Pancreas.glb",
+      "sha256": "c899428f2b0e9fe8c71a5d299f9322c4f9a751313cf473a89d9d5013e70944f9",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Ducts_of_Pancreas.glb"
+    },
+    {
+      "destination": "hra/VH_F_Heart.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Heart.glb",
+      "sha256": "9afdfb2ccf926869813582cfe150dce8cb28377417a968a4f29a5b8dc060428b",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Heart.glb"
+    },
+    {
+      "destination": "hra/VH_F_Kidney_L.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Kidney_L.glb",
+      "sha256": "8ac1228e4db8c07cbf9f6c6dc7ca522c5b8d61f641927233a29ae6609b577403",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Kidney_L.glb"
+    },
+    {
+      "destination": "hra/VH_F_Kidney_R.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Kidney_R.glb",
+      "sha256": "a67508e6948723d34a29fea2bc8c96931a8fe2f8a08293fd1c3161cfcf13968e",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Kidney_R.glb"
+    },
+    {
+      "destination": "hra/VH_F_Liver.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Liver.glb",
+      "sha256": "ad9b0be0ff253e7bfe31bfffc00017dafce226d4f3e7804a81cbb4c2e269d598",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Liver.glb"
+    },
+    {
+      "destination": "hra/VH_F_Lung.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Lung.glb",
+      "sha256": "a6a81718f4d0974bcbab47c6dc38efc941ad5c7f5f256bf7ff112c710a7fd932",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Lung.glb"
+    },
+    {
+      "destination": "hra/VH_F_Pancreas.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/VH_F_Pancreas.glb",
+      "sha256": "7aed6a1c35d5bd8514a8b6c77a8b57f02ffd61ba555e83405d037b8ee4e3d2f3",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Female/v1.2/VH_F_Pancreas.glb"
+    },
+    {
+      "destination": "hra/VH_M_Blood_Vasculature_Heart.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Blood_Vasculature_Heart.glb",
+      "sha256": "51c8392b83cc96235f848d311f75b115b56c93df5e947658ec16a8c1e5d1c891",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Blood_Vasculature_Heart.glb"
+    },
+    {
+      "destination": "hra/VH_M_Blood_Vasculature_Kidney.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Blood_Vasculature_Kidney.glb",
+      "sha256": "63cecbc05b8ef0cf80fd2b829cb430d554ab6bb536eec16c4c81b2b41a1671ea",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Blood_Vasculature_Kidney.glb"
+    },
+    {
+      "destination": "hra/VH_M_Blood_Vasculature_Liver.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Blood_Vasculature_Liver.glb",
+      "sha256": "98233dff9ec2fda4551728be35808a52700c40ff220831864302eeb5878ab1d9",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Blood_Vasculature_Liver.glb"
+    },
+    {
+      "destination": "hra/VH_M_Ducts_of_Liver.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.1/VH_M_Ducts_of_Liver.glb",
+      "sha256": "c08d844b9f3c84d0f1802a9a8b145d67545560454c9eb7fac8bf19eb09e4066d",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.1/VH_M_Ducts_of_Liver.glb"
+    },
+    {
+      "destination": "hra/VH_M_Ducts_of_Pancreas.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.1/VH_M_Ducts_of_Pancreas.glb",
+      "sha256": "b2c6faaade9d3561602925af4db3bc7c2f70020395b3d4384d2fb6d26c467aa7",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.1/VH_M_Ducts_of_Pancreas.glb"
+    },
+    {
+      "destination": "hra/VH_M_Heart.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Heart.glb",
+      "sha256": "b1237e7e765178e9357fd2ea7ccf19d55d0bf9ca55e187886635febe28244c70",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Heart.glb"
+    },
+    {
+      "destination": "hra/VH_M_Kidney_L.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Kidney_L.glb",
+      "sha256": "733eef9ec169796196470e538dc248c4397bce0ff7ed679f7b7eb0bb9f185612",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Kidney_L.glb"
+    },
+    {
+      "destination": "hra/VH_M_Kidney_R.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Kidney_R.glb",
+      "sha256": "ff9821e0b8fb7fa6174a07b9cafb9f98bb25feca34ddc0e802beeefb24cd3779",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Kidney_R.glb"
+    },
+    {
+      "destination": "hra/VH_M_Liver.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Liver.glb",
+      "sha256": "e94f18646d1b8f72cc45b92bdd67bbb4eb71d5bf954888bc8b8f8b52b3940b6a",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Liver.glb"
+    },
+    {
+      "destination": "hra/VH_M_Lung.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Lung.glb",
+      "sha256": "e64351b72b0bc5289a4dc32ba2b402b9c974f9ec0b1972bf06b436864f917913",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Lung.glb"
+    },
+    {
+      "destination": "hra/VH_M_Pancreas.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/VH_M_Pancreas.glb",
+      "sha256": "ff05d94c539ec8f6ea4620d2a0128ce9911a2c3674330c8eafdb0c96b9999ea3",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9",
+      "source_path": "VH_Male/v1.2/VH_M_Pancreas.glb"
+    }
+  ]
+}

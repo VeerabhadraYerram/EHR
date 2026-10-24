@@ -212,6 +212,28 @@
 .scan-mask-overlay {
   pointer-events: none;
 }
+
+.atlas3d-realistic .atlas3d-stage{height:clamp(580px,75vh,820px);background:#0b151b;border-color:#1e3038;border-radius:18px}
+.atlas3d-realistic.compact .atlas3d-stage{height:560px}
+.atlas3d-realistic .atlas3d-help{color:#b4c4ca;background:rgba(9,19,25,.8);border:1px solid #2e434d;border-radius:20px;padding:8px 13px;font-size:10px;bottom:14px;left:16px}
+.atlas3d-realistic .atlas3d-tools{top:17px;right:17px;display:flex;gap:6px}
+.atlas3d-realistic .atlas3d-tools{background:none;border:0}
+.atlas3d-realistic .atlas3d-stage.anatomy-expanded{position:fixed;inset:12px;width:auto;height:calc(100dvh - 24px);z-index:9999;border-radius:15px;box-shadow:0 0 0 100vmax #000b}
+.anatomy-expanded-organs{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);display:flex;flex-wrap:wrap;justify-content:center;gap:7px;width:min(650px,90%)}
+.anatomy-expanded .atlas3d-help{bottom:65px}
+.anatomy-expanded-settings{position:absolute;top:70px;right:20px;width:180px;background:#11252dcc;border:1px solid #2c4652;border-radius:10px;padding:12px;display:grid;gap:14px;color:#c5d5da;font-size:11px}.anatomy-expanded-settings label{display:block;line-height:1.5}.anatomy-expanded-settings input[type=range]{display:block;width:100%;margin:8px 0 0;accent-color:#adc5a3}.anatomy-expanded-settings input[type=checkbox]{accent-color:#adc5a3;vertical-align:middle}
+.clinical-app .anatomy-expanded-organs button{background:#142932;color:#bdcfd6;border:1px solid #39505a;border-radius:24px;padding:8px 15px;text-transform:capitalize;font-size:12px;cursor:pointer}.clinical-app .anatomy-expanded-organs button[aria-pressed=true]{background:#b0c3a2;color:#142019;border-color:#b0c3a2}
+.clinical-app .atlas3d-realistic .atlas3d-tools button{background:#172b35;color:#d2e0e4;border:1px solid #3b525e;border-radius:9px;width:33px;height:33px;display:grid;place-items:center}
+.atlas3d-realistic .atlas3d-loading{background:rgba(8,19,26,.94);color:#d3e0e2;border-radius:12px;padding:22px}
+.anatomy-profile-strip{display:flex;gap:28px;flex-wrap:wrap;margin:5px 0 22px;padding:15px 0;border-top:1px solid #e3e7de;border-bottom:1px solid #e3e7de}
+.anatomy-profile-strip span{display:grid;gap:5px;font-size:10px;color:#7a8373;letter-spacing:.025em}.anatomy-profile-strip b{font-size:13px;color:#354532;font-weight:500;text-transform:capitalize}
+.anatomy-scene-caption{position:absolute;left:22px;top:22px;display:grid;gap:7px;pointer-events:none;max-width:65%}.anatomy-scene-caption span{text-transform:uppercase;font-size:10px;letter-spacing:.16em;color:#c0d4d9}.anatomy-scene-caption small{font-size:10px;line-height:1.5;color:#7f9ca8}
+.anatomy-camera-presets{position:absolute;right:15px;bottom:15px;display:flex;gap:5px}.clinical-app .anatomy-camera-presets button{background:rgba(18,37,47,.9);color:#b3c9d0;border:1px solid #2c4550;border-radius:20px;padding:7px 11px;font-size:10px;cursor:pointer}
+.anatomy-view-tabs{display:flex;gap:6px;margin:10px 0 8px}.clinical-app .anatomy-view-tabs button{padding:8px 9px;border-radius:7px;border:1px solid #d7dfce;background:#f5f6ee;font-size:11px;cursor:pointer;color:#64764e}.clinical-app .anatomy-view-tabs button[aria-pressed=true]{background:#506743;color:white;border-color:#506743}
+.anatomy-cutaway-controls{padding:13px;background:#f0f2e9;border:1px solid #dfe5d6;border-radius:10px}.anatomy-cutaway-controls input[type=range]{display:block;width:100%;accent-color:#647b55;margin:13px 0}
+.anatomy-evidence-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:35px;padding:24px 0 12px;border-bottom:1px solid #e3e7de;margin-bottom:14px}.anatomy-evidence-grid .caption{font-size:12px;line-height:1.75;margin-top:12px}.anatomy-measurements{display:flex;gap:20px;flex-wrap:wrap;margin-top:17px;font-size:10px;color:#75806c}.anatomy-measurements b{display:block;font-size:20px;letter-spacing:-.5px;color:#3c5035;font-weight:500;margin-bottom:4px}
+@media(max-width:900px){.anatomy-evidence-grid{grid-template-columns:1fr;gap:15px}.anatomy-profile-strip{gap:18px}.atlas3d-realistic .atlas3d-stage{height:650px}}
+@media(max-width:550px){.atlas3d-realistic .atlas3d-stage{height:590px}.anatomy-camera-presets{right:12px;bottom:49px}.anatomy-scene-caption{max-width:55%;left:16px;top:18px}.anatomy-profile-strip{display:grid;grid-template-columns:1fr 1fr}.anatomy-measurements{gap:16px}.atlas3d-realistic .atlas3d-help{font-size:9px;max-width:90%;bottom:12px;left:12px}}
 .scan-study-grid a {
   overflow-wrap: anywhere;
   font-size: 10px !important;
@@ -220,4 +242,11 @@
   .scan-study-grid {
     grid-template-columns: 1fr;
   }
+}
+
+@media (max-width: 640px) {
+  .atlas3d-realistic .anatomy-expanded-organs { bottom: 66px; width: calc(100% - 24px); gap: 5px; }
+  .atlas3d-realistic .anatomy-expanded .anatomy-camera-presets { bottom: 15px; right: 15px; }
+  .atlas3d-realistic .anatomy-expanded .atlas3d-help { display: none; }
+  .atlas3d-realistic .anatomy-expanded .anatomy-scene-caption { max-width: calc(100% - 135px); }
 }

@@ -1,0 +1,4 @@
+numpy
+scipy
+trimesh
+DracoPy==2.2.0

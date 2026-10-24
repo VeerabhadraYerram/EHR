@@ -1,0 +1,81 @@
+{
+  "assets": [
+    {
+      "destination": "z-anatomy/cardiovascular_male.glb",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/cardiovascular_male.glb",
+      "sha256": "05f373a294ab809b9a628bc1474a66028642997330fddc553a33d4ac6409b757",
+      "source_path": "public/anatomy/cardiovascular_male.glb",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/digestive_male.glb",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/digestive_male.glb",
+      "sha256": "0f6b1ddc17ba93c318910db111322d53a4779b677df1bb24d99dd60c21963a08",
+      "source_path": "public/anatomy/digestive_male.glb",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/LICENSE",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/LICENSE",
+      "sha256": "c383ca7aa65f68f4ea3f4b6d60fb101d62435f819b3003411d84819fcd661202",
+      "source_path": "public/anatomy/LICENSE",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/manifest.json",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/manifest.json",
+      "sha256": "628983219020d9b9b0f14dfbc394c29952cab974fd18871469f6776917755662",
+      "source_path": "public/anatomy/manifest.json",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/muscular_male.glb",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/muscular_male.glb",
+      "sha256": "53a004c7b8af38fcbb88d5d1a7ab9dc3f6db2f5bb52188d81c5ddbfb4fb30243",
+      "source_path": "public/anatomy/muscular_male.glb",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/nervous_male.glb",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/nervous_male.glb",
+      "sha256": "e7a3a2de6c6f098152e3619dd75613531749235cfa9f687d971c8b334a08dcb8",
+      "source_path": "public/anatomy/nervous_male.glb",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/NOTICE",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/NOTICE",
+      "sha256": "3b2304a2feca5a8304991de8d684b42b3fb77c23a958fa2871fd60de076bfcb4",
+      "source_path": "public/anatomy/NOTICE",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/respiratory_male.glb",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/respiratory_male.glb",
+      "sha256": "afc1f18329b877c04d7f27ad4f09e6de0c3c143fcb2ae9ad7fdd4e2dc9261e76",
+      "source_path": "public/anatomy/respiratory_male.glb",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "z-anatomy/skeletal_male.glb",
+      "url": "https://raw.githubusercontent.com/Nurkan1/Anatria-3D/6320bd64df8db2fcfed358a27c85d1fcc1c5913c/public/anatomy/skeletal_male.glb",
+      "sha256": "b49d71788bfa0b4a3188e2954d59728a699b08ec280e70df1c2a95e13d4b81f8",
+      "source_path": "public/anatomy/skeletal_male.glb",
+      "repository_revision": "6320bd64df8db2fcfed358a27c85d1fcc1c5913c"
+    },
+    {
+      "destination": "hra/Allen_F_Brain.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Female/v1.2/Allen_F_Brain.glb",
+      "sha256": "c5711a1a8bc62ca930b8bcf076def15315c11f5ad9bc7901e51f698406d38dbc",
+      "source_path": "VH_Female/v1.2/Allen_F_Brain.glb",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9"
+    },
+    {
+      "destination": "hra/Allen_M_Brain.glb",
+      "url": "https://raw.githubusercontent.com/hubmapconsortium/ccf-3d-reference-object-library/f1a3a63f110e27ff0736047d52d04dba5d3087f9/VH_Male/v1.2/Allen_M_Brain.glb",
+      "sha256": "2b9ad5b53e40e9f0936da74f7be38d2eed15604e26358c3870a0ea13499b9a35",
+      "source_path": "VH_Male/v1.2/Allen_M_Brain.glb",
+      "repository_revision": "f1a3a63f110e27ff0736047d52d04dba5d3087f9"
+    }
+  ]
+}

@@ -116,7 +116,90 @@ def body_asset(sex):
                 (290 - np.abs(transformed[:, 0])) / 80, 0, 1
             )
             transformed[:, 0] *= 1 + 0.07 * hips
-        joints[f"{age}_{weight}"] = {name: transformed[list(indices)].mean(0).tolist() for name, indices in joint_indices.items()}
+        # Piecewise bone-frame registration preserves limb cross-sections.
+        # A global RBF cage was rejected: it compressed calves and forearms.
+        original = transformed.copy()
+        targets = {
+            "shoulder": [174, -75, 1323],
+            "elbow": [225, -71, 1014],
+            "hand": [283, -116, 779],
+            "upper-leg": [83, -95, 799],
+            "knee": [72, -70, 356],
+            "ankle": [53, -64, 1],
+        }
+
+        def segment_map(points, a, b, c, d):
+            u = (b - a) / np.linalg.norm(b - a)
+            v = (d - c) / np.linalg.norm(d - c)
+            cross = np.cross(u, v)
+            dot = float(np.dot(u, v))
+            k = np.array(
+                [
+                    [0, -cross[2], cross[1]],
+                    [cross[2], 0, -cross[0]],
+                    [-cross[1], cross[0], 0],
+                ]
+            )
+            rotation = np.eye(3) + k + k @ k / max(1e-8, 1 + dot)
+            relative = points - a
+            along = relative @ u
+            mapped = (
+                relative @ rotation.T
+                + np.outer(
+                    along * (np.linalg.norm(d - c) / np.linalg.norm(b - a) - 1), v
+                )
+                + c
+            )
+            nearest = a + np.outer(np.clip(along, 0, np.linalg.norm(b - a)), u)
+            return mapped, np.linalg.norm(points - nearest, axis=1)
+
+        for side, sign in (("l", 1), ("r", -1)):
+            joint = {
+                key: original[list(joint_indices[f"joint-{side}-{key}"])].mean(0)
+                for key in targets
+            }
+            dest = {
+                key: np.asarray(value) * [sign, 1, 1] for key, value in targets.items()
+            }
+            for chain, kind in [
+                (["shoulder", "elbow", "hand"], "arm"),
+                (["upper-leg", "knee", "ankle"], "leg"),
+            ]:
+                mapped = []
+                weights = []
+                for a, b in zip(chain, chain[1:]):
+                    q, distance = segment_map(
+                        original, joint[a], joint[b], dest[a], dest[b]
+                    )
+                    mapped.append(q)
+                    weights.append(1 / (distance + 15) ** 4)
+                weights = np.asarray(weights)
+                weights /= weights.sum(0)
+                result = np.sum(np.asarray(mapped) * weights[:, :, None], axis=0)
+                if kind == "arm":
+                    shoulder = joint["shoulder"]
+                    threshold = (
+                        abs(shoulder[0])
+                        - 35
+                        + np.maximum(0, shoulder[2] - original[:, 2]) * 0.22
+                    )
+                    blend = np.clip(
+                        (abs(original[:, 0]) - threshold) / 65, 0, 1
+                    ) * np.clip((shoulder[2] + 65 - original[:, 2]) / 110, 0, 1)
+                else:
+                    blend = np.clip(
+                        (joint["upper-leg"][2] + 30 - original[:, 2]) / 150, 0, 1
+                    )
+                    blend *= (
+                        np.abs(original[:, 0])
+                        < max(abs(joint[key][0]) for key in chain) + 100
+                    )
+                blend *= original[:, 0] * sign > 0
+                transformed += blend[:, None] * (result - original)
+        joints[f"{age}_{weight}"] = {
+            name: transformed[list(indices)].mean(0).tolist()
+            for name, indices in joint_indices.items()
+        }
         return transformed[used].astype("<f4")
 
     shapes = {
@@ -207,6 +290,7 @@ def body_asset(sex):
         "targets": names,
         "landmarks": joints["young_average"],
         "source": "MakeHuman core body and macro targets, neutral equal ancestry blend; CC0",
+        "registration": "Piecewise bone-frame display alignment to shared reference landmarks; not measured patient skeletal anatomy",
         "morphology": "Estimated appearance from recorded sex, age and BMI, with a bounded authored adiposity envelope; fixed reference stature; not a scan or body-fat measurement",
     }
 
@@ -251,9 +335,9 @@ def organ_asset(key, sex, reference):
             token in name.lower()
             for token in ("arter", "vein", "aorta", "cava", "duct")
         )
-        if key == "heart" and auxiliary:
-            lo = bounds[:, 0].min(0) - np.array([35, 35, 35])
-            hi = bounds[:, 1].max(0) + np.array([35, 35, 65])
+        if key in ("heart", "pancreas") and auxiliary:
+            lo = bounds[:, 0].min(0) - (np.array([35, 35, 35]) if key=="heart" else 12)
+            hi = bounds[:, 1].max(0) + (np.array([35, 35, 65]) if key=="heart" else 12)
             keep = ((mesh.triangles_center >= lo) & (mesh.triangles_center <= hi)).all(
                 1
             )
@@ -330,7 +414,7 @@ def main():
             print(key, sex, flush=True)
     (OUT / "manifest.json").write_text(json.dumps(result, indent=2), encoding="utf8")
     (OUT / "ATTRIBUTION.md").write_text(
-        "# Anatomy presentation v2\n\nBody: MakeHuman core base and macro targets, CC0; equal ancestry blend, reference stature, presentation arm alignment and authored high-weight abdominal/hip adiposity envelope (not measured body composition), male/female/neutral and age/weight morph export. https://www.makehumancommunity.org/about/license.html\n\nOrgans: Human Reference Atlas / HuBMAP CCF 3D Reference Object Library, Visible Human male/female v1.2, with male pancreatic and liver ducts from v1.1. CC BY 4.0. Contributors include Kristen Browne and the HRA organ illustration team. https://github.com/hubmapconsortium/ccf-3d-reference-object-library . Adaptations: coordinates converted to millimetres, reference-centre registration, combined named compartments/vessels, smooth normals, local heart vessel cropping, illustrative pancreas subdivision/smoothing and deterministic relief of up to approximately 1 mm, and procedural presentation materials. Reference anatomy is not patient imaging.\n\nShared skeleton, muscles, nerves and brain: BodyParts3D / DBCLS, CC BY 4.0; ../ATTRIBUTION.md. These remain shared reference structures, not sex-specific patient measurements.\n",
+        "# Anatomy presentation v2\n\nBody: MakeHuman core base and macro targets, CC0; equal ancestry blend, reference stature, piecewise bone-frame presentation pose alignment and authored high-weight abdominal/hip adiposity envelope (not measured body composition), male/female/neutral and age/weight morph export. https://www.makehumancommunity.org/about/license.html\n\nOrgans: Human Reference Atlas / HuBMAP CCF 3D Reference Object Library, Visible Human male/female v1.2, with male pancreatic and liver ducts from v1.1. CC BY 4.0. Contributors include Kristen Browne and the HRA organ illustration team. https://github.com/hubmapconsortium/ccf-3d-reference-object-library . Adaptations: coordinates converted to millimetres, reference-centre registration, combined named compartments/vessels, smooth normals, local heart vessel cropping, illustrative pancreas subdivision/smoothing and deterministic relief of up to approximately 1 mm, and procedural presentation materials. Reference anatomy is not patient imaging.\n\nShared skeleton, muscles, nerves and brain: BodyParts3D / DBCLS, CC BY 4.0; ../ATTRIBUTION.md. These remain shared reference structures, not sex-specific patient measurements.\n",
         encoding="utf8",
     )
 

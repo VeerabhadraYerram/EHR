@@ -2,6 +2,7 @@
 -r services/digital-twin/requirements.txt
 -r services/imaging/requirements.txt
 -r services/genomics/requirements.txt
+-r scripts/requirements-anatomy.txt
 sqlalchemy
 psycopg2-binary
 minio

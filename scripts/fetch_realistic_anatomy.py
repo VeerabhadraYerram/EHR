@@ -9,13 +9,16 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def main():
-    lock = json.loads(
-        (
-            ROOT / "frontend/doctor-review-ui/public/anatomy/v2/source-lock.json"
-        ).read_text()
-    )
+    assets = []
+    for version in ("v2", "v3"):
+        lock = (
+            ROOT
+            / f"frontend/doctor-review-ui/public/anatomy/{version}/source-lock.json"
+        )
+        if lock.exists():
+            assets.extend(json.loads(lock.read_text(encoding="utf8"))["assets"])
     target = (ROOT / "data/anatomy/source").resolve()
-    for asset in lock["assets"]:
+    for asset in assets:
         path = (target / asset["destination"]).resolve()
         if not path.is_relative_to(target):
             raise ValueError("Invalid source destination")

@@ -417,10 +417,10 @@ export default function GlucoseForecastPanel({
           type="button"
           className={`legend-toggle-pill ${showBand ? "active" : "muted"}`}
           onClick={() => setShowBand(!showBand)}
-          title="Click to toggle 90% confidence range"
+          title="Toggle the illustrative model sensitivity range; coverage is not calibrated"
         >
           <i className="legend-band" />
-          <span>90% Confidence range</span>
+          <span>Model sensitivity range</span>
         </button>
         {!compact && (
           <label className="observed-toggle">
@@ -481,6 +481,15 @@ export default function GlucoseForecastPanel({
           >
             <Users size={14} />
             <span>Patient profiles<small>Explore the cohort</small></span>
+          </button>
+          <button
+            type="button"
+            className="graph-nav-pill-btn"
+            onClick={() => onNavigate("operations")}
+            title="Open alerts, similar cases, delivery receipts and access audit"
+          >
+            <ClipboardCheck size={14} />
+            <span>Care operations<small>Alerts, cases & audit</small></span>
           </button>
         </div>
       )}

@@ -661,6 +661,9 @@ export default function DiagnosticWorkstation() {
             </div>
             <div
               className="context-fact"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('patients'); } }}
               onClick={() => navigate("patients")}
               style={{ cursor: "pointer" }}
               title="Click to view full patient registry and profile"
@@ -698,6 +701,9 @@ export default function DiagnosticWorkstation() {
             </div>
             <div
               className="context-risk"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('scenarios'); } }}
               onClick={() => navigate("scenarios")}
               style={{ cursor: "pointer" }}
               title="Click to simulate what-if counterfactual scenarios for this forecast"
@@ -754,7 +760,10 @@ export default function DiagnosticWorkstation() {
                       </p>
                       <div
                         className="hero-reading"
-                        onClick={() => navigate("forecast")}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setForecastPane('recording'); navigate('forecast'); } }}
+                        onClick={() => { setForecastPane('recording'); navigate("forecast"); }}
                         title="Click to view continuous sensor timeline & CGM dynamics"
                       >
                         <strong>
@@ -772,6 +781,9 @@ export default function DiagnosticWorkstation() {
                       </div>
                       <div
                         className="hero-risk"
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('scenarios'); } }}
                         onClick={() => navigate("scenarios")}
                         title="Click to explore and simulate counterfactual what-if scenarios"
                       >

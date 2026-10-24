@@ -122,9 +122,9 @@ class MetabolicDigitalTwinSimulator:
             intensity = str(params.get("intensity", "brisk")).lower()
             intensity_multiplier = 1.25 if intensity == "brisk" else 0.90
 
-            label = f"{int(duration)}-Minute {intensity.capitalize()} Walk"
+            label = f"{duration:g}-Minute {intensity.capitalize()} Walk"
             rationale = (
-                f"Acute {int(duration)}-min {intensity} ambulation stimulates non-insulin-mediated "
+                f"Acute {duration:g}-min {intensity} ambulation stimulates non-insulin-mediated "
                 f"GLUT4 muscle uptake, blunting postprandial glycemic surge."
             )
             mechanism = (
@@ -146,14 +146,14 @@ class MetabolicDigitalTwinSimulator:
 
         elif itype == "carb_reduction":
             carb_diff = float(params.get("carb_reduction_g", 35))
-            label = f"Reduce Meal Carbs by {int(carb_diff)}g"
+            label = f"Reduce Meal Carbs by {carb_diff:g}g"
             rationale = (
                 f"Substitutes refined starches for protein/fiber, reducing glucose appearance rate "
-                f"Ra(t) by approximately {carb_diff:.0f}g carbohydrate."
+                f"Ra(t) by approximately {carb_diff:g}g carbohydrate."
             )
             mechanism = (
                 f"Two-Compartment Gut Kinetics (Hovorka): Gut glucose absorption Ra(t) = (D*t/tau^2)*exp(1-t/tau). "
-                f"Cutting {carb_diff:.0f}g reduces peak excursion magnitude by {carb_diff * 0.95:.1f} mg/dL."
+                f"Cutting {carb_diff:g}g reduces peak excursion magnitude by {carb_diff * 0.95:.1f} mg/dL."
             )
 
             for idx, h in enumerate(horizons):
@@ -168,11 +168,11 @@ class MetabolicDigitalTwinSimulator:
             delay_mins = float(params.get("delay_carbs_minutes", 15))
             label = "Food Sequencing (Fiber & Protein First)"
             rationale = (
-                f"Consuming vegetables/protein {int(delay_mins)} mins prior to carbohydrates slows gastric emptying "
+                f"Consuming vegetables/protein {delay_mins:g} mins prior to carbohydrates slows gastric emptying "
                 f"and stimulates incretin (GLP-1) secretion without caloric restriction."
             )
             mechanism = (
-                f"Gastric Emptying Delay: assumed {delay_mins:.0f}m sequencing delay changes absorption time "
+                f"Gastric Emptying Delay: assumed {delay_mins:g}m sequencing delay changes absorption time "
                 f"constant from 40m to {40.0 + delay_mins * 5.0 / 3.0:.1f}m; "
                 f"illustrative attenuation magnitude {24.0 * delay_mins / 15.0:.1f} mg/dL before reserve modifier."
             )
@@ -189,7 +189,7 @@ class MetabolicDigitalTwinSimulator:
         elif itype == "compound_lifestyle":
             walk_dur = float(params.get("duration_minutes", 20))
             carb_cut = float(params.get("carb_reduction_g", 25))
-            label = f"Compound Intervention ({int(walk_dur)}m Walk + {int(carb_cut)}g Carb Cut)"
+            label = f"Compound Intervention ({walk_dur:g}m Walk + {carb_cut:g}g Carb Cut)"
             rationale = (
                 f"Synergistic dual lifestyle intervention: simultaneous gut absorption attenuation "
                 f"and muscle GLUT4 clearance acceleration."

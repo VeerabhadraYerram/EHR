@@ -5,6 +5,7 @@ import type {
   SimulationBranch,
 } from "./types";
 import "./scenario-assistant.css";
+import { scenarioParameters } from './scenarioParameters';
 type Message = {
   role: "user" | "assistant";
   text: string;
@@ -120,27 +121,13 @@ export default function ScenarioAssistant({
     const walk = /walk|exercise/.test(lower),
       carbs = /carb|carbohydrate/.test(lower),
       delay = /delay|sequence|sequencing/.test(lower);
-    const duration = Number(
-      lower.match(/(?:walk|exercise)(?:\s+for)?\s+(\d+)/)?.[1] ??
-        lower.match(/(\d+)\s*(?:min|minute)/)?.[1] ??
-        20,
-    );
-    const grams = Number(
-      lower.match(
-        /(?:reduce|less|remove|cut|reduction|by)\s+(\d+)\s*(?:g|gram)/,
-      )?.[1] ??
-        lower.match(/(\d+)\s*(?:g|gram)/)?.[1] ??
-        25,
-    );
-    if (
-      (walk && (duration < 0 || duration > 60)) ||
-      (carbs && (grams < 0 || grams > 60))
-    ) {
+    const {duration, grams, delay: delayMinutes, error: parameterError} = scenarioParameters(lower);
+    if (parameterError) {
       setMessages((m) => [
         ...m,
         {
           role: "assistant",
-          text: "Use walking durations of 0–60 minutes and carbohydrate reductions of 0–60 g, within the demonstration simulator’s bounds.",
+          text: parameterError,
         },
       ]);
       return;
@@ -162,7 +149,7 @@ export default function ScenarioAssistant({
         },
       ];
     } else if (delay) {
-      const mins = Number(lower.match(/(\d+)\s*(?:min|minute)/)?.[1] ?? 15);
+      const mins = delayMinutes;
       if (mins > 60) {
         setMessages((m) => [
           ...m,

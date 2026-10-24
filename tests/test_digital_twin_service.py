@@ -204,6 +204,23 @@ def test_in_silico_simulation_fidelity():
         assert "Assumption-based" in branch["simulation_method"]
 
 
+def test_decimal_scenario_values_match_labels_and_explanations():
+    response = client.post('/api/v1/twin/simulate', json={
+        'person_id': 'P001',
+        'interventions': [
+            {'intervention_type': 'carb_reduction', 'parameters': {'carb_reduction_g': 25.5}},
+            {'intervention_type': 'postprandial_walk', 'parameters': {'duration_minutes': 30.5}},
+        ],
+    })
+    assert response.status_code == 200
+    branches = {b['intervention_type']: b for b in response.json()['counterfactual_branches']}
+    carbs = branches['carb_reduction']
+    assert '25.5g' in carbs['intervention_label']
+    assert '25.5g' in carbs['clinical_rationale']
+    assert '25.5g' in carbs['biophysical_mechanism']
+    assert '30.5-Minute' in branches['postprandial_walk']['intervention_label']
+
+
 def test_patient_targeted_simulation():
     """Verify in-silico simulation targeting a cohort patient automatically."""
     res = client.post("/api/v1/twin/simulate/P001")

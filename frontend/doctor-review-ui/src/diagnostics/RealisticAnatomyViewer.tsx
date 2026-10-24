@@ -337,7 +337,7 @@ export default function RealisticAnatomyViewer({
 
     renderer.shadowMap.enabled = true;
 
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
 
     element.appendChild(renderer.domElement);
 

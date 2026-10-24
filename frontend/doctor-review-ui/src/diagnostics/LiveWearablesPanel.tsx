@@ -203,7 +203,7 @@ export default function LiveWearablesPanel({
                 className={`jump-chip ${currentIndex === 0 ? "active" : ""}`}
                 onClick={() => onIndexChange(0)}
               >
-                ⏮ Start (00:00)
+                ⏮ Start ({readings[0]?.time || 'first reading'})
               </button>
               {mealIndex !== -1 && (
                 <button

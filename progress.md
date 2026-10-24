@@ -1,5 +1,27 @@
 # Progress Log
 
+## 2026-10-24 — Final checkpoint QA
+Full suite 79 passed; added alert evaluation regression then platform/security group 10 passed; final smoothed imaging/assets/security group 9 passed and external evaluator 4 passed. Final production build and lint pass (no lint warnings; expected lazy Three.js chunk-size warning). All nine local health checks ready. Browser verified replay alert new -> acknowledged -> resolved, genomic VCF import, model-grounded chat, real muscle/body geometry, scan/mesh inspection and 390px anatomy/scan layouts without horizontal overflow. P001/P002 scan pipelines complete with distinct mask volumes; documented Taubin display smoothing leaves measurements mask-based. Screenshots and demo/integration guide saved. No commits/pushes.
+
+## 2026-10-24 — Checkpoints 5/6: care operations and validation boundaries
+Added optional Keycloak/OIDC RS256 issuer/audience/expiry and assignment/RBAC enforcement across running backends, browser PKCE adapter and realm configuration; server-derived review actors and optimistic record versions; metadata-only cross-service audit with hash verification. Added durable replay alert acknowledgment/resolution/escalation/cooldown, transparent permitted-profile neighbours, DocumentReference for final documents, FHIR $validate/transaction delivery with retained receipts/failures and stable-ID retries. NLP context now respects sentence/contrast boundaries and applies to allergy/procedure spans; nested duplicate spans reduced. Independent frozen-prediction evaluation tool reports calibration, discrimination, patient-bootstrap CIs and subgroup limits. Full regression suite: 79 passed; frontend build passed; final targeted alert/concurrency checks and browser QA logged in guide. Existing hook warning corrected subsequently. Actual Keycloak login/HAPI delivery, trained MedCAT terminology packs, Camunda, acquired-scan segmentation, external notifications and independent Indian/prospective outcomes remain unprovisioned. Startup now includes imaging 8006, genomics 8007, audit 8008; twin switched to local 8004 runtime in this session to load changes without rebuilding Docker.
+
+## 2026-10-24 — Checkpoint 4: model-grounded scenario conversation
+Added local plain-language scenario assistant with actual shared inference, SHAP, mechanism assumptions and numerical trajectory evidence. What-if now includes the branch-linked 3D horizon slider. Browser walking request returned backend peak 150.4 vs baseline 162.7 mg/dL for P001/02:13; build passed. Bounded parser/templates explicitly distinguished from general LLM.
+
+## 2026-10-24 — Checkpoint 3: patient-linked genomic explorer
+Replaced fixed educational helix with VCF import service (8007), sample/build/consent checks, persistent raw input + SHA, interactive chromosome map, filters, allele/genotype/annotation inspector and export. Synthetic example clearly fabricated. Eight parser/persistence tests pass, production build and browser import passed. No genetic risk or variant calling claim.
+
+## 2026-10-24 — Checkpoint 2: reproducible synthetic imaging
+Actual CT phantom -> masks -> marching-cubes meshes, NIfTI and 150-slice DICOM export, profile-specific seed, measured volumes and hash provenance. Imaging service 8006, slice/overlay and 3D UI. Five geometry/imaging tests passed; build and proxy verified, browser inspected. Phantom Dice explicitly not clinical accuracy.
+
+### [2026-10-24] Checkpoint 1 — real layered 3D anatomy
+- Preserved the other agent’s uncommitted main-page navigation and UI changes.
+- Imported attributed BodyParts3D CC BY 4.0 meshes with reproducible source downloads, GLB conversion, geometry manifest and bounded simplification.
+- Added true WebGL orbit/zoom, system toggles, clickable isolated organs, patient-conditioned state and forecast-horizon 3D visualization. Original illustrations remain accessible.
+- Verified three asset/topology/coordinate tests, production build, zero npm audit vulnerabilities, and browser-rendered heart selection.
+
+
 ### [2026-10-24] Streamlined Inline Navigation & Workstation Section Consolidation
 **Author:** Antigravity Pair Programmer
 

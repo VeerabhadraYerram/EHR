@@ -15,6 +15,8 @@ import { Maximize2, Pause, Play, RotateCcw } from "lucide-react";
 import { anatomyReferences } from "./anatomyReferences";
 
 import OrganPatientData from "./OrganPatientData";
+import { matchingOrganForecast } from "./organEvidence";
+import { organGlucoseState, glucoseOverlayColor } from "./organVisualization";
 
 import { phenotypeFor } from "./patientPhenotype";
 
@@ -178,7 +180,26 @@ export default function RealisticAnatomyViewer({
     () => typeof window === "undefined" || window.innerWidth > 800,
   );
   const [showFascia,setShowFascia]=useState(false);
-  const [onlineReference, setOnlineReference] = useState(false);
+  const [preferOnlineReference, setOnlineReference] = useState(false);
+  const [inspector, setInspector] = useState<'data' | 'simulation' | 'view'>(projectedGlucose !== undefined ? 'simulation' : 'data');
+  const [overlay, setOverlay] = useState(projectedGlucose !== undefined);
+  const [horizon, setHorizon] = useState(0);
+  const [scenario, setScenario] = useState('');
+  const [playing, setPlaying] = useState(false);
+  const matchedForecast = matchingOrganForecast(patient, reading, simulation);
+  const glucoseState = organGlucoseState(patient, reading, simulation, horizon, scenario);
+  const overlayGlucose = projectedGlucose ?? glucoseState?.glucose;
+  const overlayColor = overlayGlucose !== undefined ? glucoseOverlayColor(overlayGlucose) : '#78918b';
+  useEffect(() => { setHorizon(0); setScenario(''); setPlaying(false); }, [patient.person_id, reading?.reading_time]);
+  useEffect(() => {
+    if (!playing || !active || !matchedForecast || compact) return;
+    const timer = window.setInterval(() => setHorizon(h => h >= 120 ? 0 : h + 15), 1300);
+    return () => window.clearInterval(timer);
+  }, [playing, active, matchedForecast, compact]);
+  // Preserve the source choice across organs, but always render body, scans and
+  // organs without an online reference using the local viewer.
+  const onlineReference = preferOnlineReference &&
+    Boolean(anatomyReferences[selected]) && !reconstructedMeshes && !overlay;
 
   const [organSource, setOrganSource] = useState<"reference" | "alternate">(
     "reference",
@@ -239,6 +260,7 @@ export default function RealisticAnatomyViewer({
     tissueOpacity,
     reference,
     showFascia,
+    overlay, overlayColor,
   });
 
   live.current = {
@@ -254,6 +276,7 @@ export default function RealisticAnatomyViewer({
     tissueOpacity,
     reference,
     showFascia,
+    overlay, overlayColor,
   };
 
   useEffect(() => {
@@ -732,6 +755,13 @@ export default function RealisticAnatomyViewer({
           if (!mesh.isMesh) return;
 
           const mat = mesh.material as THREE.MeshPhysicalMaterial;
+          // A removable, uniformly applied data overlay; never deform tissue
+          // or paint focal pathology from a systemic glucose measurement.
+          const dataLayer = s.overlay && group.userData.layer === 'organs';
+          if (mat.userData.uniforms?.uClinicalOverlay) {
+            mat.userData.uniforms.uClinicalOverlay.value = dataLayer ? 1 : 0;
+            mat.userData.uniforms.uClinicalColor.value.set(s.overlayColor);
+          }
         mesh.visible=id!=="muscles"||!String(mat.userData.part).includes("tendons_and_fascia")||s.showFascia;
 
           mat.wireframe = s.wireframe;
@@ -918,7 +948,6 @@ export default function RealisticAnatomyViewer({
   }, [expanded]);
 
   function choose(id: string) {
-    setOnlineReference(false);
     setSelected(id);
     setCut(0);
     setHeartbeat(false);
@@ -1011,6 +1040,14 @@ export default function RealisticAnatomyViewer({
               </div>
             </div>
           )}
+          {overlay && overlayGlucose !== undefined && (
+            <div className="anatomy-glucose-badge" role="status">
+              <i style={{background: overlayColor}} />
+              <div><strong>{overlayGlucose.toFixed(1)} <small>mg/dL</small></strong>
+              <span>{projectedGlucose !== undefined ? 'Forecast page selection' : `${glucoseState?.source} · ${horizon ? `+${horizon} min` : 'selected moment'}`}</span>
+              <small>Systemic glucose overlay · not tissue damage</small></div>
+            </div>
+          )}
           {selected !== "body" && (
             <div className="anatomy-source-picker">
               {external && !reconstructedMeshes && (
@@ -1019,21 +1056,21 @@ export default function RealisticAnatomyViewer({
                     aria-pressed={!onlineReference}
                     onClick={() => setOnlineReference(false)}
                   >
-                    Local 3D
+                    Local atlas 3D
                   </button>
                   <button
                     aria-pressed={onlineReference}
-                    onClick={() => setOnlineReference(true)}
+                    onClick={() => { setOverlay(false); setOnlineReference(true); }}
                   >
                     Textured reference (online)
                   </button>
                 </>
               )}
               <button
-                aria-pressed={showOrganData}
-                onClick={() => setShowOrganData((v) => !v)}
+                aria-pressed={expanded ? showOrganData : inspector === 'data'}
+                onClick={() => expanded ? setShowOrganData((v) => !v) : setInspector('data')}
               >
-                Patient data
+                Patient panel
               </button>
             </div>
           )}
@@ -1235,6 +1272,43 @@ export default function RealisticAnatomyViewer({
           </div>
         </div>
         <aside className="atlas3d-controls">
+          <div className="anatomy-inspector-tabs" role="group" aria-label="Anatomy inspector">
+            <button aria-pressed={inspector === 'data'} onClick={() => setInspector('data')}>Patient data</button>
+            <button aria-pressed={inspector === 'simulation'} onClick={() => setInspector('simulation')}>Simulation</button>
+            <button aria-pressed={inspector === 'view'} onClick={() => setInspector('view')}>Layers & view</button>
+          </div>
+          <div className="anatomy-quick-organs" role="group" aria-label="Choose anatomy">
+            {names.filter(id => !reconstructedMeshes || id === 'body' || reconstructedMeshes.some(m => m.id === id)).map(id => <button key={id} aria-pressed={selected === id} onClick={() => choose(id)}>{id === 'body' ? 'Whole body' : id}</button>)}
+          </div>
+          {inspector !== 'view' && <div className="anatomy-patient-inspector">
+            {inspector === 'simulation' && !reconstructedMeshes && <section className="organ-simulation-panel" aria-label="Glucose visualization controls">
+              <label className="atlas3d-toggle"><span>Glucose overlay on local 3D</span><input type="checkbox" checked={overlay} onChange={e => setOverlay(e.target.checked)} /></label>
+              <p className="caption">Color represents this patient's systemic glucose, not organ function or anatomical change.</p>
+              {!compact && <>
+                <label className="caption">Compare model output
+                  <select aria-label="Organ simulation scenario" value={scenario} disabled={!matchedForecast} onChange={e => { setScenario(e.target.value); setOverlay(true); }}>
+                    <option value="">Baseline forecast</option>
+                    {(matchedForecast ? simulation?.counterfactual_branches || [] : []).map(b => <option key={b.intervention_type} value={b.intervention_type}>{b.intervention_label}</option>)}
+                  </select>
+                </label>
+                <label className="caption">{horizon ? `+${horizon} minutes` : 'Selected recording'}
+                  <input aria-label="Organ forecast horizon" type="range" min="0" max="120" step="15" disabled={!matchedForecast} value={horizon} onChange={e => { setHorizon(Number(e.target.value)); setOverlay(true); }} />
+                </label>
+                <button className="organ-timeline-play" disabled={!matchedForecast} aria-pressed={playing} onClick={() => { setPlaying(v => !v); setOverlay(true); }}>{playing ? 'Pause timeline' : 'Play timeline'}</button>
+                {glucoseState ? <div className="organ-simulation-value"><strong>{glucoseState.glucose.toFixed(1)} <small>mg/dL</small></strong><span>{glucoseState.source}</span>
+                  {scenario && horizon > 0 && <small>{(glucoseState.glucose - glucoseState.baseline).toFixed(1)} mg/dL vs baseline at the same horizon</small>}
+                  {glucoseState.lower !== null && glucoseState.upper !== null && <small>Sensitivity range {glucoseState.lower.toFixed(1)}–{glucoseState.upper.toFixed(1)} mg/dL</small>}
+                </div> : <p>No matching model value for this horizon.</p>}
+                {!matchedForecast && <p className="caption">A matching forecast is unavailable. Only recorded data can be visualized.</p>}
+                {matchedForecast?.model_applicable === false && <p className="caption">Outside the model's evaluated domain.</p>}
+              </>}
+              <div className="organ-color-legend"><span>Purple: &lt;70</span><span>Mint → amber: 100 → 250 mg/dL</span></div>
+              <small>Atlas geometry stays fixed. What-if responses are estimates; renal, cardiac and other organ outcomes are not forecast.</small>
+            </section>}
+            {inspector === 'simulation' && reconstructedMeshes && <p className="caption">Synthetic scan geometry is inspectable in Layers & view. No scan-derived physiological simulator is available.</p>}
+            {inspector === 'data' && <OrganPatientData key={patient.person_id + selected} organ={selected} patient={patient} reading={reading} simulation={simulation} source={onlineReference && external ? `${external.title} by ${external.author}; online reference` : currentSpec?.source} reconstructed={Boolean(reconstructedMeshes)} />}
+          </div>}
+          <div className="anatomy-view-inspector" hidden={inspector !== 'view'}>
           {!reconstructedMeshes && (
             <>
               <div>
@@ -1413,21 +1487,9 @@ export default function RealisticAnatomyViewer({
               onChange={(e) => setWireframe(e.target.checked)}
             />
           </label>
+          </div>
         </aside>
       </div>
-      {!compact&&(<OrganPatientData
-        key={patient.person_id + selected}
-        organ={selected}
-        patient={patient}
-        reading={reading}
-        simulation={simulation}
-        source={
-          onlineReference && external
-            ? `${external.title} by ${external.author}; CC BY 4.0; online reference`
-            : currentSpec?.source
-        }
-        reconstructed={Boolean(reconstructedMeshes)}
-      />)}
       <div className="anatomy-evidence-grid">
         <div>
           <span className="eyebrow">

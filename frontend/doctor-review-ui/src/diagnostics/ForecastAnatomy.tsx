@@ -1,4 +1,6 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
+import { matchingOrganForecast } from './organEvidence';
+import { organGlucoseState } from './organVisualization';
 import type {
   Patient,
   Reading,
@@ -18,20 +20,20 @@ export default function ForecastAnatomy({
   branch?: SimulationBranch | null;
 }) {
   const [horizon, setHorizon] = useState(0);
-  const point = (
-    branch?.simulated_trajectory || simulation?.baseline.continuous_trajectory
-  )?.find((p) => p.horizon_minutes === horizon);
-  const glucose =
-    horizon === 0 ? reading?.glucose_mg_dl : point?.projected_glucose_mg_dl;
+  useEffect(() => setHorizon(0), [patient.person_id, reading?.reading_time]);
+  const matching = matchingOrganForecast(patient, reading, simulation);
+  const matchingBranch = matching && simulation?.counterfactual_branches.includes(branch!) ? branch : null;
+  const glucose = organGlucoseState(patient, reading, simulation, horizon,
+    matchingBranch?.intervention_type)?.glucose;
   return (
     <section className="page-stack">
       <div className="paper-card">
         <span className="eyebrow">Forecast → physiological visualization</span>
         <h2>See the projected state, one step at a time.</h2>
         <p className="muted">
-          Glucose is the trained forecast endpoint. Organ color and rhythm are
-          explanatory visual mappings of glucose and baseline clinical context;
-          they are not additional validated organ forecasts.
+          The removable color overlay shows systemic glucose from the shared
+          forecast. Tissue geometry and heart rhythm do not change with glucose;
+          no organ damage or recovery is inferred.
         </p>
         <div className="forecast-anatomy-time">
           <strong>
@@ -43,14 +45,15 @@ export default function ForecastAnatomy({
             max="120"
             step="15"
             value={horizon}
+            disabled={!matching}
             aria-label="3D forecast horizon"
             onChange={(e) => setHorizon(Number(e.target.value))}
           />
           <span>{glucose?.toFixed(1) ?? "—"} mg/dL</span>
         </div>
-        {branch && (
+        {matchingBranch && (
           <p className="caption">
-            Showing what-if branch: {branch.intervention_label}.
+            Showing what-if branch: {matchingBranch.intervention_label}.
           </p>
         )}
       </div>

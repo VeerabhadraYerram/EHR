@@ -154,6 +154,7 @@ const DEFAULT_INTERVENTIONS: InterventionSpec[] = [
 
 export default function DiagnosticWorkstation() {
   const [page, setPage] = useState<Page>(currentPage);
+  const [forecastPane, setForecastPane] = useState<'recording' | 'model' | 'anatomy'>('model');
   const [patients, setPatients] = useState<Patient[]>([]),
     [selectedId, setSelectedId] = useState("");
   const [dates, setDates] = useState<string[]>([]),
@@ -889,13 +890,18 @@ export default function DiagnosticWorkstation() {
               )}
               {page === "forecast" && (
                 <div className="page-stack">
-                  {wearable}
-                  <GlucoseForecastPanel {...forecastProps} />
-                  <ForecastAnatomy
+                  <div className="forecast-workspace-tabs" role="group" aria-label="Forecast workspace views">
+                    <button aria-pressed={forecastPane === 'recording'} onClick={() => setForecastPane('recording')}><Activity size={16} />Recorded timeline</button>
+                    <button aria-pressed={forecastPane === 'model'} onClick={() => setForecastPane('model')}><FlaskConical size={16} />Forecast & SHAP</button>
+                    <button aria-pressed={forecastPane === 'anatomy'} onClick={() => setForecastPane('anatomy')}><HeartPulse size={16} />3D glucose state</button>
+                  </div>
+                  {forecastPane === 'recording' && wearable}
+                  {forecastPane === 'model' && <GlucoseForecastPanel {...forecastProps} />}
+                  {forecastPane === 'anatomy' && <ForecastAnatomy
                     patient={patient}
                     reading={reading}
                     simulation={shared}
-                  />
+                  />}
                 </div>
               )}
               {page === "scenarios" && (

@@ -2597,3 +2597,30 @@ body:has(.clinical-app) {
   from { opacity: 0; transform: translateY(12px) scale(0.95); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+/* Workspace launch cards: explicit scope overrides shared button resets. */
+.clinical-app .graph-sub-navigation { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px; padding-top:16px; }
+.clinical-app .graph-nav-pill-btn { display:flex; align-items:center; gap:10px; min-height:68px; padding:12px; border:1px solid #d6dfd6; border-radius:12px; background:#f8faf5; color:#344b3f; text-align:left; box-shadow:none; font-size:12px; }
+.clinical-app .graph-nav-pill-btn > svg:first-child { width:20px; height:20px; flex-shrink:0; }
+.clinical-app .graph-nav-pill-btn span { display:grid; gap:5px; }
+.clinical-app .graph-nav-pill-btn small { font-size:10px; font-weight:400; opacity:.75; }
+.clinical-app .graph-nav-pill-btn.primary { background:#385947; color:#fff; border-color:#385947; box-shadow:none; }
+.clinical-app .graph-nav-pill-btn:hover { border-color:#758d76; background:#edf3e8; color:#243e30; transform:translateY(-1px); box-shadow:0 4px 12px #2945310a; }
+.clinical-app .graph-nav-pill-btn:focus-visible { outline:2px solid #5d8067; outline-offset:3px; }
+.shap-explorer { margin-top:20px; border:1px solid #dae3d9; border-radius:14px; padding:16px; background:#f9fbf7; }
+.shap-explorer-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; color:#5d7062; font-size:11px; }
+.shap-explorer-toolbar select { padding:7px; border:1px solid #ccd8cc; border-radius:7px; background:white; color:#3b5444; }
+.shap-axis { margin:20px 67px 8px 32%; display:flex; justify-content:space-between; gap:8px; color:#6b7a6d; font-size:9px; }
+.clinical-app .shap-contribution { width:100%; display:grid; grid-template-columns: minmax(100px,1fr) minmax(100px,2fr) 60px; align-items:center; gap:14px; text-align:left; padding:13px 8px; border:0; border-bottom:1px solid #e1e8dd; border-radius:5px; background:transparent; color:#3e5344; font-size:12px; cursor:pointer; }
+.clinical-app .shap-contribution:hover,.clinical-app .shap-contribution[aria-pressed=true] { background:#eaf1e5; }
+.shap-factor-name { text-transform:capitalize; overflow-wrap:anywhere; }
+.shap-factor-name small { display:block; margin-top:5px; font-size:10px; color:#718073; text-transform:none; }
+.shap-diverging-track { height:24px; background:linear-gradient(90deg,transparent 49.7%,#b2bfb1 49.7%,#b2bfb1 50.3%,transparent 50.3%); position:relative; }
+.shap-diverging-track i { position:absolute; height:12px; top:6px; border-radius:3px; transition:width .2s; }
+.shap-diverging-track .positive { background:#b28259; }.shap-diverging-track .negative { background:#568374; }
+.shap-contribution strong { font-variant-numeric:tabular-nums; text-align:right; font-size:12px; }
+.shap-factor-detail { margin-top:14px; padding:15px; border:1px solid #cbdac7; border-left:3px solid #64876b; border-radius:8px; background:#eff5eb; font-size:12px; }
+.shap-factor-detail b { text-transform:capitalize; }.shap-factor-detail p { margin:8px 0; line-height:1.7; }.shap-factor-detail small { color:#667a66; }
+@media(max-width:600px){.shap-explorer{padding:10px}.shap-axis{margin-left:34%;margin-right:44px;font-size:8px}.clinical-app .shap-contribution{grid-template-columns:minmax(80px,1fr) minmax(70px,1.3fr) 42px;gap:6px;font-size:10px}.shap-contribution strong{font-size:10px}.clinical-app .graph-sub-navigation{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){.clinical-app .graph-nav-pill-btn,.shap-diverging-track i{transition:none;transform:none}}
+.forecast-workspace-tabs{display:flex;gap:6px;flex-wrap:wrap;padding:6px;border:1px solid #dae3d7;background:#edf2e9;border-radius:12px}.clinical-app .forecast-workspace-tabs button{display:flex;align-items:center;justify-content:center;gap:8px;flex:1;padding:12px;border:0;border-radius:8px;background:transparent;color:#5b735d;font-size:12px;cursor:pointer}.clinical-app .forecast-workspace-tabs button[aria-pressed=true]{background:#fff;color:#32543a;box-shadow:0 1px 4px #34532816}@media(max-width:500px){.clinical-app .forecast-workspace-tabs button{font-size:10px;gap:5px;padding:10px 5px}.forecast-workspace-tabs{gap:2px}}

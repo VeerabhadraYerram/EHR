@@ -6,6 +6,8 @@ uniform float uAnatomyWindow;
 uniform float uAnatomyCut;
 uniform float uAnatomyCutY;
 uniform float uAnatomyOuter;
+uniform float uClinicalOverlay;
+uniform vec3 uClinicalColor;
 float anatomyHash(vec3 p){p=fract(p*.3183099+vec3(.1,.3,.7));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
 float anatomyNoise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(anatomyHash(i),anatomyHash(i+vec3(1,0,0)),f.x),mix(anatomyHash(i+vec3(0,1,0)),anatomyHash(i+vec3(1,1,0)),f.x),f.y),mix(mix(anatomyHash(i+vec3(0,0,1)),anatomyHash(i+vec3(1,0,1)),f.x),mix(anatomyHash(i+vec3(0,1,1)),anatomyHash(i+vec3(1,1,1)),f.x),f.y),f.z);}
 float anatomyFbm(vec3 p){return .58*anatomyNoise(p)+.28*anatomyNoise(p*2.03)+.14*anatomyNoise(p*4.11);}
@@ -65,10 +67,10 @@ export function tissueMaterial(id: string, part: string) {
         ? "#ddbea0"
         : /cortex/.test(name)
           ? "#bc756b"
-          : "#9f4d5c";
+          : "#743c40";
     kind = 2;
-    roughness = 0.34;
-    coat = 0.37;
+    roughness = 0.48;
+    coat = 0.12;
   } else if (id === "lungs") {
     color = /bronchus|bronchi|trachea/.test(name) ? "#d6b6aa" : "#ac777e";
     kind = 6;
@@ -102,6 +104,8 @@ export function tissueMaterial(id: string, part: string) {
     uAnatomyCut: { value: 0 },
     uAnatomyCutY: { value: 0 },
     uAnatomyOuter: { value: outer ? 1 : 0 },
+    uClinicalOverlay: { value: 0 },
+    uClinicalColor: { value: new THREE.Color('#4fb095') },
   };
   material.userData = { uniforms, outer, baseColor: color, part };
   material.onBeforeCompile = (shader) => {
@@ -144,9 +148,12 @@ export function tissueMaterial(id: string, part: string) {
     );
     shader.fragmentShader = shader.fragmentShader.replace(
       "#include <opaque_fragment>",
-      `outgoingLight+=diffuseColor.rgb*pow(max(0.,dot(-normal,normalize(vec3(-.6,.5,-.8)))),3.)*.13;\n#include <opaque_fragment>`,
+      `outgoingLight+=diffuseColor.rgb*pow(max(0.,dot(-normal,normalize(vec3(-.6,.5,-.8)))),3.)*.13;
+       float clinicalRim=pow(1.-abs(dot(normal,normalize(vViewPosition))),2.5);
+       outgoingLight+=uClinicalColor*clinicalRim*uClinicalOverlay*.7;
+       #include <opaque_fragment>`,
     );
   };
-  material.customProgramCacheKey = () => "anatomy-tissue-v2";
+  material.customProgramCacheKey = () => "anatomy-tissue-v3-clinical-overlay";
   return material;
 }

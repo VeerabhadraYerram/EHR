@@ -1,4 +1,5 @@
 import { useState } from "react";
+import ShapContributionChart from './ShapContributionChart';
 import { Activity, HeartPulse, ClipboardCheck, Dna, Users, ArrowRight } from "lucide-react";
 import type { PatientSimulation, Reading, SimulationBranch } from "./types";
 
@@ -131,7 +132,6 @@ export default function GlucoseForecastPanel({
             clinical_explanation: `Input: ${baseline.features?.[feature] ?? "see source snapshot"}`,
           }))
       : baseline.top_shap_drivers;
-  const maximum = Math.max(...drivers.map((d) => Math.abs(d.shap_value)), 0.01);
   const handleChartMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const clientX = e.clientX - rect.left;
@@ -443,7 +443,7 @@ export default function GlucoseForecastPanel({
             title="Open 120-minute continuous glucose forecast & CGM timeline"
           >
             <Activity size={14} />
-            <span>Forecast</span>
+            <span>Forecast<small>Timeline & model factors</small></span>
             <ArrowRight size={13} />
           </button>
           <button
@@ -453,7 +453,7 @@ export default function GlucoseForecastPanel({
             title="Explore 3D anatomical digital twins"
           >
             <HeartPulse size={14} />
-            <span>Anatomical twins</span>
+            <span>Anatomical twins<small>Organs & patient context</small></span>
           </button>
           <button
             type="button"
@@ -462,7 +462,7 @@ export default function GlucoseForecastPanel({
             title="Clinical review & fact reconciliation"
           >
             <ClipboardCheck size={14} />
-            <span>Clinical review</span>
+            <span>Clinical review<small>Verify clinical evidence</small></span>
           </button>
           <button
             type="button"
@@ -471,7 +471,7 @@ export default function GlucoseForecastPanel({
             title="Inspect DNA sequence & genetic risk alleles"
           >
             <Dna size={14} />
-            <span>Genomics explorer</span>
+            <span>Genomics explorer<small>Variants & evidence</small></span>
           </button>
           <button
             type="button"
@@ -480,7 +480,7 @@ export default function GlucoseForecastPanel({
             title="View cohort patient profiles"
           >
             <Users size={14} />
-            <span>Patient profiles</span>
+            <span>Patient profiles<small>Explore the cohort</small></span>
           </button>
         </div>
       )}
@@ -520,28 +520,7 @@ export default function GlucoseForecastPanel({
             classifier before isotonic calibration, not percentage-point changes
             in calibrated risk.
           </p>
-          <div className="shap-list">
-            {drivers.map((d) => (
-              <div className="shap-row" key={d.feature}>
-                <div>
-                  <span>{d.feature.replaceAll("_", " ")}</span>
-                  <small>{d.clinical_explanation}</small>
-                </div>
-                <div className="shap-track">
-                  <i
-                    className={d.shap_value > 0 ? "increasing" : "decreasing"}
-                    style={{
-                      width: `${(Math.abs(d.shap_value) / maximum) * 100}%`,
-                    }}
-                  />
-                </div>
-                <strong>
-                  {d.shap_value > 0 ? "+" : ""}
-                  {d.shap_value.toFixed(3)}
-                </strong>
-              </div>
-            ))}
-          </div>
+          <ShapContributionChart drivers={drivers} features={baseline.features} />
           <details className="technical-details">
             <summary>Inspect model explanation and source inputs</summary>
             <pre>

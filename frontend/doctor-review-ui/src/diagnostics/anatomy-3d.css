@@ -270,3 +270,29 @@
 .organ-patient-data header b{white-space:nowrap;flex-shrink:0}.organ-data-expanded{scrollbar-width:thin;scrollbar-color:#42645a transparent}@media(max-width:800px){.anatomy-external-reference~.organ-data-expanded{left:15px;right:15px;width:auto}}
 
 @media(max-width:800px){.anatomy-source-picker~.anatomy-expanded-settings{top:150px;right:15px;width:160px}}
+
+/* Keep the selected organ, patient evidence and simulation together. */
+.atlas3d-realistic .atlas3d-layout { grid-template-columns:minmax(0,1fr) 320px; align-items:start; }
+.atlas3d-realistic .atlas3d-controls { display:flex; gap:12px; min-width:0; }
+.anatomy-inspector-tabs { display:grid; grid-template-columns:1.2fr 1fr; gap:4px; padding:4px; border:1px solid #dbe2d7; border-radius:10px; background:#edf1e8; }
+.clinical-app .anatomy-inspector-tabs button { padding:10px 5px; border:0; background:transparent; border-radius:7px; font-size:11px; color:#5e735f; cursor:pointer; }
+.clinical-app .anatomy-inspector-tabs button[aria-pressed=true] { background:white; color:#2c513b; box-shadow:0 1px 4px #233c1912; }
+.anatomy-quick-organs { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; }
+.clinical-app .anatomy-quick-organs button { border:1px solid #d9e1d4; border-radius:7px; padding:8px 4px; background:#f5f7f0; color:#536b50; font-size:11px; text-transform:capitalize; cursor:pointer; }
+.clinical-app .anatomy-quick-organs button[aria-pressed=true] { background:#3e604a; color:white; border-color:#3e604a; }
+.anatomy-view-inspector:not([hidden]) { display:grid; gap:20px; }.anatomy-view-inspector[hidden]{display:none}
+.anatomy-patient-inspector .organ-patient-data { margin:12px 0 0; padding:14px; }
+.organ-simulation-panel { background:#f3f6ee; border:1px solid #d6e1d0; border-radius:12px; padding:14px; font-size:11px; color:#465f49; }
+.organ-simulation-panel .caption { display:block; font-size:10px; margin:8px 0; line-height:1.6; }
+.organ-simulation-panel input[type=range],.organ-simulation-panel select { display:block; width:100%; margin-top:8px; accent-color:#51755b; }
+.organ-simulation-panel select { padding:8px; border:1px solid #d0ddc9; border-radius:6px; background:white; color:#3c5742; font-size:11px; }
+.organ-simulation-panel > small { display:block; color:#6f806b; font-size:10px; line-height:1.6; }
+.organ-simulation-value { display:grid; gap:5px; margin:12px 0; }.organ-simulation-value strong{font-size:24px;font-weight:500;font-variant-numeric:tabular-nums}.organ-simulation-value strong small{font-size:11px}.organ-simulation-value small{font-size:10px}
+.organ-color-legend{display:flex;gap:10px;flex-wrap:wrap;border-top:1px solid #dce5d5;padding-top:10px;margin:10px 0;font-size:9px;color:#63755c}
+.anatomy-glucose-badge { position:absolute; right:16px; bottom:65px; display:flex; gap:10px; padding:13px; border:1px solid #48635d; border-radius:12px; background:#10262cec; color:#d1e1d9; pointer-events:none; max-width:calc(100% - 32px); }
+.anatomy-glucose-badge > i { width:9px; height:9px; margin-top:6px; border-radius:50%; }.anatomy-glucose-badge > div{display:grid;gap:5px}.anatomy-glucose-badge strong{font-size:23px;font-weight:500;font-variant-numeric:tabular-nums}.anatomy-glucose-badge strong small{font-size:11px}.anatomy-glucose-badge span,.anatomy-glucose-badge small{font-size:10px;color:#abc4b8}
+@media(min-width:1000px){.atlas3d-realistic .atlas3d-stage:not(.anatomy-expanded){position:sticky;top:18px;height:clamp(560px,73vh,740px)}}
+@media(max-width:1000px){.atlas3d-realistic .atlas3d-layout{grid-template-columns:1fr}.atlas3d-realistic .atlas3d-controls{display:flex}.anatomy-patient-inspector{display:grid;grid-template-columns:1fr 1fr;gap:12px}.anatomy-patient-inspector .organ-patient-data{margin:0}.anatomy-quick-organs{grid-template-columns:repeat(7,1fr)}}
+@media(max-width:600px){.anatomy-patient-inspector{grid-template-columns:1fr}.anatomy-quick-organs{grid-template-columns:repeat(4,1fr)}.anatomy-glucose-badge{bottom:96px;left:12px;right:auto}.anatomy-glucose-badge strong{font-size:19px}.atlas3d-realistic .atlas3d-stage{height:520px}}
+.anatomy-inspector-tabs { grid-template-columns:repeat(3,1fr); }.anatomy-patient-inspector{display:block}.anatomy-inspector-tabs button{white-space:nowrap}
+.clinical-app .organ-timeline-play{display:flex;align-items:center;justify-content:center;width:100%;padding:8px;border:1px solid #b7cab3;background:#e7efdf;border-radius:7px;color:#3b5a3b;font-size:11px;cursor:pointer}.clinical-app .organ-timeline-play:disabled{opacity:.45;cursor:default}

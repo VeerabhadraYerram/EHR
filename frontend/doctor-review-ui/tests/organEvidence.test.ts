@@ -24,7 +24,7 @@ const reading = {
 const simulation = {
   person_id: "P1",
   decision_time: reading.reading_time,
-  baseline: { person_id: "P1", predicted_peak_glucose_mg_dl: 150 },
+  baseline: { person_id: "P1", decision_time: reading.reading_time, predicted_peak_glucose_mg_dl: 150 },
 } as PatientSimulation;
 test("organ cards use appropriate recorded fields and preserve missing values", () => {
   assert.deepEqual(

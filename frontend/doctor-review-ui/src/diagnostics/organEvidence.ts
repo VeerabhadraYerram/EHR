@@ -55,6 +55,7 @@ export function matchingOrganForecast(
     simulation.baseline.person_id !== patient.person_id ||
     (reading.person_id && reading.person_id !== patient.person_id) ||
     simulation.decision_time !== reading.reading_time ||
+    simulation.baseline.decision_time !== reading.reading_time ||
     !Number.isFinite(simulation.baseline.predicted_peak_glucose_mg_dl)
   )
     return null;

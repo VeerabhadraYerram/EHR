@@ -43,3 +43,34 @@ def test_consent_required():
             "P001", genomics.ImportVCF(**genomics.demo_vcf("P001"), consent=False)
         )
     assert error.value.status_code == 422
+
+
+def test_research_demo_uses_verified_alleles_and_reproducible_synthetic_calls():
+    demo = genomics.diabetes_demo('P001')
+    assert demo == genomics.diabetes_demo('P001')
+    assert demo['synthetic'] and demo['preview_only']
+    assert demo['sample_id'] == 'P001' and demo['reference_build'] == 'GRCh38'
+    rows = demo['variants']
+    assert [(v['id'], v['position'], v['ref'], v['alt']) for v in rows] == [
+        ('rs7903146', 112998590, 'C', 'T'),
+        ('rs13266634', 117172544, 'C', 'T'),
+        ('rs5219', 17388025, 'T', 'C'),
+    ]
+    assert [v['consequence'] for v in rows] == ['intron_variant', 'missense_variant', 'missense_variant']
+    assert len([v for v in rows if v['filter'] == 'PASS']) == 2
+    assert len({v['genotype'] for v in rows}) == 3
+    for v in rows:
+        assert sum(map(int, v['allele_depths'].split(','))) == int(v['depth'])
+        assert v['research']['annotation_url'].startswith('https://rest.ensembl.org/vep/')
+    assert genomics.diabetes_demo('P002')['variants'][0]['genotype'] != rows[0]['genotype']
+
+
+def test_demo_preview_does_not_replace_saved_sample(tmp_path, monkeypatch):
+    monkeypatch.setattr(genomics, 'DB', tmp_path / 'genomics.sqlite3')
+    saved = genomics.import_vcf('P001', genomics.ImportVCF(**genomics.demo_vcf('P001'), consent=True))
+    genomics.diabetes_demo('P001')
+    assert genomics.get_import('P001')['sha256'] == saved['sha256']
+    genomics.diabetes_demo('P002')
+    with pytest.raises(Exception) as missing:
+        genomics.get_import('P002')
+    assert missing.value.status_code == 404

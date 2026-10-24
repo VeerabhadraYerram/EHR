@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Patient } from "./types";
 import { ApiError, downloadJson, requestJson } from "./patientService";
 import "./genomics-workspace.css";
@@ -13,10 +13,12 @@ interface Variant {
   filter: string;
   genotype: string;
   depth: string;
+  allele_depths?: string;
   gene: string;
   consequence: string;
   annotation_source: string;
   info: Record<string, string>;
+  research?: { context: string; reference_url: string; annotation_url: string; literature_url: string; fetched_on: string };
 }
 interface Import {
   patient_id: string;
@@ -28,9 +30,18 @@ interface Import {
   synthetic: boolean;
   annotation_policy: string;
   variants: Variant[];
+  demo_panel?: string;
+  preview_only?: boolean;
+  vcf?: string;
 }
 export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
-  const [data, setData] = useState<Import | null>(null),
+  const inspectorRef = useRef<HTMLElement>(null);
+  function inspectDemo(key: string) {
+    setSelected(key); setChrom('all'); setQuery(''); setPassOnly(false);
+    requestAnimationFrame(() => inspectorRef.current?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block:'center'}));
+  }
+  const [importedData, setData] = useState<Import | null>(null),
+    [demoData, setDemoData] = useState<Import | null>(null),
     [text, setText] = useState(""),
     [sample, setSample] = useState(patient.person_id),
     [build, setBuild] = useState("GRCh38"),
@@ -42,9 +53,11 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
     [chrom, setChrom] = useState("all"),
     [selected, setSelected] = useState(""),
     [passOnly, setPassOnly] = useState(false);
+  const data = demoData ?? importedData;
   useEffect(() => {
     const c = new AbortController();
     setData(null);
+    setDemoData(null);
     setText("");
     setSample(patient.person_id);
     setConsent(false);
@@ -54,9 +67,13 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
     requestJson<Import>(`/api/v1/genomics/patients/${patient.person_id}`, {
       signal: c.signal,
     })
-      .then(setData)
+      .then(d => { if (!c.signal.aborted) setData(d); })
       .catch((e) => {
-        if (
+        if (e instanceof ApiError && e.status === 404 && !c.signal.aborted) {
+          requestJson<Import>(`/api/v1/genomics/patients/${patient.person_id}/demo/diabetes`, {signal:c.signal})
+            .then(d => { if (!c.signal.aborted) setDemoData(d); })
+            .catch(reason => { if (!c.signal.aborted) setError(reason.message); });
+        } else if (
           e.name !== "AbortError" &&
           (!(e instanceof ApiError) || e.status !== 404)
         )
@@ -64,6 +81,14 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
       });
     return () => c.abort();
   }, [patient.person_id]);
+  async function openResearchDemo() {
+    setBusy(true); setError('');
+    try {
+      setDemoData(await requestJson<Import>(`/api/v1/genomics/patients/${patient.person_id}/demo/diabetes`));
+      setSelected(''); setChrom('all'); setQuery(''); setPassOnly(false);
+    } catch(e) { setError((e as Error).message); }
+    finally { setBusy(false); }
+  }
   async function demo() {
     setError("");
     try {
@@ -102,6 +127,7 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
         ),
       );
       setSelected("");
+      setDemoData(null);
       setText("");
     } catch (e) {
       setError((e as Error).message);
@@ -137,6 +163,11 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
           supplied annotations. Genomic data remains separate from the current
           glucose prediction.
         </p>
+        <div className="button-row">
+          <button className="button primary" disabled={busy} onClick={openResearchDemo}>Open synthetic diabetes demo</button>
+          {demoData && importedData && <button className="button secondary" onClick={() => {setDemoData(null); setSelected(''); setChrom('all'); setQuery('');}}>Return to imported sample</button>}
+        </div>
+        {data?.demo_panel && <div className="genome-demo-banner" role="status"><strong>Synthetic research demo · not a patient genome</strong><p>Real GRCh38 reference loci and allele-specific annotations. Genotypes, read depth and quality are generated examples. This preview does not replace a saved sample or change the glucose model.</p></div>}
         <details open={!data}>
           <summary>Import a VCF sample</summary>
           <div className="genome-import-grid">
@@ -197,13 +228,13 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
               {busy ? "Validating…" : "Validate & import"}
             </button>
             <button className="button secondary" onClick={demo}>
-              Prepare synthetic VCF example
+              Prepare format-only VCF fixture
             </button>
           </div>
           <p className="caption">
-            The example contains fabricated loci and annotations. No patient
-            genome, pathogenicity or genetic risk is inferred. Imports replace
-            this profile’s current local sample.
+            The format-only fixture uses fabricated loci and annotations. The
+            research demo above uses public reference loci with fabricated sample
+            calls. Imports replace this profile’s current local sample.
           </p>
         </details>
         {error && (
@@ -214,12 +245,28 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
       </section>
       {data && (
         <>
+          {data.demo_panel && <section className="paper-card genome-demo-results" aria-label="Synthetic genomic evidence">
+            <span className="eyebrow">Targeted diabetes research panel · three loci</span>
+            <h2>From a genotype to traceable evidence.</h2>
+            <div className="genome-qc-summary">
+              <div><strong>{data.variants.length}</strong><span>Reference loci</span></div>
+              <div><strong>{data.variants.filter(v => v.filter === 'PASS').length}</strong><span>PASS examples</span></div>
+              <div><strong>{data.variants.filter(v => v.filter !== 'PASS').length}</strong><span>QC warnings</span></div>
+            </div>
+            <div className="genome-research-cards">{data.variants.map(v => {
+              const alleles = [v.ref, ...v.alt.split(',')];
+              const decoded = v.genotype.split(/[/|]/).map(a => a === '.' ? '?' : alleles[Number(a)] || '?').join(' / ');
+              const category = v.genotype === '0/0' ? 'Homozygous reference' : v.genotype === '0/1' ? 'Heterozygous' : v.genotype === '1/1' ? 'Homozygous alternate' : 'Inspect genotype';
+              return <article key={v.key}><header><b>{v.gene}</b><span>{v.id}</span></header><strong className="genome-decoded-genotype">{decoded}</strong><span>{category} · synthetic call</span><p>{v.filter === 'PASS' ? 'Passes the example QC filter. This is a genotype observation, not a disease diagnosis.' : 'Low-quality example: withhold interpretation and review the evidence.'}</p><small>ALT annotation: {v.consequence.replaceAll('_',' ')} · depth {v.depth} · QUAL {v.quality}</small><button className="text-button" onClick={() => inspectDemo(v.key)}>Inspect {v.gene} evidence</button><a href={v.research?.reference_url} target="_blank" rel="noreferrer">Ensembl reference ↗</a></article>;
+            })}</div>
+            <p className="caption">Common variants studied in diabetes research have population-dependent associations. This three-locus panel is not a polygenic score or a clinical interpretation. PASS is a fabricated sequencing QC flag, not a health result.</p>
+          </section>}
           <section className="paper-card">
             <div className="card-heading">
               <div>
                 <span className="eyebrow">
                   {data.synthetic
-                    ? "Synthetic format fixture"
+                    ? data.demo_panel ? "Synthetic research panel" : "Synthetic format fixture"
                     : "Imported sample"}{" "}
                   · {data.reference_build}
                 </span>
@@ -245,7 +292,7 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
                 "X",
                 "Y",
                 "MT",
-              ].map((c) => (
+              ].filter(c => !data.demo_panel || data.variants.some(v => v.chromosome === c)).map((c) => (
                 <div className="chromosome-track" key={c}>
                   <button
                     className={chrom === c ? "selected" : ""}
@@ -391,11 +438,12 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
                 </p>
               )}
             </section>
-            <aside className="paper-card">
+            <aside className="paper-card" ref={inspectorRef}>
               <span className="eyebrow">Locus inspector</span>
               {variant ? (
                 <>
                   <h3>
+                    {variant.id !== '.' ? `${variant.id} · ` : ''}
                     {variant.chromosome}:{variant.position.toLocaleString()}
                   </h3>
                   <div className="allele-change">
@@ -411,13 +459,16 @@ export default function GenomicsWorkspace({ patient }: { patient: Patient }) {
                     </dd>
                     <dt>Read depth</dt>
                     <dd>{variant.depth || "Not supplied"}</dd>
+                    <dt>Allele depths (REF, ALT)</dt>
+                    <dd>{variant.allele_depths || "Not supplied"}</dd>
                     <dt>Gene label</dt>
                     <dd>{variant.gene}</dd>
-                    <dt>Consequence</dt>
+                    <dt>ALT consequence (reference annotation)</dt>
                     <dd>{variant.consequence}</dd>
                     <dt>Annotation source</dt>
                     <dd>{variant.annotation_source}</dd>
                   </dl>
+                  {variant.research && <div className="genome-research-context"><p>{variant.research.context}</p><p>{variant.filter !== 'PASS' ? 'QC warning: this synthetic call should not be interpreted.' : 'Research context only. No individual risk or treatment conclusion is calculated.'}</p><a href={variant.research.literature_url} target="_blank" rel="noreferrer">Published association study ↗</a><br/><a href={variant.research.annotation_url} target="_blank" rel="noreferrer">Allele-specific Ensembl VEP snapshot source ↗</a><small>Reference checked {variant.research.fetched_on}; this app does not run live annotation.</small></div>}
                   <details>
                     <summary>All supplied INFO fields</summary>
                     <pre>{JSON.stringify(variant.info, null, 2)}</pre>

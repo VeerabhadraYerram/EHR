@@ -1,0 +1,54 @@
+{
+  "build": "GRCh38",
+  "source": "Ensembl Variation REST snapshot",
+  "loci": [
+    {
+      "rsid": "rs7903146",
+      "gene": "TCF7L2",
+      "chromosome": "10",
+      "position": 112998590,
+      "ref": "C",
+      "alt": "T",
+      "consequence": "intron_variant",
+      "context": "Common variant studied in Type 2 diabetes susceptibility.",
+      "source_url": "https://rest.ensembl.org/variation/human/rs7903146?content-type=application/json",
+      "reference_url": "https://www.ensembl.org/Homo_sapiens/Variation/Explore?v=rs7903146",
+      "fetched_on": "2026-10-24",
+      "reference_alleles": "C/G/T",
+      "annotation_url": "https://rest.ensembl.org/vep/human/hgvs/10%3Ag.112998590C%3ET?content-type=application/json",
+      "literature_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4911058/"
+    },
+    {
+      "rsid": "rs13266634",
+      "gene": "SLC30A8",
+      "chromosome": "8",
+      "position": 117172544,
+      "ref": "C",
+      "alt": "T",
+      "consequence": "missense_variant",
+      "context": "Common variant studied in Type 2 diabetes susceptibility.",
+      "source_url": "https://rest.ensembl.org/variation/human/rs13266634?content-type=application/json",
+      "reference_url": "https://www.ensembl.org/Homo_sapiens/Variation/Explore?v=rs13266634",
+      "fetched_on": "2026-10-24",
+      "reference_alleles": "C/A/T",
+      "annotation_url": "https://rest.ensembl.org/vep/human/hgvs/8%3Ag.117172544C%3ET?content-type=application/json",
+      "literature_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4911058/"
+    },
+    {
+      "rsid": "rs5219",
+      "gene": "KCNJ11",
+      "chromosome": "11",
+      "position": 17388025,
+      "ref": "T",
+      "alt": "C",
+      "consequence": "missense_variant",
+      "context": "Common variant studied in Type 2 diabetes susceptibility.",
+      "source_url": "https://rest.ensembl.org/variation/human/rs5219?content-type=application/json",
+      "reference_url": "https://www.ensembl.org/Homo_sapiens/Variation/Explore?v=rs5219",
+      "fetched_on": "2026-10-24",
+      "reference_alleles": "T/A/C/G",
+      "annotation_url": "https://rest.ensembl.org/vep/human/hgvs/11%3Ag.17388025T%3EC?content-type=application/json",
+      "literature_url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4911058/"
+    }
+  ]
+}

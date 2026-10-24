@@ -1,0 +1,15 @@
+##fileformat=VCFv4.2
+##reference=GRCh38
+##synthetic=true
+##source=EHR-Twin-diabetes-research-demo-v1
+##INFO=<ID=GENE,Number=1,Type=String,Description="Gene label from curated reference metadata">
+##INFO=<ID=CONSEQUENCE,Number=1,Type=String,Description="Allele-specific Ensembl VEP snapshot">
+##INFO=<ID=ANNOTATION_SOURCE,Number=1,Type=String,Description="Reference annotation source">
+##FILTER=<ID=LowQual,Description="Synthetic low-quality example for QC demonstration">
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Fabricated genotype">
+##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Fabricated read depth">
+##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Fabricated reference and alternate read counts">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	P002
+10	112998590	rs7903146	C	T	147	PASS	GENE=TCF7L2;CONSEQUENCE=intron_variant;ANNOTATION_SOURCE=Ensembl_VEP_snapshot_2026-10-24	GT:DP:AD	1/1:62:0,62
+8	117172544	rs13266634	C	T	164	PASS	GENE=SLC30A8;CONSEQUENCE=missense_variant;ANNOTATION_SOURCE=Ensembl_VEP_snapshot_2026-10-24	GT:DP:AD	0/0:75:75,0
+11	17388025	rs5219	T	C	18	LowQual	GENE=KCNJ11;CONSEQUENCE=missense_variant;ANNOTATION_SOURCE=Ensembl_VEP_snapshot_2026-10-24	GT:DP:AD	0/1:10:5,5

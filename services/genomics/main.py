@@ -105,6 +105,7 @@ def parse_vcf(text, sample, build):
                 "filter": filt,
                 "genotype": genotype,
                 "depth": fmt.get("DP"),
+                "allele_depths": fmt.get("AD"),
                 "info": info,
                 "gene": info.get("GENE", info.get("SYMBOL", "Unannotated")),
                 "consequence": info.get("CONSEQUENCE", "Unannotated"),
@@ -200,6 +201,57 @@ def demo_vcf(patient_id: str):
         "vcf": header + "\n".join(lines) + "\n",
         "sample_id": patient_id,
         "reference_build": "GRCh38",
+    }
+
+
+@app.get(PREFIX + "/patients/{patient_id}/demo/diabetes")
+def diabetes_demo(patient_id: str):
+    """Read-only targeted panel: public reference metadata, fabricated calls/QC."""
+    valid_patient(patient_id)
+    panel = json.loads((Path(__file__).with_name('demo_loci.json')).read_text())
+    seed = int(patient_id[1:])
+    header = [
+        '##fileformat=VCFv4.2', '##reference=GRCh38', '##synthetic=true',
+        '##source=EHR-Twin-diabetes-research-demo-v1',
+        '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene label from curated reference metadata">',
+        '##INFO=<ID=CONSEQUENCE,Number=1,Type=String,Description="Allele-specific Ensembl VEP snapshot">',
+        '##INFO=<ID=ANNOTATION_SOURCE,Number=1,Type=String,Description="Reference annotation source">',
+        '##FILTER=<ID=LowQual,Description="Synthetic low-quality example for QC demonstration">',
+        '##FORMAT=<ID=GT,Number=1,Type=String,Description="Fabricated genotype">',
+        '##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Fabricated read depth">',
+        '##FORMAT=<ID=AD,Number=R,Type=Integer,Description="Fabricated reference and alternate read counts">',
+        '#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t' + patient_id,
+    ]
+    records = []
+    for i, locus in enumerate(panel['loci']):
+        gt = ['0/0', '0/1', '1/1'][(seed + i) % 3]
+        depth = 48 + (seed * 7 + i * 13) % 45
+        low_quality = i == 2
+        if low_quality:
+            depth = 8 + seed % 5
+        alt_depth = round(depth * {'0/0': 0, '0/1': .48, '1/1': 1}[gt])
+        qual = 18 if low_quality else 145 + (seed + i * 17) % 70
+        records.append('\t'.join(map(str, [locus['chromosome'], locus['position'],
+            locus['rsid'], locus['ref'], locus['alt'], qual,
+            'LowQual' if low_quality else 'PASS',
+            f"GENE={locus['gene']};CONSEQUENCE={locus['consequence']};ANNOTATION_SOURCE=Ensembl_VEP_snapshot_2026-10-24",
+            'GT:DP:AD', f'{gt}:{depth}:{depth-alt_depth},{alt_depth}'])))
+    vcf = '\n'.join(header + records) + '\n'
+    variants = parse_vcf(vcf, patient_id, 'GRCh38')
+    for variant, locus in zip(variants, panel['loci']):
+        variant['research'] = {
+            'context': locus['context'], 'reference_url': locus['reference_url'],
+            'annotation_url': locus['annotation_url'], 'literature_url': locus['literature_url'],
+            'fetched_on': locus['fetched_on'],
+        }
+    return {
+        'patient_id': patient_id, 'sample_id': patient_id, 'reference_build': 'GRCh38',
+        'filename': f'synthetic-diabetes-panel-{patient_id}.vcf',
+        'sha256': hashlib.sha256(vcf.encode()).hexdigest(),
+        'synthetic': True, 'demo_panel': 'diabetes-research-v1', 'preview_only': True,
+        'imported_at': None, 'vcf': vcf, 'variants': variants,
+        'annotation_policy': 'Public reference loci and allele-specific VEP annotations; genotypes, quality and depth are fabricated. No patient genetic risk, pathogenicity or drug response is inferred.',
+        'pipeline': 'Deterministic synthetic VCF → exact-sample/build validation → parsed genotype/QC evidence; no database writes.',
     }
 
 

@@ -116,6 +116,7 @@ def body_asset(sex):
                 (290 - np.abs(transformed[:, 0])) / 80, 0, 1
             )
             transformed[:, 0] *= 1 + 0.07 * hips
+        joints[f"{age}_{weight}"] = {name: transformed[list(indices)].mean(0).tolist() for name, indices in joint_indices.items()}
         return transformed[used].astype("<f4")
 
     shapes = {
@@ -204,6 +205,7 @@ def body_asset(sex):
         "triangles": len(faces),
         "bounds_mm": {"min": v.min(0).tolist(), "max": v.max(0).tolist()},
         "targets": names,
+        "landmarks": joints["young_average"],
         "source": "MakeHuman core body and macro targets, neutral equal ancestry blend; CC0",
         "morphology": "Estimated appearance from recorded sex, age and BMI, with a bounded authored adiposity envelope; fixed reference stature; not a scan or body-fat measurement",
     }

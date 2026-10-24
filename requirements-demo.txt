@@ -1,0 +1,11 @@
+-e packages/ehr-contracts
+-r services/digital-twin/requirements.txt
+-r services/imaging/requirements.txt
+-r services/genomics/requirements.txt
+sqlalchemy
+psycopg2-binary
+minio
+rapidfuzz
+httpx
+pytest
+PyJWT[crypto]>=2.10,<3

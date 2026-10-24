@@ -119,6 +119,21 @@ def invalidate(state):
 
 class Actor(BaseModel):
     actor: str = Field(min_length=2, max_length=100)
+    expected_version: int | None = None
+
+    @field_validator("actor")
+    @classmethod
+    def authenticated_actor(cls, value):
+        from ehr_security import actor
+        return actor(value)
+
+
+def check_version(state, request):
+    from ehr_security import mode
+    if mode()=="oidc" and request.expected_version is None:
+        raise HTTPException(428,"Record version is required for this mutation")
+    if request.expected_version is not None and request.expected_version != state["version"]:
+        raise HTTPException(409,"Record changed since loading. Refresh before reviewing again.")
 
 
 class Review(Actor):
@@ -170,7 +185,7 @@ def health():
 def workspace(patient_id: str):
     with LOCK, database() as db:
         state = load(db, patient_id)
-        event(db, patient_id, "demo-reader", "workspace.read", {})
+        event(db, patient_id, __import__("ehr_security").actor(), "workspace.read", {})
         return {**state, "deduplication": duplicates(state), "mode": "Local persistent demo; actor names are not authenticated identities", "fhir_validation": "Basic structural checks only; official HL7 validator and hospital persistence are not connected"}
 
 
@@ -178,6 +193,7 @@ def workspace(patient_id: str):
 def add_entity(patient_id: str, request: NewEntity):
     with LOCK, database() as db:
         state = load(db, patient_id)
+        check_version(state, request)
         item = entity(request.kind, request.code, request.label, request.value, request.unit, request.observed_at, request.source)
         state["entities"].append(item)
         invalidate(state)
@@ -192,6 +208,7 @@ def review_entity(patient_id: str, entity_id: str, request: Review):
         raise HTTPException(422, "An edited value is required")
     with LOCK, database() as db:
         state = load(db, patient_id)
+        check_version(state, request)
         item = next((e for e in state["entities"] if e["id"] == entity_id), None)
         if not item or item["status"] == "merged":
             raise HTTPException(404, "Reviewable entity not found")
@@ -219,6 +236,7 @@ def review_entity(patient_id: str, entity_id: str, request: Review):
 def merge_entities(patient_id: str, request: Merge):
     with LOCK, database() as db:
         state = load(db, patient_id)
+        check_version(state, request)
         requested = set(request.entity_ids)
         group = next((g for g in duplicates(state) if g["kind"] == "duplicate" and {e["id"] for e in g["entities"]} == requested), None)
         if not group:
@@ -238,6 +256,7 @@ def merge_entities(patient_id: str, request: Merge):
 def decide_recommendation(patient_id: str, recommendation_id: str, request: Decision):
     with LOCK, database() as db:
         state = load(db, patient_id)
+        check_version(state, request)
         item = next((r for r in state["recommendations"] if r["id"] == recommendation_id), None)
         if not item:
             raise HTTPException(404, "Recommendation not found")
@@ -261,6 +280,7 @@ def document_text(state, request):
 def create_document(patient_id: str, request: Document):
     with LOCK, database() as db:
         state = load(db, patient_id)
+        check_version(state, request)
         if request.finalize:
             ready(state)
         item = {"id": str(uuid.uuid4()), "kind": request.kind, "status": "final" if request.finalize else "draft", "text": document_text(state, request), "created_at": now(), "actor": request.actor, "record_version": state["version"]}
@@ -317,6 +337,10 @@ def bundle_for(state, actor):
             resource = {"resourceType": "Procedure", "id": rid, "status": "unknown", "subject": subject, "code": coding, "note": [{"text": item["value"]}]}
         resources.append(resource)
         resources.append({"resourceType": "Provenance", "id": str(uuid.uuid4()), "target": [{"reference": "urn:uuid:" + rid}], "recorded": now(), "agent": [{"who": {"display": actor}}], "entity": [{"role": "source", "what": {"identifier": {"system": "urn:ehr:source", "value": source}}} for source in item["sources"]]})
+    import base64
+    for document in state["documents"]:
+        if document["status"]=="final" and document["record_version"]==state["version"]:
+            resources.append({"resourceType":"DocumentReference","id":document["id"],"status":"current","subject":{"reference":f"urn:ehr:patient:{patient_id}"},"type":{"text":document["kind"].replace("_"," ")},"date":document["created_at"],"author":[{"display":document["actor"]}],"content":[{"attachment":{"contentType":"text/plain; charset=utf-8","data":base64.b64encode(document["text"].encode()).decode(),"title":document["kind"].replace("_"," ")}}]})
     return {"resourceType": "Bundle", "id": str(uuid.uuid4()), "type": "collection", "timestamp": now(), "meta": {"tag": [{"system": "urn:ehr:environment", "code": "local-demo"}]}, "entry": [{"fullUrl": "urn:uuid:" + r["id"] if r["resourceType"] != "Patient" else "urn:ehr:patient:" + patient_id, "resource": r} for r in resources]}
 
 
@@ -324,6 +348,7 @@ def bundle_for(state, actor):
 def approve_fhir(patient_id: str, request: Actor):
     with LOCK, database() as db:
         state = load(db, patient_id)
+        check_version(state, request)
         ready(state)
         bundle = bundle_for(state, request.actor)
         # Deliberately narrow: no claim of conformance to an implementation guide.
@@ -354,3 +379,14 @@ def audit(patient_id: str):
         event(db, patient_id, "demo-reader", "audit.read", {})
         records = db.execute("SELECT * FROM events WHERE patient_id=? ORDER BY id DESC LIMIT 500", (patient_id,)).fetchall()
         return [{**dict(r), "detail": json.loads(r["detail"])} for r in records]
+
+from services.workflows.platform import router as platform_router
+app.include_router(platform_router)
+
+# Cross-cutting OIDC authorization and local access audit.
+import sys as _sys
+from pathlib import Path as _Path
+_security_root=next((p for p in _Path(__file__).resolve().parents if (p/"ehr_security.py").exists()), _Path(__file__).resolve().parent)
+_sys.path.insert(0,str(_security_root))
+from ehr_security import install_security
+install_security(app, "workflows")

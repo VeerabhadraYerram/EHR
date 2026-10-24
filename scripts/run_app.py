@@ -27,6 +27,9 @@ SERVICES = [
     service("Clinical fusion", "services/clinical-processing/fusion", "main:app", 8003),
     service("Digital twin", "services/digital-twin", "main:app", 8004),
     service("Local clinical workflows", ".", "services.workflows.main:app", 8005),
+    service("Synthetic imaging", ".", "services.imaging.main:app", 8006),
+    service("Genomics", ".", "services.genomics.main:app", 8007),
+    service("Access audit", ".", "services.audit.main:app", 8008),
     {"name": "Doctor review frontend", "cwd": ROOT_DIR / "frontend/doctor-review-ui", "port": 5188,
      "url": "http://127.0.0.1:5188/", "cmd": [NPM_BIN, "run", "dev", "--", "--host", "127.0.0.1", "--port", "5188", "--strictPort"]},
 ]
@@ -41,6 +44,10 @@ def probe(item):
             if item["port"] == 5188:
                 return b"<html" in body.lower(), "frontend HTML received"
             status = json.loads(body).get("status")
+            expected_auth = os.environ.get("EHR_AUTH_MODE", "demo")
+            actual_auth = response.headers.get("X-EHR-Auth-Mode", "demo")
+            if actual_auth != expected_auth:
+                return False, f"Authentication mode mismatch: expected {expected_auth}, running {actual_auth}; restart this service"
             return status in {"ok", "healthy"}, f"health status={status}"
     except Exception as exc:
         return False, str(exc)

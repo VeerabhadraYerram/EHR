@@ -1,0 +1,15 @@
+{
+  "realm": "ehr", "enabled": true, "registrationAllowed": false,
+  "roles": {"realm": [{"name":"clinician"},{"name":"reviewer"},{"name":"administrator"},{"name":"researcher"}]},
+  "clients": [{
+    "clientId":"ehr-ui", "enabled":true, "publicClient":true,
+    "standardFlowEnabled":true, "implicitFlowEnabled":false, "directAccessGrantsEnabled":false,
+    "redirectUris":["http://localhost:5188/*"], "webOrigins":["http://localhost:5188"],
+    "attributes":{"pkce.code.challenge.method":"S256","post.logout.redirect.uris":"http://localhost:5188/*"},
+    "protocolMappers":[
+      {"name":"ehr-api-audience","protocol":"openid-connect","protocolMapper":"oidc-audience-mapper","config":{"included.custom.audience":"ehr-api","access.token.claim":"true","id.token.claim":"false"}},
+      {"name":"assigned-patients","protocol":"openid-connect","protocolMapper":"oidc-usermodel-attribute-mapper","config":{"user.attribute":"patient_ids","claim.name":"patient_ids","jsonType.label":"String","multivalued":"true","access.token.claim":"true","id.token.claim":"false","userinfo.token.claim":"false"}}
+    ]
+  }],
+  "users": []
+}

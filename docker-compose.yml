@@ -56,9 +56,17 @@ services:
       - "8004:8004"
     volumes:
       - ./data/digital_twin:/data/digital_twin:ro
+      - ./ehr_security.py:/app/ehr_security.py:ro
+      - ./services/audit:/app/services/audit:ro
+      - ./data/audit:/app/data/audit
     environment:
       - ENVIRONMENT=production
       - DATA_DIR=/data/digital_twin
+      - AUDIT_DB=/app/data/audit/access.sqlite3
+      - EHR_AUTH_MODE=${EHR_AUTH_MODE:-demo}
+      - OIDC_ISSUER=${OIDC_ISSUER:-}
+      - OIDC_AUDIENCE=${OIDC_AUDIENCE:-}
+      - OIDC_JWKS_URL=${OIDC_JWKS_URL:-}
     depends_on:
       - ehr-postgres
     healthcheck:

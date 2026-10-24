@@ -278,3 +278,11 @@ def extract_nlp(payload: Dict[str, Any] = Body(...)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+
+# Cross-cutting OIDC authorization and local access audit.
+import sys as _sys
+from pathlib import Path as _Path
+_security_root=next((p for p in _Path(__file__).resolve().parents if (p/"ehr_security.py").exists()), _Path(__file__).resolve().parent)
+_sys.path.insert(0,str(_security_root))
+from ehr_security import install_security
+install_security(app, "ingestion")

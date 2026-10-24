@@ -171,3 +171,14 @@ dist/
 build/
 .next/
 out/
+
+# Source mesh archive; reproducible GLBs and attribution remain versionable
+data/anatomy/source/
+.firecrawl/
+
+data/imaging/
+
+data/genomics/
+
+data/audit/
+data/test-temp*/

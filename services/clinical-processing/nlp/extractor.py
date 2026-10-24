@@ -45,6 +45,8 @@ class ClinicalEntityExtractor:
 
         def check_context(start_char: int, window: int = 40):
             prefix = text_lower[max(0, start_char - window):start_char]
+            # Context must not leak across sentences or contrast clauses.
+            prefix = re.split(r'[.!?;\n]|\b(?:but|however|currently|now)\b', prefix)[-1]
             negated = any(re.search(rf"\b{re.escape(t)}\b", prefix) for t in self.NEGATION_TRIGGERS)
             hedged = any(re.search(rf"\b{re.escape(t)}\b", prefix) for t in self.HEDGING_TRIGGERS)
             historical = any(re.search(rf"\b{re.escape(t)}\b", prefix) for t in self.HISTORICAL_TRIGGERS)
@@ -161,6 +163,17 @@ class ClinicalEntityExtractor:
                 ))
                 entity_counter += 1
 
+        # Apply context to procedures/allergies/labs as well as diagnoses/medicines.
+        for item in entities:
+            neg, cert, temp = check_context(item.start_char)
+            item.negation_status = neg
+            item.certainty = cert
+            item.temporal_status = temp
+        # Retain the longest dictionary match for nested diagnosis synonyms.
+        entities = [e for e in entities if not any(
+            other.entity_type == e.entity_type and other.start_char <= e.start_char
+            and other.end_char >= e.end_char and other.end_char-other.start_char > e.end_char-e.start_char
+            for other in entities)]
         # Sort entities by start_char
         entities.sort(key=lambda e: e.start_char)
 

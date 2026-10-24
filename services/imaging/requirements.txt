@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+numpy
+scipy
+scikit-image
+trimesh
+nibabel
+pydicom
+Pillow

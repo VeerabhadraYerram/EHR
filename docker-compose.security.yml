@@ -1,0 +1,15 @@
+# Optional LOCAL DEVELOPMENT identity provider. Supply your own bootstrap password.
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    command: start-dev --import-realm
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Set a local Keycloak bootstrap password}
+    volumes:
+      - ./config/keycloak/ehr-realm.json:/opt/keycloak/data/import/ehr-realm.json:ro
+      - ehr_keycloak_data:/opt/keycloak/data
+volumes:
+  ehr_keycloak_data:

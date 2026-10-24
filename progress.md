@@ -1,5 +1,12 @@
 # Progress Log
 
+### [2026-10-24] README Team Name Cleanup
+**Author:** Codex
+
+**Work Completed:**
+- Removed the former squad name from the README team information and presentation outline.
+- Verified both occurrences were removed.
+
 ### [2026-10-24] README Architecture and Presentation PDFs
 **Author:** Codex
 

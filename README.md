@@ -16,7 +16,7 @@
 
 ## 👥 Team & Submission Information
 
-* **Team Name**: `saikoushikpallapolu` (Kassak Squad)
+* **Team Name**: `saikoushikpallapolu`
 * **Team Members**:
   - **Shiva Sai**
   - **Veerabhadra Yerram**
@@ -207,7 +207,7 @@ The accompanying 11-slide presentation deck is structured as follows:
 
 | Slide # | Slide Title | Core Topic & Highlights |
 |:---:|---|---|
-| **1** | **Title Slide** | Platform Name (AURA-Twin), Tagline, Team Kassak Squad details |
+| **1** | **Title Slide** | Platform Name (AURA-Twin), Tagline, Team details |
 | **2** | **The Problem** | Human cost (101M diabetics, 1.2M deaths), Economic bleed ($85B+), System failure |
 | **3** | **The Flaw in Current Systems** | Retrospective care, The alarm trap (>35% false alarms), Siloed multimodal data |
 | **4** | **Our Solution** | Dual-Head AI, Multi-threshold operating curves, In silico counterfactuals, TreeSHAP |

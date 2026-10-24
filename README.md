@@ -34,8 +34,8 @@
 | Deliverable | Description | Format & Link |
 |---|---|---|
 | 🎥 **Prototype Video (20+ min)** | End-to-end clinical workflow walkthrough, model evaluation, and live UI demo | [Video Demonstration & Agenda](#-prototype-video-demonstration-20-minutes) |
-| 🏗️ **Architecture Diagram** | Complete 8-step clinical journey from voice/EHR capture to explainable twin | [Architecture Diagram (PDF / Visual)](#-system-architecture--the-8-step-clinical-journey) |
-| 📊 **Project Pitch Deck** | Full 11-slide presentation with human/economic problem, tech stack, and ROI | [Project Presentation (PDF / Slides)](#-project-presentation-slide-deck) |
+| 🏗️ **Architecture Diagram** | AURA-Twin system architecture diagram | [View Architecture Diagram (PDF)](docs/architecture/AURA-Twin_Architecture_Diagram.pdf) |
+| 📊 **Project Pitch Deck** | AURA-Twin Sankalp presentation deck | [View Presentation Deck (PDF)](docs/presentation/AURA-Twin_Sankalp_Deck.pdf) |
 | 📜 **Open-Source License** | Official MIT License terms | [LICENSE](file:///c:/Users/saiko/OneDrive/Desktop/EHR/EHR/LICENSE) |
 
 ---
@@ -86,6 +86,10 @@ AURA-Twin transforms reactive diabetes management into **proactive, explainable,
 ---
 
 ## 🏗️ System Architecture & The 8-Step Clinical Journey
+
+**Architecture diagram:** [View or download the AURA-Twin Architecture Diagram (PDF)](docs/architecture/AURA-Twin_Architecture_Diagram.pdf).
+
+The text diagram below provides an inline overview of the clinical journey.
 
 ```
 ========================================================================================================================
@@ -196,6 +200,8 @@ To eliminate nurse alert fatigue while protecting outpatient safety, AURA-Twin p
 ---
 
 ## 📊 Project Presentation Slide Deck
+
+**Presentation deck:** [View or download the AURA-Twin Sankalp Deck (PDF)](docs/presentation/AURA-Twin_Sankalp_Deck.pdf).
 
 The accompanying 11-slide presentation deck is structured as follows:
 

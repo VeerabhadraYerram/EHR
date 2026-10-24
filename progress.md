@@ -1,5 +1,13 @@
 # Progress Log
 
+### [2026-10-24] README Architecture and Presentation PDFs
+**Author:** Codex
+
+**Work Completed:**
+- Added the supplied architecture diagram and Sankalp presentation PDFs under `docs/architecture/` and `docs/presentation/`.
+- Linked both PDFs directly from the README deliverables table and their corresponding sections using repository-relative paths.
+- Verified the copied PDFs match the supplied files and the README links resolve locally.
+
 ### [2026-10-24] Face-Safe Consultation Transcript Video
 **Author:** Codex
 

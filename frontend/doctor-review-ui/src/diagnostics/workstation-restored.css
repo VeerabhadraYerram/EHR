@@ -930,3 +930,37 @@ body:has(.restored-workstation) {
     color: #172c32;
   }
 }
+
+/* Existing mesh viewer in the restored diagnostic workstation palette. */
+.restored-workstation .ws-anatomy-page { min-width:0; }
+.restored-workstation .ws-anatomy-page .anatomy-profile-strip,
+.restored-workstation .ws-anatomy-page .anatomy-evidence-grid { border-color:var(--line); }
+.restored-workstation .ws-anatomy-page .anatomy-profile-strip b { color:var(--ink); }
+.restored-workstation .ws-anatomy-page .anatomy-profile-strip span,
+.restored-workstation .ws-anatomy-page .caption { color:var(--muted); }
+.restored-workstation .ws-anatomy-page .anatomy-inspector-tabs,
+.restored-workstation .ws-anatomy-page .organ-simulation-panel,
+.restored-workstation .ws-anatomy-page .organ-patient-data,
+.restored-workstation .ws-anatomy-page .anatomy-cutaway-controls { background:#0d2430; border-color:#2d4b57; color:#c5dcdf; }
+.restored-workstation .ws-anatomy-page .organ-patient-data { margin-top:0; }
+.restored-workstation .ws-anatomy-page .anatomy-inspector-tabs button,
+.restored-workstation .ws-anatomy-page .anatomy-quick-organs button,
+.restored-workstation .ws-anatomy-page .anatomy-view-tabs button,
+.restored-workstation .ws-anatomy-page .organ-data-tabs button,
+.restored-workstation .ws-anatomy-page .organ-timeline-play { background:#102b36; border-color:#305460; color:#a9c7ce; }
+.restored-workstation .ws-anatomy-page .anatomy-inspector-tabs button[aria-pressed=true],
+.restored-workstation .ws-anatomy-page .anatomy-quick-organs button[aria-pressed=true],
+.restored-workstation .ws-anatomy-page .anatomy-view-tabs button[aria-pressed=true],
+.restored-workstation .ws-anatomy-page .organ-data-tabs button[aria-selected=true] { background:#19434c; border-color:#548a8e; color:#b9ece5; box-shadow:none; }
+.restored-workstation .ws-anatomy-page .atlas3d-organ-list button { background:#102b36; color:#a9c7ce; border-color:#305460; }
+.restored-workstation .ws-anatomy-page .atlas3d-organ-list button.selected { background:#19434c; color:#b9ece5; }
+.restored-workstation .ws-anatomy-page .atlas3d-toggle,
+.restored-workstation .ws-anatomy-page .organ-metric,
+.restored-workstation .ws-anatomy-page .organ-color-legend { color:#a5bec5; border-color:#2d4b57; }
+.restored-workstation .ws-anatomy-page .organ-simulation-panel > small { color:#91adb7; }
+.restored-workstation .ws-anatomy-page .organ-simulation-panel select { background:#0b1e2b; color:#d0e5e8; border-color:#3a5b67; }
+.restored-workstation .ws-anatomy-page input[type=range],
+.restored-workstation .ws-anatomy-page input[type=checkbox] { accent-color:#88c9c2; }
+.restored-workstation .ws-anatomy-page .anatomy-measurements b { color:#a9ded5; }
+.restored-workstation .ws-anatomy-page .organ-patient-data svg { color:#8acbc0; }
+.restored-workstation .ws-anatomy-page button:focus-visible { outline:2px solid #88d7cd; outline-offset:3px; }

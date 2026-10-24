@@ -1,5 +1,15 @@
 # Progress Log
 
+### [2026-10-24] Add Dedicated 3D Anatomy Page to Updated UI
+**Author:** Codex
+
+**Work Completed:**
+- Added a dedicated `/anatomy-3d` page and a 3D anatomy navigation button to the updated diagnostic workstation, preserving Body & imaging and the existing overview artwork.
+- Reused the existing 3D anatomy viewer and assets with shared patient, recording and forecast context. Preserved organ selection, anatomy layers, patient data, simulation controls and expanded viewing.
+- Adapted the anatomy inspector and data panels to the restored dark theme with scoped styles. Lazy-loaded the viewer on its page.
+- Production build, lint and diff whitespace checks passed. Browser verified navigation, direct reload, P001 context, rendered model and skeleton toggle; desktop and 390px layouts had no horizontal document overflow and no browser errors. Screenshot: `docs/evidence/3d-anatomy-restored-ui.png`.
+- No backend or model asset changes. No commit or push performed.
+
 ### [2026-10-24] Restore Body-Focused Diagnostic Workstation
 **Author:** Codex
 
@@ -886,4 +896,3 @@ Append your updates to the top of the log when you complete a significant chunk 
 - `test_model_performance.py`: 4/4 tests passing
 - `test_digital_twin_service.py`: 9/9 tests passing
 - **Overall Suite:** 19/19 tests passing (100%)
-

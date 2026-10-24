@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   ArrowDownToLine,
   ArrowLeft,
   ArrowRight,
   BookOpen,
+  Box,
   Check,
   ClipboardCheck,
   Dna,
@@ -49,6 +50,8 @@ import "./patient-workstation.css";
 import "./clinical-app.css";
 import "./workstation-restored.css";
 
+const Anatomy3DViewer = lazy(() => import("./Anatomy3DViewer"));
+
 const pages = [
   {
     id: "overview",
@@ -80,6 +83,12 @@ const pages = [
     label: "Body & imaging",
     icon: HeartPulse,
     description: "Whole-body reference and synthetic imaging demonstration.",
+  },
+  {
+    id: "anatomy-3d",
+    label: "3D anatomy",
+    icon: Box,
+    description: "Explore layered anatomy, organs and the selected patient’s data in 3D.",
   },
   {
     id: "review",
@@ -866,6 +875,19 @@ export default function DiagnosticWorkstation() {
                     patient={patient}
                     reading={reading}
                   />
+                </div>
+              )}
+              {page === "anatomy-3d" && (
+                <div className="ws-anatomy-page">
+                  <Suspense fallback={<section className="paper-card" role="status">Loading 3D anatomy…</section>}>
+                    <Anatomy3DViewer
+                      key={selectedId}
+                      patient={patient}
+                      reading={reading}
+                      simulation={shared}
+                      title="Interactive 3D anatomy"
+                    />
+                  </Suspense>
                 </div>
               )}
               {page === "review" && (

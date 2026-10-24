@@ -128,7 +128,7 @@ class MetabolicDigitalTwinSimulator:
         if itype == "postprandial_walk":
             duration = float(params.get("duration_minutes", 20))
             intensity = str(params.get("intensity", "brisk")).lower()
-            intensity_multiplier = 1.25 if intensity == "brisk" else 0.90
+            intensity_multiplier = {"gentle": 0.6, "moderate": 0.9, "brisk": 1.25}[intensity]
 
             label = f"{duration:g}-Minute {intensity.capitalize()} Walk"
             rationale = (
@@ -148,7 +148,7 @@ class MetabolicDigitalTwinSimulator:
                 if h >= 10:
                     delta = h - 10
                     shape = (1.0 - math.exp(-delta / tau_onset)) * math.exp(-max(0.0, delta - duration) / tau_decay)
-                    sim_curve[idx] = max(70.0, sim_curve[idx] - (magnitude * shape))
+                    sim_curve[idx] = max(0.0, sim_curve[idx] - (magnitude * shape))
 
             risk_attenuation_factor = max(0.15, 1.0 - (0.032 * duration * intensity_multiplier * bmi_modifier))
 
@@ -168,7 +168,7 @@ class MetabolicDigitalTwinSimulator:
                 tau_gut = 40.0
                 shape = (h / tau_gut) * math.exp(1.0 - (h / tau_gut))
                 reduction = carb_diff * 0.95 * shape
-                sim_curve[idx] = max(70.0, sim_curve[idx] - reduction)
+                sim_curve[idx] = max(0.0, sim_curve[idx] - reduction)
 
             risk_attenuation_factor = max(0.20, 1.0 - (0.015 * carb_diff))
 
@@ -190,7 +190,7 @@ class MetabolicDigitalTwinSimulator:
                 shape_delayed = (h / tau_delayed) * math.exp(1.0 - (h / tau_delayed))
                 # Flattens early surge
                 delta_blunt = 24.0 * (delay_mins / 15.0) * shape_delayed * cpeptide_modifier
-                sim_curve[idx] = max(70.0, sim_curve[idx] - delta_blunt)
+                sim_curve[idx] = max(0.0, sim_curve[idx] - delta_blunt)
 
             risk_attenuation_factor = max(0.15, 1.0 - delay_mins / 30.0)
 
@@ -219,7 +219,7 @@ class MetabolicDigitalTwinSimulator:
                     shape_walk = (1.0 - math.exp(-delta / 25.0)) * math.exp(-max(0.0, delta - walk_dur) / 40.0)
                     red_walk = 32.0 * (walk_dur / 20.0) * bmi_modifier * shape_walk
 
-                sim_curve[idx] = max(70.0, sim_curve[idx] - (red_carb + red_walk))
+                sim_curve[idx] = max(0.0, sim_curve[idx] - (red_carb + red_walk))
 
             risk_attenuation_factor = max(0.10, (1.0 - min(0.85, 0.025 * walk_dur * bmi_modifier)) * (1.0 - min(0.80, 0.015 * carb_cut)))
 
@@ -238,7 +238,7 @@ class MetabolicDigitalTwinSimulator:
 
             suppression = 18.0 if dose >= 500 else 10.0
             for idx, h in enumerate(horizons):
-                sim_curve[idx] = max(70.0, sim_curve[idx] - suppression * (1.0 - math.exp(-h / 30.0)))
+                sim_curve[idx] = max(0.0, sim_curve[idx] - suppression * (1.0 - math.exp(-h / 30.0)))
 
             risk_attenuation_factor = 0.55
 
@@ -295,7 +295,7 @@ class MetabolicDigitalTwinSimulator:
                 TrajectoryPoint(
                     horizon_minutes=h,
                     projected_glucose_mg_dl=val,
-                    lower_bound_p10_mg_dl=round(max(40.0, val - 1.645 * sigma), 1),
+                    lower_bound_p10_mg_dl=round(max(0.0, val - 1.645 * sigma), 1),
                     upper_bound_p90_mg_dl=round(val + 1.645 * sigma, 1),
                 )
             )

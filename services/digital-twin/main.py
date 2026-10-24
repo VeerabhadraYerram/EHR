@@ -377,6 +377,31 @@ def get_cohort_risk_summaries():
     model = engine.model_fingerprint
     return _cohort_risk_summaries(source.hexdigest(), model)
 
+# The assistant inherits the same assigned-patient authorization as the other twin routes.
+try:
+    from .assistant import ChatRequest, answer_question, status as assistant_status
+except ImportError:
+    from assistant import ChatRequest, answer_question, status as assistant_status
+import asyncio as _asyncio
+_assistant_slots = _asyncio.Semaphore(3)
+
+@app.get('/api/v1/twin/assistant/status')
+def get_assistant_status():
+    return assistant_status()
+
+@app.post('/api/v1/twin/patients/{patient_id}/assistant')
+async def patient_assistant(patient_id: str, request: ChatRequest):
+    patient = get_patient(patient_id)
+    if _assistant_slots.locked():
+        raise HTTPException(429, 'The assistant is busy. Please retry shortly.')
+    async with _assistant_slots:
+        try:
+            return await _asyncio.wait_for(answer_question(request, patient, DATA_DIR, simulate_patient_counterfactuals, engine.serialization_format), timeout=95)
+        except (ValueError, LookupError) as exc:
+            raise HTTPException(422, str(exc)) from exc
+        except _asyncio.TimeoutError as exc:
+            raise HTTPException(504, 'The assistant timed out. Your patient record is unchanged; please retry.') from exc
+
 # Cross-cutting OIDC authorization and local access audit.
 import sys as _sys
 from pathlib import Path as _Path

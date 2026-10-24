@@ -185,3 +185,6 @@ data/test-temp*/
 
 data/anatomy/build/
 data/anatomy/*-tree.json
+
+# Local demonstration video exports and transcripts
+demo_outputs/

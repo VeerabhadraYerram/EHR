@@ -165,9 +165,16 @@ export default function BodyWorkstation({
                 {reading ? Math.round(reading.glucose_mg_dl) : "—"}
               </strong>
               <span>
-                mg/dL<small>Recorded glucose · {reading?.time || "—"}</small>
+                mg/dL
+                <small>
+                  Recorded glucose ·{" "}
+                  {reading?.reading_time.replace("T", " ") || "—"}
+                </small>
               </span>
             </div>
+            <p className="ws-small-note">
+              Baseline clinical snapshot · historical research data
+            </p>
             <dl className="facts-list">
               {[
                 ["HbA1c", `${value(patient.hba1c_percent)} %`],

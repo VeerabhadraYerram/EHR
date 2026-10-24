@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import shap
 from xgboost import XGBClassifier
+import xgboost
 
 try:
     from .portable import load_portable_models, SOURCE_FILES
@@ -67,6 +68,9 @@ class DigitalTwinEngine:
         self._load_models()
 
     def _load_models(self):
+        version = tuple(int(part) for part in xgboost.__version__.split('.')[:2])
+        if version < (3, 2):
+            raise RuntimeError('This model was exported with XGBoost 3.2. Install xgboost>=3.2,<4; older runtimes can silently misread vector base scores.')
         print(f"Loading Digital Twin model weights from {MODEL_DIR}...")
         self.classifier = XGBClassifier()
         self.classifier.load_model(str(MODEL_DIR / "classifier.json"))
@@ -181,7 +185,7 @@ class DigitalTwinEngine:
 
             # Illustrative sensitivity envelope only: no residual quantile calibration exists.
             sigma = 4.5 + (idx * 2.1)
-            p10 = round(max(40.0, val - 1.645 * sigma), 1)
+            p10 = round(max(0.0, val - 1.645 * sigma), 1)
             p90 = round(val + 1.645 * sigma, 1)
 
             trajectory_points.append(

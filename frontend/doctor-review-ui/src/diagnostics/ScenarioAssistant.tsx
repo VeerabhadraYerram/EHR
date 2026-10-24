@@ -1,336 +1,418 @@
-import { useEffect, useState } from "react";
-import type {
-  InterventionSpec,
-  PatientSimulation,
-  SimulationBranch,
-} from "./types";
+import { useEffect, useRef, useState } from "react";
+import {
+  ArrowUp,
+  BookOpen,
+  Check,
+  Copy,
+  RotateCcw,
+  Sparkles,
+  Square,
+} from "lucide-react";
+import { requestJson } from "./patientService";
+import AnswerVisual, { EvidenceValue } from "./AnswerVisual";
+import type { AssistantAnswer } from "./assistantTypes";
+import type { InterventionSpec, PatientSimulation } from "./types";
 import "./scenario-assistant.css";
-import { scenarioParameters } from './scenarioParameters';
+
 type Message = {
   role: "user" | "assistant";
   text: string;
-  branch?: SimulationBranch;
-  simulation?: PatientSimulation;
+  answer?: AssistantAnswer;
 };
-type Pending = {
-  prompt: string;
-  type: string;
-  previous: PatientSimulation | null;
+const suggestions = [
+  [
+    "Understand the patient record",
+    "Explain the patient’s HbA1c in simple words",
+  ],
+  ["Explore a scenario", "What if the patient walks for 30 minutes?"],
+  [
+    "See the pattern",
+    "Show the patient’s recorded glucose trend and explain the observations",
+  ],
+  [
+    "Check the evidence",
+    "What does the evidence show about the patient’s kidney health, and what is missing?",
+  ],
+];
+const labels: Record<string, string> = {
+  record: "Recorded fact",
+  observation: "Observed pattern",
+  prediction: "Model prediction",
+  scenario: "Hypothetical scenario",
+  explanation: "Explanation",
+  limitation: "Evidence limit",
 };
-function explain(s: PatientSimulation, branch?: SimulationBranch): Message {
-  const b = s.baseline;
-  const drivers = b.top_shap_drivers
-    .slice(0, 3)
-    .map(
-      (d) =>
-        `${d.feature.replaceAll("_", " ")} ${d.shap_value >= 0 ? "raises" : "lowers"} the model score (SHAP ${d.shap_value.toFixed(3)}). ${d.clinical_explanation}`,
-    )
-    .join("\n\n");
-  const text = `For ${s.person_id} at ${s.decision_time}, glucose is ${b.glucose_now_mg_dl.toFixed(1)} mg/dL. The baseline two-hour peak is ${b.predicted_peak_glucose_mg_dl.toFixed(1)} mg/dL, around +${b.predicted_peak_time_minutes} minutes. The incident-spike probability is ${(b.calibrated_spike_probability * 100).toFixed(1)}%.${b.model_applicable === false ? " This recording is outside the incident-spike model’s evaluated domain; that probability should not be interpreted as a new-event estimate." : ""}\n\n${branch ? `With “${branch.intervention_label}”, the simulated peak is ${branch.simulated_peak_mg_dl.toFixed(1)} mg/dL (${branch.peak_reduction_mg_dl.toFixed(1)} mg/dL lower than baseline). The simulator reports ${(branch.simulated_risk_probability * 100).toFixed(1)}% risk, a ${branch.risk_reduction_percentage_points.toFixed(1)} percentage-point change.\n\nWhy this scenario changes the curve: ${branch.clinical_rationale}\n\nMechanism assumed by the simulator: ${branch.biophysical_mechanism}\n\n` : ""}Why the baseline model made this prediction:\n\n${drivers || "No SHAP explanation was returned; I cannot supply a model reason."}\n\nSHAP describes model contributions, not proof of causation. What-if curves use mechanistic assumptions and are not measured treatment responses. ${b.uncertainty_method || s.uncertainty_method || "Prediction bands are approximate, not an individual guarantee."}${branch?.hypoglycemia_risk_warning ? " The simulator also flagged possible hypoglycaemia in this scenario." : ""}`;
-  return { role: "assistant", text, branch, simulation: s };
-}
 export default function ScenarioAssistant({
   patientId,
   decisionTime,
-  simulation,
-  busy,
-  error,
   onRun,
   onSelect,
+  onSimulation,
 }: {
   patientId: string;
   decisionTime: string;
-  simulation: PatientSimulation | null;
-  busy: boolean;
-  error: string;
   onRun: (specs: InterventionSpec[]) => void;
   onSelect: (type: string) => void;
+  onSimulation: (simulation: PatientSimulation) => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([]),
     [prompt, setPrompt] = useState(""),
-    [pending, setPending] = useState<Pending | null>(null);
+    [pending, setPending] = useState(false),
+    [error, setError] = useState(""),
+    [retry, setRetry] = useState("");
+  const [status, setStatus] = useState<{
+      configured: boolean;
+      providers: string[];
+      external_data: string;
+    } | null>(null),
+    [sources, setSources] = useState<Record<number, boolean>>({}),
+    [copied, setCopied] = useState<number | null>(null);
+  const request = useRef<AbortController | null>(null),
+    context = useRef("");
   useEffect(() => {
+    const c = new AbortController();
+    requestJson<typeof status>("/api/v1/twin/assistant/status", {
+      signal: c.signal,
+    })
+      .then(setStatus)
+      .catch(() => {});
+    return () => c.abort();
+  }, []);
+  useEffect(() => {
+    context.current = `${patientId}:${decisionTime}`;
+    request.current?.abort();
     setMessages([]);
-    setPending(null);
     setPrompt("");
+    setPending(false);
+    setError("");
+    setRetry("");
+    setSources({});
+    return () => {
+      request.current?.abort();
+    };
   }, [patientId, decisionTime]);
-  useEffect(() => {
-    if (
-      !pending ||
-      busy ||
-      !simulation ||
-      simulation === pending.previous ||
-      simulation.person_id !== patientId ||
-      simulation.decision_time !== decisionTime
-    )
-      return;
-    const branch = simulation.counterfactual_branches.find(
-      (b) => b.intervention_type === pending.type,
-    );
-    setMessages((m) => [
-      ...m,
-      branch
-        ? explain(simulation, branch)
-        : {
-            role: "assistant",
-            text: "The backend did not return this scenario. I cannot provide predicted values for it.",
-          },
-    ]);
-    setPending(null);
-  }, [pending, busy, simulation, patientId, decisionTime]);
-  useEffect(() => {
-    if (pending && error) {
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          text: `The model request failed: ${error}. No scenario values are available.`,
-        },
-      ]);
-      setPending(null);
-    }
-  }, [error, pending]);
-  function ask(value: string) {
-    const q = value.trim();
-    if (!q || pending || busy) return;
-    setPrompt("");
+  const stop = () => {
+    request.current?.abort();
+    setPending(false);
+    setError("Request stopped. No records were changed.");
+  };
+  async function ask(question: string) {
+    const q = question.trim();
+    if (!q || pending || !decisionTime) return;
+    const snapshot = context.current,
+      controller = new AbortController();
+    request.current = controller;
+    const history = messages
+      .slice(-8)
+      .map((m) => ({ role: m.role, text: m.text.slice(0, 5000) }));
     setMessages((m) => [...m, { role: "user", text: q }]);
-    const lower = q.toLowerCase();
-    if (/insulin|dose|medication|tablet|metformin/.test(lower)) {
-      setMessages((m) => [
-        ...m,
+    setPrompt("");
+    setError("");
+    setRetry(q);
+    setPending(true);
+    const timeout = setTimeout(() => controller.abort(), 98000);
+    try {
+      const result = await requestJson<AssistantAnswer>(
+        `/api/v1/twin/patients/${encodeURIComponent(patientId)}/assistant`,
         {
-          role: "assistant",
-          text: "I can explain the current forecast and simulate supported lifestyle assumptions. I cannot choose or change medication doses. Use the clinician review workflow for medication decisions.",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: q,
+            decision_time: decisionTime,
+            history,
+          }),
+          signal: controller.signal,
         },
-      ]);
-      return;
-    }
-    if (/[-−]\s*\d/.test(lower)) {
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          text: "Use a non-negative duration or an explicit carbohydrate reduction in grams.",
-        },
-      ]);
-      return;
-    }
-    let specs: InterventionSpec[] = [],
-      type = "";
-    const walk = /walk|exercise/.test(lower),
-      carbs = /carb|carbohydrate/.test(lower),
-      delay = /delay|sequence|sequencing/.test(lower);
-    const {duration, grams, delay: delayMinutes, error: parameterError} = scenarioParameters(lower);
-    if (parameterError) {
-      setMessages((m) => [
-        ...m,
-        {
-          role: "assistant",
-          text: parameterError,
-        },
-      ]);
-      return;
-    }
-    if (walk && carbs) {
-      type = "compound_lifestyle";
-      specs = [
-        {
-          intervention_type: type,
-          parameters: { duration_minutes: duration, carb_reduction_g: grams },
-        },
-      ];
-    } else if (walk) {
-      type = "postprandial_walk";
-      specs = [
-        {
-          intervention_type: type,
-          parameters: { duration_minutes: duration, intensity: "brisk" },
-        },
-      ];
-    } else if (delay) {
-      const mins = delayMinutes;
-      if (mins > 60) {
-        setMessages((m) => [
-          ...m,
-          {
-            role: "assistant",
-            text: "Choose a carbohydrate delay between 0 and 60 minutes.",
-          },
-        ]);
-        return;
+      );
+      if (controller.signal.aborted || context.current !== snapshot) return;
+      if (
+        result.patient_id !== patientId ||
+        result.decision_time !== decisionTime
+      )
+        throw new Error(
+          "The response did not match this patient and timestamp. Please retry.",
+        );
+      const text = result.claims.map((c) => c.text).join("\n\n");
+      setMessages((m) => [...m, { role: "assistant", text, answer: result }]);
+      if (result.simulation && result.interventions.length) {
+        onRun(result.interventions);
+        onSelect(result.interventions[0].intervention_type);
+        onSimulation(result.simulation);
       }
-      type = "food_sequencing";
-      specs = [
-        {
-          intervention_type: type,
-          parameters: {
-            delay_carbs_minutes: mins,
-            preload_type: "fiber_protein",
-          },
-        },
-      ];
-    } else if (carbs) {
-      type = "carb_reduction";
-      specs = [
-        { intervention_type: type, parameters: { carb_reduction_g: grams } },
-      ];
+      setRetry("");
+    } catch (e) {
+      if (context.current === snapshot)
+        setError(
+          controller.signal.aborted
+            ? "Request stopped or timed out. No answer was substituted. You can retry."
+            : (e as Error).message,
+        );
+    } finally {
+      clearTimeout(timeout);
+      if (context.current === snapshot) setPending(false);
     }
-    if (type) {
-      if (!simulation) {
-        setMessages((m) => [
-          ...m,
-          {
-            role: "assistant",
-            text: "Wait for the shared baseline model to load before running a scenario.",
-          },
-        ]);
-        return;
-      }
-      setPending({ prompt: q, type, previous: simulation });
-      onSelect(type);
-      onRun(specs);
-      return;
+  }
+  async function copy(m: Message, index: number) {
+    try {
+      await navigator.clipboard.writeText(m.text);
+      setCopied(index);
+      setTimeout(() => setCopied(null), 1800);
+    } catch {
+      setError(
+        "Copy is unavailable in this browser. Select the response text to copy it.",
+      );
     }
-    if (
-      /why|explain|predict|forecast|risk|glucose|compare|baseline|current|peak/.test(
-        lower,
-      ) &&
-      simulation
-    ) {
-      setMessages((m) => [...m, explain(simulation)]);
-      return;
-    }
-    setMessages((m) => [
-      ...m,
-      {
-        role: "assistant",
-        text: "Try “Explain my forecast”, “What if I walk for 30 minutes?”, “Reduce carbs by 20 g”, “Delay carbs 15 minutes”, or “Walk 20 minutes and reduce carbs by 25 g”. I interpret these supported requests locally and explain the actual model output; I do not invent answers to other clinical questions.",
-      },
-    ]);
   }
   return (
-    <section className="paper-card scenario-assistant">
-      <div className="card-heading">
+    <section className="paper-card scenario-assistant evidence-assistant">
+      <header className="assistant-heading">
         <div>
-          <span className="eyebrow">Conversation with the model evidence</span>
-          <h2>Ask your twin.</h2>
-        </div>
-        <span className="subtle-tag">Local · no external AI data transfer</span>
-      </div>
-      <p className="muted">
-        Ask in plain language. Supported requests run the shared glucose model
-        and show its predicted values and reasons. Responses use a bounded local
-        language parser and evidence templates, not a general-purpose language
-        model.
-      </p>
-      <div className="assistant-suggestions">
-        {[
-          "Explain my forecast",
-          "What if I walk for 30 minutes?",
-          "Reduce carbs by 20 g",
-          "Delay carbs 15 minutes",
-        ].map((q) => (
-          <button
-            className="button secondary"
-            key={q}
-            disabled={busy || Boolean(pending)}
-            onClick={() => ask(q)}
-          >
-            {q}
-          </button>
-        ))}
-      </div>
-      <div className="assistant-conversation" role="log" aria-live="polite">
-        {messages.length === 0 && (
-          <p className="assistant-empty">
-            Start with the forecast, then explore a supported change. The chart
-            below follows the same response.
+          <span className="eyebrow">
+            <Sparkles size={13} /> Selected patient, explained
+          </span>
+          <h2>Ask. Understand. Explore.</h2>
+          <p className="muted">
+            Questions about the record, clear explanations, and supported
+            what-if experiments—with the evidence beside every answer.
           </p>
-        )}
+        </div>
+        <button
+          className="button secondary"
+          disabled={pending || !messages.length}
+          onClick={() => {
+            setMessages([]);
+            setSources({});
+            setError("");
+            setRetry("");
+          }}
+        >
+          <RotateCcw size={13} />
+          New conversation
+        </button>
+      </header>
+      <div className="assistant-context-strip">
+        <span>
+          <i />
+          {patientId}
+        </span>
+        <span>
+          As of {decisionTime.replace("T", " ") || "Select a reading"}
+        </span>
+        <span>
+          {status?.configured ? "AI + patient evidence" : "Local evidence mode"}
+        </span>
+        <span>Read-only assistant</span>
+      </div>
+      <details className="assistant-privacy">
+        <summary>
+          <BookOpen size={12} /> How answers are grounded & where data goes
+        </summary>
+        <p>
+          {status?.external_data ||
+            "Checking the backend connection. API credentials stay on the server."}
+        </p>
+        <p>
+          Facts, observations, model forecasts and hypothetical effects are
+          labelled separately. Baseline cohort fields may be derived or imputed.
+          This assistant does not prescribe medication, diagnose from a scan, or
+          write to the clinical record.
+        </p>
+      </details>
+      {!messages.length && (
+        <div className="assistant-start">
+          <div>
+            <span className="eyebrow">Start with a question</span>
+            <h3>What would you like to understand?</h3>
+          </div>
+          <div className="assistant-question-grid">
+            {suggestions.map(([label, q]) => (
+              <button
+                key={q}
+                onClick={() => ask(q)}
+                disabled={pending || !decisionTime}
+              >
+                <span>{label}</span>
+                <strong>{q}</strong>
+                <ArrowUp size={15} />
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div
+        className="assistant-conversation"
+        role="log"
+        aria-label="Patient assistant conversation"
+        aria-live="polite"
+        aria-busy={pending}
+      >
         {messages.map((m, i) => (
           <article key={i} className={`assistant-message ${m.role}`}>
-            <strong>{m.role === "user" ? "You" : "Twin assistant"}</strong>
-            <p>{m.text}</p>
-            {m.branch && (
-              <div className="assistant-evidence">
+            <div className="assistant-message-heading">
+              <strong>
+                {m.role === "user" ? "Clinician" : "Patient evidence assistant"}
+              </strong>
+              {m.answer && (
                 <span>
-                  Simulated peak{" "}
-                  <b>{m.branch.simulated_peak_mg_dl.toFixed(1)} mg/dL</b>
+                  {m.answer.provider.provider === "local"
+                    ? "Evidence-only fallback"
+                    : `${m.answer.provider.provider} · grounded response`}
                 </span>
-                <span>
-                  Risk change{" "}
-                  <b>
-                    {m.branch.risk_reduction_percentage_points.toFixed(1)} pp
-                  </b>
-                </span>
-              </div>
-            )}
-            {m.simulation && (
-              <details>
-                <summary>Inspect forecast values & evidence</summary>
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Horizon</th>
-                      <th>Glucose</th>
-                      <th>Approx. band</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(
-                      m.branch?.simulated_trajectory ||
-                      m.simulation.baseline.continuous_trajectory
-                    )
-                      .filter((p) => p.horizon_minutes % 30 === 0)
-                      .map((p) => (
-                        <tr key={p.horizon_minutes}>
-                          <td>+{p.horizon_minutes} min</td>
-                          <td>{p.projected_glucose_mg_dl.toFixed(1)}</td>
-                          <td>
-                            {p.lower_bound_p10_mg_dl.toFixed(1)}–
-                            {p.upper_bound_p90_mg_dl.toFixed(1)}
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-                <p className="caption">
-                  Snapshot: {m.simulation.person_id} ·{" "}
-                  {m.simulation.decision_time}. Values in mg/dL.{" "}
-                  {m.simulation.assumptions?.join(" ")}
-                </p>
-              </details>
+              )}
+            </div>
+            {m.answer ? (
+              <>
+                <h3>{m.answer.title}</h3>
+                <AnswerVisual visual={m.answer.visual} patientId={patientId} />
+                <div className="answer-claims">
+                  {m.answer.claims.map((c, j) => (
+                    <div key={j} className={`answer-claim ${c.kind}`}>
+                      <span>{labels[c.kind] || c.kind}</span>
+                      <p>{c.text}</p>
+                      <div className="answer-citations">
+                        {c.evidence_ids.map((id) => {
+                          const e = m.answer!.evidence.find((e) => e.id === id);
+                          return (
+                            <button
+                              key={id}
+                              onClick={() =>
+                                setSources((s) => ({ ...s, [i]: true }))
+                              }
+                              title={e?.source || e?.url || e?.label}
+                            >
+                              <BookOpen size={10} />
+                              {e?.label || id}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {m.answer.notices.map((n) => (
+                  <p className="notice warning" key={n}>
+                    {n}
+                  </p>
+                ))}
+                <div className="assistant-answer-actions">
+                  <button
+                    className="text-button"
+                    aria-expanded={Boolean(sources[i])}
+                    onClick={() => setSources((s) => ({ ...s, [i]: !s[i] }))}
+                  >
+                    <BookOpen size={13} />
+                    {sources[i] ? "Hide" : "Inspect"} sources (
+                    {m.answer.evidence.length})
+                  </button>
+                  <button className="text-button" onClick={() => copy(m, i)}>
+                    {copied === i ? <Check size={13} /> : <Copy size={13} />}
+                    Copy answer
+                  </button>
+                </div>
+                {sources[i] && (
+                  <div className="answer-sources">
+                    {m.answer.evidence.map((e) => (
+                      <section key={e.id}>
+                        <span className="eyebrow">
+                          {e.kind} · {e.id}
+                        </span>
+                        <h4>{e.label}</h4>
+                        <EvidenceValue evidence={e} />
+                        <p className="caption">{e.source}</p>
+                        {e.url &&
+                          e.url.startsWith("https://www.niddk.nih.gov/") && (
+                            <a href={e.url} target="_blank" rel="noreferrer">
+                              Read source at NIDDK ↗
+                            </a>
+                          )}
+                      </section>
+                    ))}
+                  </div>
+                )}
+                {!!m.answer.followups.length && (
+                  <div className="assistant-followups">
+                    {m.answer.followups.map((q) => (
+                      <button
+                        className="button secondary"
+                        key={q}
+                        disabled={pending}
+                        onClick={() => ask(q)}
+                      >
+                        {q}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <p>{m.text}</p>
             )}
           </article>
         ))}
         {pending && (
-          <p role="status">
-            Running the selected scenario against the shared model…
-          </p>
+          <div className="assistant-thinking" role="status">
+            <span className="loading-spinner" />
+            <div>
+              <strong>Checking the record and building an explanation…</strong>
+              <p>
+                Charts use recorded measurements or actual simulator output.
+              </p>
+            </div>
+            <button className="text-button" onClick={stop}>
+              <Square size={12} />
+              Stop
+            </button>
+          </div>
         )}
       </div>
+      {error && (
+        <div className="notice error" role="alert">
+          <p>{error}</p>
+          {retry && !pending && (
+            <button className="text-button" onClick={() => ask(retry)}>
+              Retry question
+            </button>
+          )}
+        </div>
+      )}
       <form
+        className="assistant-form"
         onSubmit={(e) => {
           e.preventDefault();
           ask(prompt);
         }}
-        className="assistant-form"
       >
-        <input
-          aria-label="Ask the twin assistant"
+        <label className="sr-only" htmlFor="patient-assistant-question">
+          Ask about this patient
+        </label>
+        <textarea
+          id="patient-assistant-question"
+          rows={2}
           value={prompt}
-          maxLength={1000}
+          maxLength={2000}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="What if I walk for 20 minutes?"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              ask(prompt);
+            }
+          }}
+          placeholder="Ask about labs, patterns, medicines, missing evidence—or a what-if scenario…"
+          disabled={!decisionTime}
         />
         <button
           className="button primary"
-          disabled={busy || Boolean(pending) || !prompt.trim()}
+          disabled={pending || !prompt.trim() || !decisionTime}
         >
-          Ask twin
+          <ArrowUp size={16} />
+          Ask
         </button>
       </form>
+      <p className="assistant-input-note">
+        Enter to ask · Shift + Enter for a new line · Conversation resets when
+        patient or recording time changes.
+      </p>
     </section>
   );
 }

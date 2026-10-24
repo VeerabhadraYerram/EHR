@@ -14,6 +14,19 @@ def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def source_hash_matches(path: Path, expected: str) -> bool:
+    """Accept Git LF/CRLF conversion of JSON metadata, never changed content or pickle bytes."""
+    raw = path.read_bytes()
+    if hashlib.sha256(raw).hexdigest() == expected:
+        return True
+    if path.name not in {'feature_names.json', 'metrics.json', 'isotonic_calibrator.json'}:
+        return False
+    json.loads(raw)  # Only valid metadata, not arbitrary binary, gets newline normalization.
+    normalized = raw.replace(b'\r\n', b'\n')
+    return any(hashlib.sha256(data).hexdigest() == expected
+               for data in (normalized, normalized.replace(b'\n', b'\r\n')))
+
+
 class PortableIsotonic:
     def __init__(self, specification: dict):
         if specification.get('out_of_bounds') != 'clip':
@@ -48,7 +61,7 @@ def load_portable_models(model_dir: Path, require_parity: bool = True):
     if set(manifest.get('source_sha256', {})) != set(SOURCE_FILES):
         raise ValueError('Incomplete portable source fingerprint.')
     for name in SOURCE_FILES:
-        if sha256(model_dir / name) != manifest['source_sha256'][name]:
+        if not source_hash_matches(model_dir / name, manifest['source_sha256'][name]):
             raise ValueError(f'Portable model is stale: source fingerprint differs for {name}.')
     parity = manifest.get('parity_verification', {})
     if require_parity and (parity.get('clinical_vectors', 0) <= 0 or parity.get('max_calibrated_probability_abs_error', 1) > 1e-6 or parity.get('max_trajectory_abs_error_mg_dl', 1) > 1e-4):
@@ -58,7 +71,7 @@ def load_portable_models(model_dir: Path, require_parity: bool = True):
     if set(manifest.get('export_sha256', {})) != set(expected_outputs):
         raise ValueError('Incomplete portable output fingerprint.')
     for name in expected_outputs:
-        if sha256(model_dir / name) != manifest['export_sha256'][name]:
+        if not source_hash_matches(model_dir / name, manifest['export_sha256'][name]):
             raise ValueError(f'Portable artifact failed integrity check: {name}.')
     calibrator = PortableIsotonic(json.loads((model_dir / 'isotonic_calibrator.json').read_text()))
     estimators = []

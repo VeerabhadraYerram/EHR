@@ -1,4 +1,12 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Activity,
   ArrowDownToLine,
@@ -88,7 +96,8 @@ const pages = [
     id: "anatomy-3d",
     label: "3D anatomy",
     icon: Box,
-    description: "Explore layered anatomy, organs and the selected patient’s data in 3D.",
+    description:
+      "Explore layered anatomy, organs and the selected patient’s data in 3D.",
   },
   {
     id: "review",
@@ -156,10 +165,6 @@ const DEFAULT_INTERVENTIONS: InterventionSpec[] = [
   {
     intervention_type: "compound_lifestyle",
     parameters: { duration_minutes: 20, carb_reduction_g: 25 },
-  },
-  {
-    intervention_type: "confirm_medication",
-    parameters: { drug: "metformin", dose_mg: 500 },
   },
 ];
 
@@ -849,11 +854,9 @@ export default function DiagnosticWorkstation() {
                   <ScenarioAssistant
                     patientId={selectedId}
                     decisionTime={reading?.reading_time || ""}
-                    simulation={shared}
-                    busy={predicting}
-                    error={predictionError}
                     onRun={setInterventions}
                     onSelect={setBranchId}
+                    onSimulation={setSimulation}
                   />
                   <ScenarioControls
                     appliedSpecs={interventions}
@@ -879,7 +882,13 @@ export default function DiagnosticWorkstation() {
               )}
               {page === "anatomy-3d" && (
                 <div className="ws-anatomy-page">
-                  <Suspense fallback={<section className="paper-card" role="status">Loading 3D anatomy…</section>}>
+                  <Suspense
+                    fallback={
+                      <section className="paper-card" role="status">
+                        Loading 3D anatomy…
+                      </section>
+                    }
+                  >
                     <Anatomy3DViewer
                       key={selectedId}
                       patient={patient}
@@ -1134,6 +1143,26 @@ function ScenarioControls({
     [delay, setDelay] = useState(initial.delay);
   const [applied, setApplied] = useState(initial);
   const [autoSimulate, setAutoSimulate] = useState(true);
+  useEffect(() => {
+    const walkSpec = appliedSpecs.find((s) =>
+      ["postprandial_walk", "compound_lifestyle"].includes(s.intervention_type),
+    );
+    const carbSpec = appliedSpecs.find((s) =>
+      ["carb_reduction", "compound_lifestyle"].includes(s.intervention_type),
+    );
+    const delaySpec = appliedSpecs.find(
+      (s) => s.intervention_type === "food_sequencing",
+    );
+    const next = {
+      walk: Number(walkSpec?.parameters.duration_minutes ?? 0),
+      carbs: Number(carbSpec?.parameters.carb_reduction_g ?? 0),
+      delay: Number(delaySpec?.parameters.delay_carbs_minutes ?? 0),
+    };
+    setWalk(next.walk);
+    setCarbs(next.carbs);
+    setDelay(next.delay);
+    setApplied(next);
+  }, [appliedSpecs]);
 
   const dirty =
     walk !== applied.walk || carbs !== applied.carbs || delay !== applied.delay;
@@ -1141,7 +1170,7 @@ function ScenarioControls({
   const runSimulation = useCallback(
     (w = walk, c = carbs, d = delay) => {
       setApplied({ walk: w, carbs: c, delay: d });
-      onRun([
+      const specs: InterventionSpec[] = [
         {
           intervention_type: "postprandial_walk",
           parameters: { duration_minutes: w, intensity: "brisk" },
@@ -1161,11 +1190,15 @@ function ScenarioControls({
           intervention_type: "compound_lifestyle",
           parameters: { duration_minutes: w, carb_reduction_g: c },
         },
-        {
-          intervention_type: "confirm_medication",
-          parameters: { drug: "metformin", dose_mg: 500 },
-        },
-      ]);
+      ];
+      onRun(
+        specs.filter(
+          (spec) =>
+            !["postprandial_walk", "compound_lifestyle"].includes(
+              spec.intervention_type,
+            ) || Number(spec.parameters.duration_minutes) > 0,
+        ),
+      );
     },
     [walk, carbs, delay, onRun],
   );
@@ -1204,7 +1237,7 @@ function ScenarioControls({
       <div className="card-heading">
         <div>
           <span className="eyebrow">Interactive What-If Simulation Engine</span>
-          <h2>Physiological Sensitivity & Counterfactuals</h2>
+          <h2>Lifestyle scenario comparisons</h2>
         </div>
         <div className="heading-actions">
           <label
@@ -1216,20 +1249,20 @@ function ScenarioControls({
               checked={autoSimulate}
               onChange={(e) => setAutoSimulate(e.target.checked)}
             />
-            <span>⚡ Live Auto-Simulate</span>
+            <span>Auto-calculate</span>
           </label>
-          <span className="subtle-tag">Clinician decision support</span>
+          <span className="subtle-tag">Research comparison</span>
         </div>
       </div>
 
       <p className="muted">
         Adjust lifestyle parameters below or click a clinical preset to simulate
-        patient-specific glucose trajectories in real-time.
+        glucose trajectories for the selected patient and recorded timestamp.
       </p>
 
       {/* Quick Clinical Presets */}
       <div className="scenario-presets-bar">
-        <span className="presets-label">Clinical presets:</span>
+        <span className="presets-label">Example scenarios:</span>
         <div className="presets-row">
           {presets.map((p) => (
             <button
@@ -1256,8 +1289,8 @@ function ScenarioControls({
             <button
               type="button"
               className="stepper-btn"
-              onClick={() => setWalk((v) => Math.max(5, v - 5))}
-              disabled={walk <= 5}
+              onClick={() => setWalk((v) => Math.max(0, v - 5))}
+              disabled={walk <= 0}
               aria-label="Decrease walking duration by 5 minutes"
             >
               −
@@ -1265,17 +1298,17 @@ function ScenarioControls({
             <input
               aria-label="Walking duration"
               type="range"
-              min="5"
-              max="60"
-              step="5"
+              min="0"
+              max="120"
+              step="0.5"
               value={walk}
               onChange={(e) => setWalk(Number(e.target.value))}
             />
             <button
               type="button"
               className="stepper-btn"
-              onClick={() => setWalk((v) => Math.min(60, v + 5))}
-              disabled={walk >= 60}
+              onClick={() => setWalk((v) => Math.min(120, v + 5))}
+              disabled={walk >= 120}
               aria-label="Increase walking duration by 5 minutes"
             >
               +
@@ -1283,10 +1316,10 @@ function ScenarioControls({
           </div>
           <span className="slider-intensity-badge">
             {walk <= 15
-              ? "Light Walking (Mild glucose uptake)"
+              ? "Short-duration walking assumption"
               : walk <= 35
-                ? "Brisk Postprandial (Optimal uptake)"
-                : "Intensive Exercise (High muscle clearance)"}
+                ? "Moderate-duration walking assumption"
+                : "Longer-duration walking assumption"}
           </span>
         </div>
 
@@ -1310,7 +1343,7 @@ function ScenarioControls({
               type="range"
               min="0"
               max="75"
-              step="5"
+              step="0.5"
               value={carbs}
               onChange={(e) => setCarbs(Number(e.target.value))}
             />
@@ -1355,7 +1388,7 @@ function ScenarioControls({
               type="range"
               min="0"
               max="60"
-              step="5"
+              step="0.5"
               value={delay}
               onChange={(e) => setDelay(Number(e.target.value))}
             />
@@ -1391,7 +1424,7 @@ function ScenarioControls({
         )}
         {busy && (
           <span className="simulating-indicator">
-            <i className="pulse-dot" /> Simulating physiological trajectory…
+            <i className="pulse-dot" /> Calculating scenario comparison…
           </span>
         )}
         {dirty && !autoSimulate && (
@@ -1422,10 +1455,10 @@ function ScenarioControls({
                     `Clinical What-If: ${selectedBranch.intervention_label} | Peak: ${selectedBranch.simulated_peak_mg_dl.toFixed(1)} mg/dL (Estimated reduction: -${selectedBranch.peak_reduction_mg_dl.toFixed(1)} mg/dL) | Mechanism: ${selectedBranch.biophysical_mechanism}`,
                   );
                   if (onToast)
-                    onToast("Scenario recommendation copied to clipboard.");
+                    onToast("Scenario comparison copied to clipboard.");
                 }}
               >
-                📋 Copy recommendation
+                Copy comparison
               </button>
               <button
                 type="button"

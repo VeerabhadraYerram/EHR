@@ -4,6 +4,22 @@ A local diabetes digital-twin demonstration alongside an EHR ingestion, identity
 
 The 100-person demonstration cohort contains real-source-derived data and synthetic demonstration context. Read the dataset manifest and provenance labels before interpreting any result. Synthetic realism is not independent clinical validation.
 
+## Challenge use case and submission readiness
+
+The healthcare problem is anticipating incident glucose spikes in Type 2 diabetes
+from clinical history and continuous glucose recordings, so a clinician can review
+the forecast and explore explicitly assumption-based lifestyle scenarios. The
+stack uses React/TypeScript/Vite/Three.js, Python/FastAPI, calibrated XGBoost and
+multi-horizon glucose regressors with genuine TreeSHAP explanations. The wider
+local EHR pipeline uses PostgreSQL, MinIO and a SQLite demonstration review store.
+
+See [functional QA and official-requirements checklist](docs/FUNCTIONAL_QA_AND_HACKATHON_READINESS_2026-10-24.md).
+Before submission, add actual team and college/incubator details, a qualifying
+20-minute-or-longer demo-video link, the final presentation PDF/PPT, current twin
+architecture PDF/PPT and owner-approved project license details. Verify public
+repository access and the required team/college folder name. These items are not
+claimed complete by the running application.
+
 ## Local startup
 
 Run from the repository root in PowerShell. Use Python, Node/npm and Docker Desktop with Compose available. Model artifacts and cohort files must already exist under `data/digital_twin`.

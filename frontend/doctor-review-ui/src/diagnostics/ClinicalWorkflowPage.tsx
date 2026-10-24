@@ -689,6 +689,7 @@ export default function ClinicalWorkflowPage({
           </p>
           <div className="wf-toolbar">
             <select
+              aria-label="Select legacy EHR patient"
               value={legacyId}
               onChange={(e) => {
                 setLegacyId(e.target.value);
